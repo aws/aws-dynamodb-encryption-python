@@ -1,0 +1,66 @@
+{
+    "plaintext": "file://plaintext.json",
+    "keys": "file://keys.json",
+    "scenarios": [
+        {
+            "version": "v0",
+            "provider": "static",
+            "keys": {
+                "decrypt": "aesKey",
+                "verify": "hmacKey"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/static-aes-hmac-1.json"
+        },
+        {
+            "version": "v0",
+            "provider": "static",
+            "keys": {
+                "decrypt": "aesKey",
+                "verify": "hmacKey"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/static-aes-hmac-2.json"
+        },
+        {
+            "version": "v1",
+            "provider": "static",
+            "keys": {
+                "decrypt": "aesKey",
+                "verify": "hmacKey"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/static-aes-hmac-3.json"
+        },
+        {
+            "version": "v0",
+            "provider": "wrapped",
+            "keys": {
+                "decrypt": "rsaEncPriv",
+                "verify": "rsaEncPub"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-1.json"
+        },
+        {
+            "version": "v1",
+            "provider": "wrapped",
+            "keys": {
+                "decrypt": "rsaEncPriv",
+                "verify": "rsaEncPub"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-2.json"
+        },
+        {
+            "version": "v0",
+            "provider": "wrapped",
+            "keys": {
+                "decrypt": "rsaEncPriv",
+                "verify": "rsaEncPub"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-3.json"
+        }
+    ]
+}
