@@ -1,0 +1,22 @@
+[
+    {
+        "material_description": {
+            "A": "Field A",
+            "B": "Field B",
+            "C": "123"
+        },
+        "serialized": "AAAAAAAAAAFBAAAAB0ZpZWxkIEEAAAABQgAAAAdGaWVsZCBCAAAAAUMAAAADMTIz"
+    },
+    {
+        "material_description": {
+            "B": "Field B",
+            "C": "123",
+            "A": "Field A"
+        },
+        "serialized": "AAAAAAAAAAFBAAAAB0ZpZWxkIEEAAAABQgAAAAdGaWVsZCBCAAAAAUMAAAADMTIz"
+    },
+    {
+        "material_description": {},
+        "serialized": "AAAAAA=="
+    }
+]
