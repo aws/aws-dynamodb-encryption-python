@@ -73,6 +73,7 @@ def _serialize_deserialize_cycle(attribute):
 
 
 @pytest.mark.slow
+@pytest.mark.hypothesis
 @SLOW_SETTINGS
 @hypothesis.given(ddb_attribute_values)
 def test_serialize_deserialize_attribute_slow(attribute):
@@ -80,6 +81,7 @@ def test_serialize_deserialize_attribute_slow(attribute):
 
 
 @pytest.mark.veryslow
+@pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(ddb_attribute_values)
 def test_serialize_deserialize_attribute_vslow(attribute):
@@ -93,6 +95,7 @@ def _ddb_dict_ddb_transform_cycle(item):
 
 
 @pytest.mark.slow
+@pytest.mark.hypothesis
 @SLOW_SETTINGS
 @hypothesis.given(ddb_items)
 def test_dict_to_ddb_and_back_slow(item):
@@ -100,6 +103,7 @@ def test_dict_to_ddb_and_back_slow(item):
 
 
 @pytest.mark.veryslow
+@pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(ddb_items)
 def test_dict_to_ddb_and_back_vslow(item):
