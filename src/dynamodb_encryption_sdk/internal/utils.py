@@ -11,7 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """"""
+import attr
+
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
+from dynamodb_encryption_sdk.structures import TableInfo
 
 
 def sorted_key_map(item, transform=to_bytes):
@@ -28,3 +31,25 @@ def sorted_key_map(item, transform=to_bytes):
         sorted_items.append((_key, value, key))
     sorted_items = sorted(sorted_items, key=lambda x: x[0])
     return sorted_items
+
+
+@attr.s(hash=False)
+class TableInfoCache(object):
+    """"""
+    _client = attr.ib()
+    _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool))
+
+    def __attrs_post_init__(self):
+        """"""
+        self._all_tables_info = {}
+
+    def table_info(self, table_name):
+        """"""
+        try:
+            return self._all_tables_info[table_name]
+        except KeyError:
+            _table_info = TableInfo(name=table_name)
+            if self._auto_refresh_table_indexes:
+                _table_info.refresh_indexed_attributes(self._client)
+            self._all_tables_info[table_name] = _table_info
+            return _table_info
