@@ -200,7 +200,7 @@ class TableInfo(object):
         return self._indexed_attributes
 
     def all_index_keys(self):
-        # type: () -> Set[str]
+        # type: () -> Set[Text]
         """Provide a set containing the names of all indexed attributes that must not be encrypted."""
         if self._primary_index is None:
             return set()
@@ -209,6 +209,21 @@ class TableInfo(object):
             return self.primary_index.attributes
 
         return self.indexed_attributes
+
+    @property
+    def encryption_context_values(self):
+        # type: () -> Dict[Text, Text]
+        """Build parameters needed to inform an EncryptionContext constructor about this table.
+
+        :rtype: dict
+        """
+        values = {'table_name': self.name}
+        if self.primary_index is not None:
+            values.update({
+                'partition_key': self.primary_index.partition,
+                'sort_key': self.primary_index.sort
+            })
+        return values
 
     def refresh_indexed_attributes(self, client):
         """Use the provided boto3 DynamoDB client to determine all indexes for this table.
