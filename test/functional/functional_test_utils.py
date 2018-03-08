@@ -238,10 +238,7 @@ def diverse_item():
 _reserved_attributes = set([attr.value for attr in ReservedAttributes])
 
 
-def cycle_item_check(plaintext_item, crypto_config):
-    """Common logic for cycled item (plaintext->encrypted->decrypted) tests: used by many test suites."""
-    ciphertext_item = encrypt_python_item(plaintext_item, crypto_config)
-
+def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
     # Verify that all expected attributes are present
     ciphertext_attributes = set(ciphertext_item.keys())
     plaintext_attributes = set(plaintext_item.keys())
@@ -256,12 +253,19 @@ def cycle_item_check(plaintext_item, crypto_config):
             continue
 
         # If the attribute should have been encrypted, verify that it is Binary and different from the original
-        if crypto_config.attribute_actions.action(name) is ItemAction.ENCRYPT_AND_SIGN:
+        if attribute_actions.action(name) is ItemAction.ENCRYPT_AND_SIGN:
             assert isinstance(value, Binary)
             assert value != plaintext_item[name]
         # Otherwise, verify that it is the same as the original
         else:
             assert value == plaintext_item[name]
+
+
+def cycle_item_check(plaintext_item, crypto_config):
+    """Common logic for cycled item (plaintext->encrypted->decrypted) tests: used by many test suites."""
+    ciphertext_item = encrypt_python_item(plaintext_item, crypto_config)
+
+    check_encrypted_item(plaintext_item, ciphertext_item, crypto_config.attribute_actions)
 
     cycled_item = decrypt_python_item(ciphertext_item, crypto_config)
     assert cycled_item == plaintext_item
