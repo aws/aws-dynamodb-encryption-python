@@ -220,8 +220,8 @@ class TableInfo(object):
         values = {'table_name': self.name}
         if self.primary_index is not None:
             values.update({
-                'partition_key': self.primary_index.partition,
-                'sort_key': self.primary_index.sort
+                'partition_key_name': self.primary_index.partition,
+                'sort_key_name': self.primary_index.sort
             })
         return values
 
