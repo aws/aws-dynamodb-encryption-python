@@ -117,6 +117,8 @@ class EncryptedTable(object):
 
     def get_item(self, **kwargs):
         """Transparently encrypt an item before putting it to the table."""
+        # TODO: update projection expression
+        # TODO: check for unsupported parameters
         crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
         kwargs['Item'] = encrypt_python_item(
             item=kwargs['Item'],
