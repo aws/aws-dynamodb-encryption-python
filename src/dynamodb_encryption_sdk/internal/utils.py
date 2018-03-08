@@ -16,6 +16,8 @@ import attr
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 from dynamodb_encryption_sdk.structures import TableInfo
 
+__all__ = ('sorted_key_map', 'TableInfoCache')
+
 
 def sorted_key_map(item, transform=to_bytes):
     """Creates a list of the item's key/value pairs as tuples, sorted by the keys transformed by transform.
@@ -35,16 +37,27 @@ def sorted_key_map(item, transform=to_bytes):
 
 @attr.s(hash=False)
 class TableInfoCache(object):
-    """"""
+    """Very simple cache of TableInfo objects, providing configuration information about DynamoDB tables.
+
+    :param client: Boto3 DynamoDB client
+    :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
+        Requires ``dynamodb:DescribeTable`` permissions on each table.
+    """
     _client = attr.ib()
     _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool))
 
     def __attrs_post_init__(self):
-        """"""
+        """Set up the empty cache."""
         self._all_tables_info = {}
 
     def table_info(self, table_name):
-        """"""
+        """Collect a TableInfo object for the specified table, creating and adding it to
+        the cache if not already present.
+
+        :param str table_name: Name of table
+        :returns: TableInfo describing the requested table
+        :rtype: dynamodb_encryption_sdk.structures.TableInfo
+        """
         try:
             return self._all_tables_info[table_name]
         except KeyError:
