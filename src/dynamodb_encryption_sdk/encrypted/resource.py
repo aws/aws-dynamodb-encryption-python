@@ -100,6 +100,14 @@ class EncryptedResource(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#service-resource
 
+    :param resource: Pre-configured boto3 DynamoDB service resource object
+    :type resource: TODO:
+    :param materials_provider: Cryptographic materials provider to use
+    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+    :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
+    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
+        Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     """
     _resource = attr.ib()
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
@@ -138,8 +146,8 @@ class EncryptedResource(object):
     def _crypto_config(self, table_name):
         """Pull all encryption-specific parameters from the request and use them to build a crypto config.
 
-        :returns: crypto config and updated kwargs
-        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
+        :returns: crypto config
+        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig
         """
         table_info = self._table_info_cache.table_info(table_name)
         crypto_config = CryptoConfig(

@@ -33,17 +33,8 @@ class EncryptedTable(object):
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#table
 
         If you want to provide per-request cryptographic details, the ``put_item``, ``get_item``,
-        ``query``, and ``scan`` methods will also accept any of the following parameters:
-
-        * ``CryptoConfig`` : Defines a custom ``CryptoConfig`` instance for this request.
-          If provided, all below parameters are ignored.
-        * ``MaterialsProvider`` : Defines a custom cryptographic materials provider for this
-          request. If not provided, the table-level materials provider is used.
-        * ``AttributeActions`` : Defines a custom ``AttributeActions`` instance for this
-          request. If not provided, the table-level attribute actions is used.
-        * ``EncryptionContext`` : Defines a custom ``EncryptionContext`` instance for this
-          request. If not provided, one is generated based on the table-level configuration.
-        * ``MaterialDescription`` : Defines a custom material description for this request.
+        ``query``, and ``scan`` methods will also a ``CryptoConfig`` parameter, defining
+        a custom ``CryptoConfig`` instance for this request.
 
     .. warning::
 
@@ -57,6 +48,8 @@ class EncryptedTable(object):
     :type table_info: dynamodb_encryption_sdk.structures.TableInfo
     :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
     :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
+        Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     """
     _table = attr.ib()
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
@@ -116,7 +109,10 @@ class EncryptedTable(object):
         return crypto_config, kwargs
 
     def get_item(self, **kwargs):
-        """Transparently encrypt an item before putting it to the table."""
+        """Transparently decrypt an item after getting it from the table.
+
+        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.get_item
+        """
         # TODO: update projection expression
         # TODO: check for unsupported parameters
         crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
@@ -127,7 +123,10 @@ class EncryptedTable(object):
         return self._table.put_item(**ddb_kwargs)
 
     def put_item(self, **kwargs):
-        """Transparently decrypt an item after getting it from the table."""
+        """Transparently encrypt an item before putting it to the table.
+
+        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
+        """
         crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
         # TODO: update projection expression
         # TODO: check for unsupported parameters
@@ -149,9 +148,9 @@ class EncryptedTable(object):
         # TODO: update projection expression
         # TODO: check for unsupported parameters
         response = method(**ddb_kwargs)
-        for item in response['Items']:
-            item = decrypt_python_item(
-                item=item,
+        for pos in range(len(response['Items'])):
+            response['Items'][pos] = decrypt_python_item(
+                item=response['Items'][pos],
                 crypto_config=crypto_config
             )
         return response
