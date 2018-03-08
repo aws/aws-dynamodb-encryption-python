@@ -12,12 +12,13 @@
 # language governing permissions and limitations under the License.
 import attr
 import copy
-import six
 
 from dynamodb_encryption_sdk.identifiers import ItemAction
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
+
+__all__ = ('CryptoConfig',)
 
 
 @attr.s(hash=False)

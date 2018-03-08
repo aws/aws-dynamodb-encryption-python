@@ -30,6 +30,8 @@ class EncryptedTable(object):
         This class provides a superset of the boto3 DynamoDB Table API, so should work as
         a drop-in replacement once configured.
 
+        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#table
+
         If you want to provide per-request cryptographic details, the ``put_item``, ``get_item``,
         ``query``, and ``scan`` methods will also accept any of the following parameters:
 
@@ -63,8 +65,12 @@ class EncryptedTable(object):
         default=None
     )
     _attribute_actions = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(AttributeActions)),
+        validator=attr.validators.instance_of(AttributeActions),
         default=attr.Factory(AttributeActions)
+    )
+    _auto_refresh_table_indexes = attr.ib(
+        validator=attr.validators.instance_of(bool),
+        default=True
     )
 
     def __attrs_post_init__(self):
@@ -72,73 +78,55 @@ class EncryptedTable(object):
         if self._table_info is None:
             self._table_info = TableInfo(name=self._table.name)
 
-        self._attribute_actions.set_index_keys(*self._table_info.all_index_keys())
+        if self._auto_refresh_table_indexes:
+            self._table_info.refresh_indexed_attributes(self._table.meta.client)
 
-        self._encryption_context_table_data = {'table_name': self._table_info.name}
-        if self._table_info.primary_index is not None:
-            self._encryption_context_table_data.update(dict(
-                partition_key_name=self._table_info.primary_index.partition,
-                sort_key_name=self._table_info.primary_index.sort
-            ))
+        self._attribute_actions.set_index_keys(*self._table_info.all_index_keys())
 
     def __getattr__(self, name):
         """Catch any method/attribute lookups that are not defined in this class and try
-        to find them on the provided table object.
+        to find them on the provided bridge object.
 
         :param str name: Attribute name
         :returns: Result of asking the provided table object for that attribute name
-        :raises AttributeError: if attribute is not found on provided table object
+        :raises AttributeError: if attribute is not found on provided bridge object
         """
         return getattr(self._table, name)
 
-    def _extract_crypto_config(self, **kwargs):
+    def update_item(self, **kwargs):
+        """Update item is not yet supported."""
+        raise NotImplementedError('"update_item" is not yet implemented')
+
+    def _crypto_config(self, **kwargs):
         """Pull all encryption-specific parameters from the request and use them to build a crypto config.
 
         :returns: crypto config and updated kwargs
         :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
         """
         crypto_config = kwargs.pop('CryptoConfig', None)
-        materials_provider = kwargs.pop('MaterialsProvider', self._materials_provider)
-        material_description = kwargs.pop('MaterialDescription', {})
-        encryption_context = kwargs.pop('EncryptionContext', None)
-        attribute_actions = kwargs.pop('AttributeActions', self._attribute_actions)
 
         if crypto_config is not None:
             return crypto_config, kwargs
 
-        if encryption_context is None:
-            encryption_context = EncryptionContext(
-                material_description=material_description,
-                **self._encryption_context_table_data
-            )
-
         crypto_config = CryptoConfig(
-            materials_provider=materials_provider,
-            encryption_context=encryption_context,
-            attribute_actions=attribute_actions
+            materials_provider=self._materials_provider,
+            encryption_context=EncryptionContext(**self._table_info.encryption_context_values),
+            attribute_actions=self._attribute_actions
         )
         return crypto_config, kwargs
 
-    def put_item(self, **kwargs):
-        """Transparently encrypt an item before putting it to the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.get_item
-        """
-        crypto_config, ddb_kwargs = self._extract_crypto_config(**kwargs)
-
-        ddb_kwargs['Item'] = encrypt_python_item(
-            item=ddb_kwargs['Item'],
+    def get_item(self, **kwargs):
+        """Transparently encrypt an item before putting it to the table."""
+        crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
+        kwargs['Item'] = encrypt_python_item(
+            item=kwargs['Item'],
             crypto_config=crypto_config
         )
         return self._table.put_item(**ddb_kwargs)
 
-    def get_item(self, **kwargs):
-        """Transparently decrypt an item after getting it from the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.get_item
-        """
-        crypto_config, ddb_kwargs = self._extract_crypto_config(**kwargs)
-
+    def put_item(self, **kwargs):
+        """Transparently decrypt an item after getting it from the table."""
+        crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
         # TODO: update projection expression
         # TODO: check for unsupported parameters
         response = self._table.get_item(**ddb_kwargs)
@@ -149,19 +137,13 @@ class EncryptedTable(object):
             )
         return response
 
-    def update_item(self, **kwargs):
-        """Update item is not yet supported.
-        """
-        raise NotImplementedError('"update_item" is not yet implemented')
-
-    def _multi_result(self, method, **kwargs):
+    def _encrypted_multi_get(self, method, **kwargs):
         """Transparently decrypt multiple items after getting them from the table.
 
         :param method: Method from underlying DynamoDB table object to use
         :type method: callable
         """
-        crypto_config, ddb_kwargs = self._extract_crypto_config(**kwargs)
-
+        crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
         # TODO: update projection expression
         # TODO: check for unsupported parameters
         response = method(**ddb_kwargs)
@@ -173,15 +155,15 @@ class EncryptedTable(object):
         return response
 
     def query(self, **kwargs):
-        """Transparently decrypt multiple items after getting them from the table with a query.
+        """Transparently decrypt multiple items after getting them from a query request to the table.
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.query
         """
-        self._multi_result(method=self._table.query, **kwargs)
+        return self._encrypted_multi_get(self._table.query, **kwargs)
 
     def scan(self, **kwargs):
-        """Transparently decrypt multiple items after getting them from the table with a scan.
+        """Transparently decrypt multiple items after getting them from a scan request to the table.
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.scan
         """
-        self._multi_result(method=self._table.scan, **kwargs)
+        return self._encrypted_multi_get(self._table.scan, **kwargs)
