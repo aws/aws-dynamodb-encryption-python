@@ -113,20 +113,6 @@ class EncryptedTable(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.get_item
         """
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
-        crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
-        kwargs['Item'] = encrypt_python_item(
-            item=kwargs['Item'],
-            crypto_config=crypto_config
-        )
-        return self._table.put_item(**ddb_kwargs)
-
-    def put_item(self, **kwargs):
-        """Transparently encrypt an item before putting it to the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
-        """
         crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
         # TODO: update projection expression
         # TODO: check for unsupported parameters
@@ -137,6 +123,20 @@ class EncryptedTable(object):
                 crypto_config=crypto_config
             )
         return response
+
+    def put_item(self, **kwargs):
+        """Transparently encrypt an item before putting it to the table.
+
+        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
+        """
+        crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
+        # TODO: update projection expression
+        # TODO: check for unsupported parameters
+        ddb_kwargs['Item'] = encrypt_python_item(
+            item=ddb_kwargs['Item'],
+            crypto_config=crypto_config
+        )
+        return self._table.put_item(**ddb_kwargs)
 
     def _encrypted_multi_get(self, method, **kwargs):
         """Transparently decrypt multiple items after getting them from the table.
