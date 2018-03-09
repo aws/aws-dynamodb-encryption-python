@@ -23,6 +23,9 @@ class ItemAction(Enum):
     SIGN_ONLY = 1
     ENCRYPT_AND_SIGN = 2
 
+    def __gt__(self, other):
+        return not self.__lt__(other) and not self.__eq__(other)
+
     def __lt__(self, other):
         return self.value < other.value
 
