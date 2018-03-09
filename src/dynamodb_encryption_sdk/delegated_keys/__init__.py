@@ -12,7 +12,11 @@
 # language governing permissions and limitations under the License.
 """Delegated keys."""
 import abc
-from typing import Dict, Text
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Dict, Text  # pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
 
 import six
 
