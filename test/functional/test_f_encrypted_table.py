@@ -11,32 +11,18 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """"""
-from decimal import Decimal
-
 import boto3
 import hypothesis
-from moto import mock_dynamodb2
 import pytest
 
 from .functional_test_utils import (
-    check_encrypted_item, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item
+    check_encrypted_item, example_table, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
+    TEST_KEY, TEST_TABLE_NAME
 )
 from .hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
-_TABLE_NAME = 'my_table'
-_INDEX = {
-    'partition_attribute': {
-        'type': 'S',
-        'value': 'test_value'
-    },
-    'sort_attribute': {
-        'type': 'N',
-        'value':  Decimal('99.233')
-    }
-}
-_KEY = {name: value['value'] for name, value in _INDEX.items()}
 
 
 def pytest_generate_tests(metafunc):
@@ -45,59 +31,28 @@ def pytest_generate_tests(metafunc):
     set_parametrized_item(metafunc)
 
 
-@pytest.fixture(scope='module')
-def example_table():
-    mock_dynamodb2().start()
-    ddb = boto3.resource('dynamodb', region_name='us-west-2')
-    ddb.create_table(
-        TableName=_TABLE_NAME,
-        KeySchema=[
-            {
-                'AttributeName': 'partition_attribute',
-                'KeyType': 'HASH'
-            },
-            {
-                'AttributeName': 'sort_attribute',
-                'KeyType': 'RANGE'
-            }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': name,
-                'AttributeType': value['type']
-            }
-            for name, value in _INDEX.items()
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 100,
-            'WriteCapacityUnits': 100
-        }
-    )
-    yield
-    mock_dynamodb2().stop()
-
-
-def _table_cycle_check(materials_manager, initial_actions, initial_item):
-    attribute_actions = initial_actions.copy()
+def _table_cycle_check(materials_provider, initial_actions, initial_item):
+    check_attribute_actions = initial_actions.copy()
+    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
     item = initial_item.copy()
-    item.update(_KEY)
+    item.update(TEST_KEY)
 
-    table = boto3.resource('dynamodb', region_name='us-west-2').Table(_TABLE_NAME)
+    table = boto3.resource('dynamodb', region_name='us-west-2').Table(TEST_TABLE_NAME)
     e_table = EncryptedTable(
         table=table,
-        materials_provider=materials_manager,
-        attribute_actions=attribute_actions,
+        materials_provider=materials_provider,
+        attribute_actions=initial_actions,
     )
 
     _put_result = e_table.put_item(Item=item)
 
-    encrypted_result = table.get_item(Key=_KEY)
-    check_encrypted_item(item, encrypted_result['Item'], attribute_actions)
+    encrypted_result = table.get_item(Key=TEST_KEY)
+    check_encrypted_item(item, encrypted_result['Item'], check_attribute_actions)
 
-    decrypted_result = e_table.get_item(Key=_KEY)
+    decrypted_result = e_table.get_item(Key=TEST_KEY)
     assert decrypted_result['Item'] == item
 
-    e_table.delete_item(Key=_KEY)
+    e_table.delete_item(Key=TEST_KEY)
 
 
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):

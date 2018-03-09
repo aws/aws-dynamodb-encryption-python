@@ -150,10 +150,14 @@ class EncryptedResource(object):
         :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig
         """
         table_info = self._table_info_cache.table_info(table_name)
+
+        attribute_actions = self._attribute_actions.copy()
+        attribute_actions.set_index_keys(*table_info.all_index_keys())
+
         crypto_config = CryptoConfig(
             materials_provider=self._materials_provider,
             encryption_context=EncryptionContext(**table_info.encryption_context_values),
-            attribute_actions=self._attribute_actions
+            attribute_actions=attribute_actions
         )
         return crypto_config
 
