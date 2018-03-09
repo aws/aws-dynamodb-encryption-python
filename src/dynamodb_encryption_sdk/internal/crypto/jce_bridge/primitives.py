@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Cryptographic primitive resources for JCE bridge."""
+import abc
+import attr
 import logging
 import os
 
@@ -18,8 +20,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding as symmetric_padding, hashes, serialization, keywrap
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
 from cryptography.hazmat.primitives.ciphers import algorithms, modes, Cipher
+import six
 
-from . import JavaBridge
 from dynamodb_encryption_sdk.exceptions import (
     DecryptionError, EncryptionError, InvalidAlgorithmError, UnwrappingError, WrappingError
 )
@@ -68,38 +70,22 @@ class _NoPadding(object):
         return self._NoPadder()
 
 
-class JavaPadding(JavaBridge):
+@six.add_metaclass(abc.ABCMeta)
+class JavaPadding(object):
     """Bridge the gap from the Java padding names and Python resources.
         https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
-    __rlookup__ = {}
 
-    def __init__(self, padding_name, padding, digest=None, mgf=None, mgf_digest=None):
-        """Sets up a new JavaPadding object.
-
-        :param str padding_name: Java encryption padding name
-        """
-        self.java_name = padding_name
-        self.padding = padding
-        self.digest = digest
-        self.mgf = mgf
-        self.mgf_digest = mgf_digest
-        self.register()
-
-    def build(self, block_size=None):
-        # type: (int) -> ANY
-        """Build an instance of this padding type.
-
-        :param int block_size: Not used by SimplePadding. Ignored and not required.
-        :returns: Padding instance
-        """
-        raise NotImplemented('This JavaPadding does not implement "build"')
+    @abc.abstractmethod
+    def build(self, block_size):
+        """Build an instance of this padding type."""
 
 
+@attr.s(hash=False)
 class SimplePadding(JavaPadding):
     """Padding types that do not require any preparation."""
-    NO_PADDING = ('NoPadding', _NoPadding)
-    PKCS1 = ('PKCS1Padding', asymmetric_padding.PKCS1v15)
+    java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
+    padding = attr.ib()
 
     def build(self, block_size=None):
         # type: (int) -> ANY
@@ -111,9 +97,11 @@ class SimplePadding(JavaPadding):
         return self.padding()
 
 
+@attr.s(hash=False)
 class BlockSizePadding(JavaPadding):
     """Padding types that require a block size input."""
-    PKCS5 = ('PKCS5Padding', symmetric_padding.PKCS7)
+    java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
+    padding = attr.ib()
 
     def build(self, block_size):
         # type: (int) -> ANY
@@ -125,6 +113,7 @@ class BlockSizePadding(JavaPadding):
         return self.padding(block_size)
 
 
+@attr.s(hash=False)
 class OaepPadding(JavaPadding):
     """OAEP padding types. These require more complex setup.
 
@@ -134,18 +123,11 @@ class OaepPadding(JavaPadding):
         The same hashing algorithm should be used by both OAEP and the MGF, but by default
         Java always uses SHA1 for the MGF.
     """
-    OAEP_SHA1_MGF1 = (
-        'OAEPWithSHA-1AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA1, asymmetric_padding.MGF1, hashes.SHA1
-    )
-    OAEP_SHA256_MGF1 = (
-        'OAEPWithSHA-256AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA256, asymmetric_padding.MGF1, hashes.SHA1
-    )
-    OAEP_SHA384_MGF1 = (
-        'OAEPWithSHA-384AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA384, asymmetric_padding.MGF1, hashes.SHA1
-    )
-    OAEP_SHA512_MGF1 = (
-        'OAEPWithSHA-512AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA512, asymmetric_padding.MGF1, hashes.SHA1
-    )
+    java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
+    padding = attr.ib()
+    digest = attr.ib()
+    mgf = attr.ib()
+    mgf_digest = attr.ib()
 
     def build(self, block_size=None):
         # type: (int) -> ANY
@@ -161,31 +143,13 @@ class OaepPadding(JavaPadding):
         )
 
 
-class JavaMode(JavaBridge):
+@attr.s(hash=False)
+class JavaMode(object):
     """Bridge the gap from the Java encryption mode names and Python resources.
         https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
-    __rlookup__ = {}
-
-    # TODO: Should we support these?
-    # OFB = ('OFB', modes.OFB)
-    # CFB = ('CFB', modes.CFB)
-    # CFB8 = ('CFB8', modes.CFB8)
-    ECB = ('ECB', modes.ECB)
-    CBC = ('CBC', modes.CBC)
-    CTR = ('CTR', modes.CTR)
-    GCM = ('GCM', modes.GCM)
-
-    def __init__(self, mode_name, mode):
-        """Set up a new JavaMode object.
-
-        :param str mode_name: Java encryption mode name
-        :param mode: Native encryption mode class
-        :type mode: varies
-        """
-        self.java_name = mode_name
-        self.mode = mode
-        self.register()
+    java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
+    mode = attr.ib()
 
     def build(self, iv):
         # type: (int) -> ANY
@@ -197,16 +161,13 @@ class JavaMode(JavaBridge):
         return self.mode(iv)
 
 
-class JavaEncryptionAlgorithm(JavaBridge):
+@attr.s(hash=False)
+class JavaEncryptionAlgorithm(object):
     """Bridge the gap from the Java encryption algorithm names and Python resources.
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
-    __rlookup__ = {}
-
-    def __init__(self, cipher_name, cipher):
-        self.java_name = cipher_name
-        self.cipher = cipher
-        self.register()
+    java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
+    cipher = attr.ib()
 
     def validate_algorithm(self, algorithm):
         # type: (Text) -> None
@@ -224,11 +185,6 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
     """JavaEncryptionAlgorithm for symmetric algorithms.
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
-    AES = ('AES', algorithms.AES)
-    # TODO: Should we support these?
-    # DES : pretty sure we don't want to support this
-    # DESede : pretty sure we don't want to support this
-    # BLOWFISH = ('Blowfish', algorithms.Blowfish)
 
     def load_key(self, key, key_type, key_encoding):
         """Load a key from bytes.
@@ -397,10 +353,9 @@ _KEY_LOADERS = {
 
 class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
     """JavaEncryptionAlgorithm for asymmetric algorithms.
+
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
-    # TODO: RSA for wrapped materials is blocked on determining correct wrapping behavior
-    RSA = ('RSA', rsa)
 
     def load_key(self, key, key_type, key_encoding):
         """Load a key from bytes.
@@ -469,3 +424,40 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             error_message = 'Decryption failed'
             _LOGGER.exception(error_message)
             raise DecryptionError(error_message)
+
+
+JAVA_ENCRYPTION_ALGORITHM = {
+    'RSA': JavaAsymmetricEncryptionAlgorithm('RSA', rsa),
+    'AES': JavaSymmetricEncryptionAlgorithm('AES', algorithms.AES)
+    # TODO: Should we support these?
+    # DES : pretty sure we don't want to support this
+    # DESede : pretty sure we don't want to support this
+    # 'BLOWFISH': JavaSymmetricEncryptionAlgorithm('Blowfish', algorithms.Blowfish)
+}
+JAVA_MODE = {
+    'ECB': JavaMode('ECB', modes.ECB),
+    'CBC': JavaMode('CBC', modes.CBC),
+    'CTR': JavaMode('CTR', modes.CTR),
+    'GCM': JavaMode('GCM', modes.GCM)
+    # TODO: Should we support these?
+    # 'OFB': JavaMode('OFB', modes.OFB)
+    # 'CFB': JavaMode('CFB', modes.CFB)
+    # 'CFB8': JavaMode('CFB8', modes.CFB8)
+}
+JAVA_PADDING = {
+    'NoPadding': SimplePadding('NoPadding', _NoPadding),
+    'PKCS1Padding': SimplePadding('PKCS1Padding', asymmetric_padding.PKCS1v15),
+    'PKCS5Padding': BlockSizePadding('PKCS5Padding', symmetric_padding.PKCS7),
+    'OAEPWithSHA-1AndMGF1Padding': OaepPadding(
+        'OAEPWithSHA-1AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA1, asymmetric_padding.MGF1, hashes.SHA1
+    ),
+    'OAEPWithSHA-256AndMGF1Padding': OaepPadding(
+        'OAEPWithSHA-256AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA256, asymmetric_padding.MGF1, hashes.SHA1
+    ),
+    'OAEPWithSHA-384AndMGF1Padding': OaepPadding(
+        'OAEPWithSHA-384AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA384, asymmetric_padding.MGF1, hashes.SHA1
+    ),
+    'OAEPWithSHA-512AndMGF1Padding': OaepPadding(
+        'OAEPWithSHA-512AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA512, asymmetric_padding.MGF1, hashes.SHA1
+    )
+}

@@ -13,7 +13,9 @@
 """Cipher resource for JCE bridge."""
 import attr
 
-from .primitives import JavaEncryptionAlgorithm, JavaMode, JavaPadding
+from .primitives import (
+    JAVA_ENCRYPTION_ALGORITHM, JavaEncryptionAlgorithm, JAVA_MODE, JavaMode, JAVA_PADDING, JavaPadding
+)
 
 __all__ = ('JavaCipher',)
 
@@ -120,7 +122,7 @@ class JavaCipher(object):
 
         cipher_transformation = cipher_transformation.split('/')
         return cls(
-            cipher=JavaEncryptionAlgorithm.from_name(cipher_transformation[0]),
-            mode=JavaMode.from_name(cipher_transformation[1]),
-            padding=JavaPadding.from_name(cipher_transformation[2])
+            cipher=JAVA_ENCRYPTION_ALGORITHM[cipher_transformation[0]],
+            mode=JAVA_MODE[cipher_transformation[1]],
+            padding=JAVA_PADDING[cipher_transformation[2]]
         )

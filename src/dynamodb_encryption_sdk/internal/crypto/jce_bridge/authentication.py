@@ -11,49 +11,51 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Cryptographic authentication resources for JCE bridge."""
+import abc
+
+import attr
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
+import six
 
-from . import JavaBridge
 from .primitives import load_rsa_key
 from dynamodb_encryption_sdk.exceptions import InvalidAlgorithmError, SignatureVerificationError, SigningError
 
-__all__ = ('JavaAuthenticator', 'JavaMac', 'JavaSignature')
+__all__ = ('JavaAuthenticator', 'JavaMac', 'JavaSignature', 'JAVA_AUTHENTICATOR')
 
 
-class JavaAuthenticator(JavaBridge):
+@six.add_metaclass(abc.ABCMeta)
+class JavaAuthenticator(object):
     """Parent class for all Java bridges that provide authentication characteristics."""
-    __rlookup__ = {}
+
+    @abc.abstractmethod
+    def load_key(self, key, key_type, key_encoding):
+        """"""
+
+    @abc.abstractmethod
+    def validate_algorithm(self, algorithm):
+        """"""
+
+    @abc.abstractmethod
+    def sign(self, key, data):
+        """"""
+
+    @abc.abstractmethod
+    def verify(self, key, signature, data):
+        """"""
 
 
+@attr.s(hash=False)
 class JavaMac(JavaAuthenticator):
     """Symmetric MAC authenticators.
 
     https://docs.oracle.com/javase/8/docs/api/javax/crypto/Mac.html
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Mac
     """
-
-    # Symmetric Key Signatures
-    # TODO: should we support these?
-    # HmacMD5
-    # HmacSHA1
-    HMAC_SHA224 = ('HmacSHA224', hmac.HMAC, hashes.SHA224)
-    HMAC_SHA256 = ('HmacSHA256', hmac.HMAC, hashes.SHA256)
-    HMAC_SHA384 = ('HmacSHA384', hmac.HMAC, hashes.SHA384)
-    HMAC_SHA512 = ('HmacSHA512', hmac.HMAC, hashes.SHA512)
-
-    def __init__(self, algorithm_name, algorithm_type, hash_type):
-        """Sets up a new JavaMac object.
-
-        :param str algorithm_name: Java algorithm name
-        :param algorithm_type: Native algorithm class
-        :param hash_type: Native hashing class (if needed)
-        """
-        self.java_name = algorithm_name
-        self.algorithm_type = algorithm_type
-        self.hash_type = hash_type
-        self.register()
+    java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
+    algorithm_type = attr.ib()
+    hash_type = attr.ib()
 
     def _build_hmac_signer(self, key):
         """"""
@@ -106,35 +108,17 @@ class JavaMac(JavaAuthenticator):
         verifier.verify(signature)
 
 
+@attr.s(hash=False)
 class JavaSignature(JavaAuthenticator):
     """Asymmetric signature authenticators.
 
     https://docs.oracle.com/javase/8/docs/api/java/security/Signature.html
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Signature
     """
-
-    # Asymmetric Key Signatures
-    # TODO: should we support these?
-    # (NONE|SHA(1|224|256|384|512))with(|EC)DSA
-    # (NONE|SHA1)withRSA
-    SHA224_RSA = ('SHA224withRSA', rsa, hashes.SHA224, padding.PKCS1v15)
-    SHA256_RSA = ('SHA256withRSA', rsa, hashes.SHA256, padding.PKCS1v15)
-    SHA384_RSA = ('SHA384withRSA', rsa, hashes.SHA384, padding.PKCS1v15)
-    SHA512_RSA = ('SHA512withRSA', rsa, hashes.SHA512, padding.PKCS1v15)
-
-    def __init__(self, algorithm_name, algorithm_type, hash_type, padding_type):
-        """Sets up a new JavaSignature object.
-
-        :param str algorithm_name: Java algorithm name
-        :param algorithm_type: Native algorithm class
-        :param hash_type: Native hashing class (if needed)
-        :param padding_type: Native padding class
-        """
-        self.java_name = algorithm_name
-        self.algorithm_type = algorithm_type
-        self.hash_type = hash_type
-        self.padding_type = padding_type
-        self.register()
+    java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
+    algorithm_type = attr.ib()
+    hash_type = attr.ib()
+    padding_type = attr.ib()
 
     def validate_algorithm(self, algorithm):
         # type: (Text) -> None
@@ -178,3 +162,20 @@ class JavaSignature(JavaAuthenticator):
             self.padding_type(),
             self.hash_type()
         )
+
+
+JAVA_AUTHENTICATOR = {
+    'HmacSHA224': JavaMac('HmacSHA224', hmac.HMAC, hashes.SHA224),
+    'HmacSHA256': JavaMac('HmacSHA256', hmac.HMAC, hashes.SHA256),
+    'HmacSHA384': JavaMac('HmacSHA384', hmac.HMAC, hashes.SHA384),
+    'HmacSHA512': JavaMac('HmacSHA512', hmac.HMAC, hashes.SHA512),
+    'SHA224withRSA': JavaSignature('SHA224withRSA', rsa, hashes.SHA224, padding.PKCS1v15),
+    'SHA256withRSA': JavaSignature('SHA256withRSA', rsa, hashes.SHA256, padding.PKCS1v15),
+    'SHA384withRSA': JavaSignature('SHA384withRSA', rsa, hashes.SHA384, padding.PKCS1v15),
+    'SHA512withRSA': JavaSignature('SHA512withRSA', rsa, hashes.SHA512, padding.PKCS1v15)
+    # TODO: should we support these?
+    # HmacMD5
+    # HmacSHA1
+    # (NONE|SHA(1|224|256|384|512))with(|EC)DSA
+    # (NONE|SHA1)withRSA
+}

@@ -66,7 +66,7 @@ _ALGORITHM_GENERATE_MAP = {
 
 @attr.s(hash=False)
 class JceNameLocalDelegatedKey(DelegatedKey):
-    """Delegated key that JCE StandardName algorithm values to determine behavior.
+    """Delegated key that uses JCE StandardName algorithm values to determine behavior.
 
     :param bytes key: Raw key bytes
     :param str algorithm: JCE Standard Algorithm Name
@@ -111,25 +111,23 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         # First try for encryption ciphers
         # https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
         try:
-            key_transformer = primitives.JavaEncryptionAlgorithm.from_name(self.algorithm)
-            self.__key_handler_class = type(key_transformer)
+            key_transformer = primitives.JAVA_ENCRYPTION_ALGORITHM[self.algorithm]
             self.__key = key_transformer.load_key(self.key, self._key_type, self._key_encoding)
             self._enable_encryption()
             self._enable_wrap()
             return
-        except JceTransformationError:
+        except KeyError:
             pass
 
         # Now try for authenticators
         # https://docs.oracle.com/javase/8/docs/api/javax/crypto/Mac.html
         # https://docs.oracle.com/javase/8/docs/api/java/security/Signature.html
         try:
-            key_transformer = authentication.JavaAuthenticator.from_name(self.algorithm)
-            self.__key_handler_class = authentication.JavaAuthenticator
+            key_transformer = authentication.JAVA_AUTHENTICATOR[self.algorithm]
             self.__key = key_transformer.load_key(self.key, self._key_type, self._key_encoding)
             self._enable_authentication()
             return
-        except JceTransformationError:
+        except KeyError:
             pass
 
         raise JceTransformationError('Unknown algorithm: "{}"'.format(self.algorithm))
@@ -161,13 +159,13 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     @property
     def allowed_for_raw_materials(self):
-        """Only ``JceNameLocalDelegatedKey`` backed by ``JavaSymmetricEncryptionAlgorithm``
-        algorithms are allowed to be used with ``RawCryptographicMaterials``.
+        """Only ``JceNameLocalDelegatedKey`` backed by AES keys are allowed to be used with
+        ``RawCryptographicMaterials``.
 
         :returns: decision
         :rtype: bool
         """
-        return self.__key_handler_class is primitives.JavaSymmetricEncryptionAlgorithm
+        return self.algorithm == 'AES'
 
     def _encrypt(self, algorithm, plaintext, additional_associated_data=None):
         # type: (Text, bytes, Dict[Text, Text]) -> bytes
@@ -256,7 +254,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         :returns: Signature value
         :rtype: bytes
         """
-        signer = self.__key_handler_class.from_name(algorithm)
+        signer = authentication.JAVA_AUTHENTICATOR[algorithm]
         return signer.sign(self.__key, data)
 
     def _verify(self, algorithm, signature, data):
@@ -267,7 +265,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         :param bytes signature: Signature to verify
         :param bytes data: Data over which to verify signature
         """
-        verifier = self.__key_handler_class.from_name(algorithm)
+        verifier = authentication.JAVA_AUTHENTICATOR[algorithm]
         verifier.verify(self.__key, signature, data)
 
     def _signing_algorithm(self):
