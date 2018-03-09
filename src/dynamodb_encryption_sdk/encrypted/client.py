@@ -78,10 +78,14 @@ class EncryptedClient(object):
             return crypto_config, kwargs
 
         table_info = self._table_info_cache.table_info(table_name)
+
+        attribute_actions = self._attribute_actions.copy()
+        attribute_actions.set_index_keys(*table_info.all_index_keys())
+
         crypto_config = CryptoConfig(
             materials_provider=self._materials_provider,
             encryption_context=EncryptionContext(**table_info.encryption_context_values),
-            attribute_actions=self._attribute_actions
+            attribute_actions=attribute_actions
         )
         return crypto_config, kwargs
 
@@ -162,10 +166,11 @@ class EncryptedClient(object):
         # TODO: check for unsupported parameters
         response = self._client.batch_get_item(**kwargs)
         for table_name, items in response['Responses'].items():
+            crypto_config = self._crypto_config(table_name)[0]
             for pos in range(len(items)):
                 items[pos] = decrypt_dynamodb_item(
                     item=items[pos],
-                    crypto_config=self._crypto_config(table_name)[0]
+                    crypto_config=crypto_config
                 )
         return response
 
@@ -177,12 +182,13 @@ class EncryptedClient(object):
         # TODO: update projection expression
         # TODO: check for unsupported parameters
         for table_name, items in kwargs['RequestItems'].items():
+            crypto_config = self._crypto_config(table_name)[0]
             for pos in range(len(items)):
                 for request_type, item in items[pos].items():
                     # We don't encrypt primary indexes, so we can ignore DeleteItem requests
                     if request_type == 'PutRequest':
                         items[pos][request_type] = encrypt_dynamodb_item(
                             item=item,
-                            crypto_config=self._crypto_config(table_name)[0]
+                            crypto_config=crypto_config
                         )
         return self._client.batch_write_item(**kwargs)

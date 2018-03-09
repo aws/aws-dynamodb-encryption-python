@@ -16,7 +16,9 @@ from collections import defaultdict
 from decimal import Decimal
 import itertools
 
+import boto3
 from boto3.dynamodb.types import Binary
+from moto import mock_dynamodb2
 import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
@@ -29,6 +31,50 @@ from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEnc
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
 
 _DELEGATED_KEY_CACHE = defaultdict(lambda: defaultdict(dict))
+TEST_TABLE_NAME = 'my_table'
+TEST_INDEX = {
+    'partition_attribute': {
+        'type': 'S',
+        'value': 'test_value'
+    },
+    'sort_attribute': {
+        'type': 'N',
+        'value':  Decimal('99.233')
+    }
+}
+TEST_KEY = {name: value['value'] for name, value in TEST_INDEX.items()}
+
+
+@pytest.fixture(scope='module')
+def example_table():
+    mock_dynamodb2().start()
+    ddb = boto3.resource('dynamodb', region_name='us-west-2')
+    ddb.create_table(
+        TableName=TEST_TABLE_NAME,
+        KeySchema=[
+            {
+                'AttributeName': 'partition_attribute',
+                'KeyType': 'HASH'
+            },
+            {
+                'AttributeName': 'sort_attribute',
+                'KeyType': 'RANGE'
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': name,
+                'AttributeType': value['type']
+            }
+            for name, value in TEST_INDEX.items()
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 100,
+            'WriteCapacityUnits': 100
+        }
+    )
+    yield
+    mock_dynamodb2().stop()
 
 
 def _get_from_cache(dk_class, algorithm, key_length):

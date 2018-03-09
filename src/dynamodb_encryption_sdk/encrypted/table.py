@@ -74,6 +74,8 @@ class EncryptedTable(object):
         if self._auto_refresh_table_indexes:
             self._table_info.refresh_indexed_attributes(self._table.meta.client)
 
+        # Clone the attribute actions before we modify them
+        self._attribute_actions = self._attribute_actions.copy()
         self._attribute_actions.set_index_keys(*self._table_info.all_index_keys())
 
     def __getattr__(self, name):
