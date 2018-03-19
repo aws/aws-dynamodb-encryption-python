@@ -20,7 +20,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 import boto3
-import botocore
+import botocore.client
+import botocore.session
 import six
 
 from . import CryptographicMaterialsProvider
@@ -99,7 +100,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
 
         This cryptographic materials provider makes one AWS KMS API call each time encryption
         or decryption materials are requested. This means that one request will be made for
-        per item that you read or write.
+        each item that you read or write.
 
     :param str key_id: ID of AWS KMS CMK to use
     :param botocore_session: botocore session object (optional)
@@ -114,19 +115,44 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         validator=attr.validators.instance_of(botocore.session.Session),
         default=attr.Factory(botocore.session.Session)
     )
-    _grant_tokens = attr.ib(
-        validator=attr.validators.instance_of(tuple),
-        default=attr.Factory(tuple),
-        converter=tuple
-    )
-    _material_description = attr.ib(
-        validator=attr.validators.instance_of(dict),
-        default=attr.Factory(dict)
-    )
-    _regional_clients = attr.ib(
-        validator=attr.validators.instance_of(dict),
-        default=attr.Factory(dict)
-    )
+    _grant_tokens = attr.ib(default=attr.Factory(tuple))
+
+    @_grant_tokens.validator
+    def _grant_tokens_validator(self, attribute, value):
+        """Validate grant token values."""
+        if not isinstance(value, tuple):
+            raise TypeError('"grant_tokens" must be a tuple')
+
+        for token in value:
+            if not isinstance(token, six.string_types):
+                raise TypeError('"grant_tokens" must contain strings')
+
+    _material_description = attr.ib(default=attr.Factory(dict))
+
+    @_material_description.validator
+    def _material_description_validator(self, attribute, value):
+        """Validate material description values."""
+        if not isinstance(value, dict):
+            raise TypeError('"material_description" must be a dictionary')
+
+        for key, data in value.items():
+            if not (isinstance(key, six.string_types) and isinstance(data, six.string_types)):
+                raise TypeError('"material_description" must be a string-string dictionary')
+
+    _regional_clients = attr.ib(default=attr.Factory(dict))
+
+    @_regional_clients.validator
+    def regional_clients_validator(self, attribute, value):
+        """Validate regional clients values."""
+        if not isinstance(value, dict):
+            raise TypeError('"regional_clients" must be a dictionary')
+
+        for key, client in value.items():
+            if not isinstance(key, six.string_types):
+                raise TypeError('"regional_clients" region name must be a string')
+
+            if not isinstance(client, botocore.client.BaseClient):
+                raise TypeError('"regional_clients" client must be a botocore client')
 
     def __attrs_post_init__(self):
         # type: () -> None
