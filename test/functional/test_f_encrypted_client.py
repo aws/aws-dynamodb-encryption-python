@@ -17,7 +17,7 @@ import pytest
 
 from .functional_test_utils import (
     check_encrypted_item, example_table, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
-    TEST_KEY, TEST_TABLE_NAME
+    TEST_BATCH_KEYS, TEST_KEY, TEST_TABLE_NAME
 )
 from .hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
@@ -68,11 +68,109 @@ def _client_cycle_single_item_check(materials_provider, initial_actions, initial
         TableName=TEST_TABLE_NAME,
         Key=ddb_key
     )
+    del item
+    del check_attribute_actions
+
+
+def _matching_key(actual_item, expected):
+        expected_item = [
+            i for i in expected
+            if i['partition_attribute'] == actual_item['partition_attribute']
+            and i['sort_attribute'] == actual_item['sort_attribute']
+        ]
+        assert len(expected_item) == 1
+        return expected_item[0]
+
+
+def _assert_equal_lists_of_items(actual, expected):
+    assert len(actual) == len(expected)
+
+    for actual_item in actual:
+        expected_item = _matching_key(actual_item, expected)
+        assert ddb_to_dict(actual_item) == ddb_to_dict(expected_item)
+
+
+def _check_encrypted_items(actual, expected, attribute_actions):
+    assert len(actual) == len(expected)
+
+    for actual_item in actual:
+        expected_item = _matching_key(actual_item, expected)
+        check_encrypted_item(
+            plaintext_item=ddb_to_dict(expected_item),
+            ciphertext_item=ddb_to_dict(actual_item),
+            attribute_actions=attribute_actions
+        )
+
+
+def _client_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
+    check_attribute_actions = initial_actions.copy()
+    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+    items = []
+    for key in TEST_BATCH_KEYS:
+        _item = initial_item.copy()
+        _item.update(key)
+        items.append(dict_to_ddb(_item))
+
+    client = boto3.client('dynamodb', region_name='us-west-2')
+    e_client = EncryptedClient(
+        client=client,
+        materials_provider=materials_provider,
+        attribute_actions=initial_actions
+    )
+
+    _put_result = e_client.batch_write_item(
+        RequestItems={
+            TEST_TABLE_NAME: [
+                {'PutRequest': {'Item': _item}}
+                for _item in items
+            ]
+        }
+    )
+
+    ddb_keys = [dict_to_ddb(key) for key in TEST_BATCH_KEYS]
+    encrypted_result = client.batch_get_item(
+        RequestItems={
+            TEST_TABLE_NAME: {
+                'Keys': ddb_keys
+            }
+        }
+    )
+    _check_encrypted_items(encrypted_result['Responses'][TEST_TABLE_NAME], items, check_attribute_actions)
+
+    decrypted_result = e_client.batch_get_item(
+        RequestItems={
+            TEST_TABLE_NAME: {
+                'Keys': ddb_keys
+            }
+        }
+    )
+    _assert_equal_lists_of_items(decrypted_result['Responses'][TEST_TABLE_NAME], items)
+
+    _delete_result = e_client.batch_write_item(
+        RequestItems={
+            TEST_TABLE_NAME: [
+                {'DeleteRequest': {'Key': _key}}
+                for _key in ddb_keys
+            ]
+        }
+    )
+    raw_scan_result = client.scan(TableName=TEST_TABLE_NAME)
+    e_scan_result = e_client.scan(TableName=TEST_TABLE_NAME)
+    assert not raw_scan_result['Items']
+    assert not e_scan_result['Items']
+
+    del check_attribute_actions
+    del items
 
 
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     _client_cycle_single_item_check(some_cmps, parametrized_actions, parametrized_item)
+
+
+def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
+    """Test a small number of curated CMPs against a small number of curated items."""
+    _client_cycle_batch_items_check(some_cmps, parametrized_actions, parametrized_item)
 
 
 @pytest.mark.slow
