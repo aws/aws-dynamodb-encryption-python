@@ -18,8 +18,9 @@ from .functional_test_utils import (
 )
 from .hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
-from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item
-from dynamodb_encryption_sdk.exceptions import DecryptionError
+from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
+from dynamodb_encryption_sdk.exceptions import DecryptionError, EncryptionError
+from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
@@ -43,6 +44,17 @@ def test_unsigned_item():
         decrypt_python_item(item, crypto_config)
 
     exc_info.match(r'No signature attribute found in item')
+
+
+@pytest.mark.parametrize('item', (
+    {reserved.value: 'asdf'}
+    for reserved in ReservedAttributes
+))
+def test_reserved_attributes_on_encrypt(item):
+    with pytest.raises(EncryptionError) as exc_info:
+        encrypt_python_item(item, None)
+
+    exc_info.match(r'Reserved attribute name *')
 
 
 def _item_cycle_check(materials_provider, attribute_actions, item):

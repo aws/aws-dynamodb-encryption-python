@@ -19,7 +19,7 @@ except ImportError:  # pragma: no cover
     pass
 
 from . import CryptoConfig
-from dynamodb_encryption_sdk.exceptions import DecryptionError
+from dynamodb_encryption_sdk.exceptions import DecryptionError, EncryptionError
 from dynamodb_encryption_sdk.identifiers import ItemAction
 from dynamodb_encryption_sdk.internal.crypto.authentication import sign_item, verify_item_signature
 from dynamodb_encryption_sdk.internal.crypto.encryption import decrypt_attribute, encrypt_attribute
@@ -51,7 +51,12 @@ def encrypt_dynamodb_item(item, crypto_config):
         # If we explicitly have been told not to do anything to this item, just copy it.
         return item.copy()
 
-    # TODO: Check for attributes that we write
+    for reserved_name in ReservedAttributes:
+        if reserved_name.value in item:
+            raise EncryptionError('Reserved attribute name "{}" is not allowed in plaintext item.'.format(
+                reserved_name.value
+            ))
+
     crypto_config.materials_provider.refresh()
     encryption_materials = crypto_config.encryption_materials()
 
