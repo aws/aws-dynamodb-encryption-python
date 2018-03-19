@@ -43,12 +43,58 @@ TEST_INDEX = {
     }
 }
 TEST_KEY = {name: value['value'] for name, value in TEST_INDEX.items()}
+TEST_BATCH_INDEXES = [
+    {
+        'partition_attribute': {
+            'type': 'S',
+            'value': 'test_value'
+        },
+        'sort_attribute': {
+            'type': 'N',
+            'value':  Decimal('99.233')
+        }
+    },
+    {
+        'partition_attribute': {
+            'type': 'S',
+            'value': 'test_value'
+        },
+        'sort_attribute': {
+            'type': 'N',
+            'value':  Decimal('92986745')
+        }
+    },
+    {
+        'partition_attribute': {
+            'type': 'S',
+            'value': 'test_value'
+        },
+        'sort_attribute': {
+            'type': 'N',
+            'value':  Decimal('2231.0001')
+        }
+    },
+    {
+        'partition_attribute': {
+            'type': 'S',
+            'value': 'another_test_value'
+        },
+        'sort_attribute': {
+            'type': 'N',
+            'value':  Decimal('732342')
+        }
+    }
+]
+TEST_BATCH_KEYS = [
+    {name: value['value'] for name, value in key.items()}
+    for key in TEST_BATCH_INDEXES
+]
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def example_table():
     mock_dynamodb2().start()
-    ddb = boto3.resource('dynamodb', region_name='us-west-2')
+    ddb = boto3.client('dynamodb', region_name='us-west-2')
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
@@ -74,6 +120,7 @@ def example_table():
         }
     )
     yield
+    ddb.delete_table(TableName=TEST_TABLE_NAME)
     mock_dynamodb2().stop()
 
 
@@ -198,7 +245,7 @@ def set_parametrized_cmp(metafunc):
     """Set paramatrized values for cryptographic materials providers."""
     for name, algorithm_generator in (('all_the_cmps', _all_algorithm_pairs), ('some_cmps', _some_algorithm_pairs)):
         if name in metafunc.fixturenames:
-            metafunc.parametrize(name, _all_possible_cmps(algorithm_generator), scope='module')
+            metafunc.parametrize(name, _all_possible_cmps(algorithm_generator))
 
 
 def set_parametrized_actions(metafunc):
