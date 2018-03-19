@@ -53,6 +53,8 @@ def _table_cycle_check(materials_provider, initial_actions, initial_item):
     assert decrypted_result['Item'] == item
 
     e_table.delete_item(Key=TEST_KEY)
+    del item
+    del check_attribute_actions
 
 
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
