@@ -15,11 +15,11 @@ import boto3
 import hypothesis
 import pytest
 
-from .functional_test_utils import (
+from ..functional_test_utils import (
     check_encrypted_item, example_table, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
     TEST_KEY, TEST_TABLE_NAME
 )
-from .hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
+from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]

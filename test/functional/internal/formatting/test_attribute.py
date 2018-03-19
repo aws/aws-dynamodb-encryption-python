@@ -19,8 +19,8 @@ from dynamodb_encryption_sdk.exceptions import DeserializationError, Serializati
 from dynamodb_encryption_sdk.internal.formatting.deserialize.attribute import deserialize_attribute
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
-from .functional_test_vector_generators import attribute_test_vectors
-from .hypothesis_strategies import ddb_attribute_values, ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
+from ...functional_test_vector_generators import attribute_test_vectors
+from ...hypothesis_strategies import ddb_attribute_values, ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
