@@ -13,7 +13,7 @@
 import hypothesis
 import pytest
 
-from .integration_test_utils import aws_kms_cmp, functional_test_utils, hypothesis_strategies
+from ..integration_test_utils import aws_kms_cmp, functional_test_utils, hypothesis_strategies
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.structures import EncryptionContext
 
