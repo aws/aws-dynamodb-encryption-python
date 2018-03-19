@@ -193,8 +193,8 @@ class EncryptedResource(object):
                 for request_type, item in items[pos].items():
                     # We don't encrypt primary indexes, so we can ignore DeleteItem requests
                     if request_type == 'PutRequest':
-                        items[pos][request_type] = encrypt_python_item(
-                            item=item,
+                        items[pos][request_type]['Item'] = encrypt_python_item(
+                            item=item['Item'],
                             crypto_config=self._crypto_config(table_name)
                         )
         return self._resource.batch_write_item(**kwargs)

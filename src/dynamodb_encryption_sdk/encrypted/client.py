@@ -187,8 +187,8 @@ class EncryptedClient(object):
                 for request_type, item in items[pos].items():
                     # We don't encrypt primary indexes, so we can ignore DeleteItem requests
                     if request_type == 'PutRequest':
-                        items[pos][request_type] = encrypt_dynamodb_item(
-                            item=item,
+                        items[pos][request_type]['Item'] = encrypt_dynamodb_item(
+                            item=item['Item'],
                             crypto_config=crypto_config
                         )
         return self._client.batch_write_item(**kwargs)
