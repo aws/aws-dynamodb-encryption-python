@@ -363,6 +363,26 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         )
         return hkdf.derive(initial_material)
 
+    def _derive_delegated_key(self, initial_material, key_info, hkdf_info):
+        # type: (bytes, KeyInfo, HkdfInfo) -> JceNameLocalDelegatedKey
+        """Derive the raw key and use it to build a JceNameLocalDelegatedKey.
+
+        :param bytes initial_material: Initial material to use with KDF
+        :param key_info: Key information to use to calculate encryption key
+        :type key_info: dynamodb_encryption_sdk.material_providers.aws_kms.KeyInfo
+        :param hkdf_info: Info to use in HKDF calculation
+        :type hkdf_info: dynamodb_encryption_sdk.material_providers.aws_kms.HkdfInfo
+        :returns: Delegated key to use for encryption and decryption
+        :rtype: dynamodb_encryption_sdk.delegated_keys.jce.JceNameLocalDelegatedKey
+        """
+        raw_key = self._hkdf(initial_material, key_info.length // 8, hkdf_info.value)
+        return JceNameLocalDelegatedKey(
+            key=raw_key,
+            algorithm=key_info.algorithm,
+            key_type=EncryptionKeyTypes.SYMMETRIC,
+            key_encoding=KeyEncodingType.RAW
+        )
+
     def _encryption_key(self, initial_material, key_info):
         # type: (bytes, KeyInfo) -> JceNameLocalDelegatedKey
         """Calculate an encryption key from ``initial_material`` using the requested key info.
@@ -373,13 +393,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         :returns: Delegated key to use for encryption and decryption
         :rtype: dynamodb_encryption_sdk.delegated_keys.jce.JceNameLocalDelegatedKey
         """
-        raw_key = self._hkdf(initial_material, key_info.length // 8, HkdfInfo.ENCRYPTION.value)
-        return JceNameLocalDelegatedKey(
-            key=raw_key,
-            algorithm=key_info.algorithm,
-            key_type=EncryptionKeyTypes.SYMMETRIC,
-            key_encoding=KeyEncodingType.RAW
-        )
+        return self._derive_delegated_key(initial_material, key_info, HkdfInfo.ENCRYPTION)
 
     def _mac_key(self, initial_material, key_info):
         # type: (bytes, KeyInfo) -> JceNameLocalDelegatedKey
@@ -391,13 +405,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         :returns: Delegated key to use for signature calculation and verification
         :rtype: dynamodb_encryption_sdk.delegated_keys.jce.JceNameLocalDelegatedKey
         """
-        raw_key = self._hkdf(initial_material, key_info.length // 8, HkdfInfo.SIGNING.value)
-        return JceNameLocalDelegatedKey(
-            key=raw_key,
-            algorithm=key_info.algorithm,
-            key_type=EncryptionKeyTypes.SYMMETRIC,
-            key_encoding=KeyEncodingType.RAW
-        )
+        return self._derive_delegated_key(initial_material, key_info, HkdfInfo.SIGNING)
 
     def decryption_materials(self, encryption_context):
         # type: (EncryptionContext) -> RawDecryptionMaterials
