@@ -17,8 +17,7 @@ import pytest
 
 from ..functional_test_utils import (
     check_encrypted_item, example_table, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
-    check_many_encrypted_items, assert_equal_lists_of_items,
-    TEST_BATCH_KEYS, TEST_KEY, TEST_TABLE_NAME
+    cycle_batch_item_check, TEST_KEY, TEST_TABLE_NAME
 )
 from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
@@ -74,14 +73,6 @@ def _client_cycle_single_item_check(materials_provider, initial_actions, initial
 
 
 def _client_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
-    check_attribute_actions = initial_actions.copy()
-    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
-    items = []
-    for key in TEST_BATCH_KEYS:
-        _item = initial_item.copy()
-        _item.update(key)
-        items.append(dict_to_ddb(_item))
-
     client = boto3.client('dynamodb', region_name='us-west-2')
     e_client = EncryptedClient(
         client=client,
@@ -89,58 +80,19 @@ def _client_cycle_batch_items_check(materials_provider, initial_actions, initial
         attribute_actions=initial_actions
     )
 
-    _put_result = e_client.batch_write_item(
-        RequestItems={
-            TEST_TABLE_NAME: [
-                {'PutRequest': {'Item': _item}}
-                for _item in items
-            ]
-        }
+    cycle_batch_item_check(
+        raw=client,
+        encrypted=e_client,
+        initial_actions=initial_actions,
+        initial_item=initial_item,
+        write_transformer=dict_to_ddb,
+        read_transformer=ddb_to_dict
     )
 
-    ddb_keys = [dict_to_ddb(key) for key in TEST_BATCH_KEYS]
-    encrypted_result = client.batch_get_item(
-        RequestItems={
-            TEST_TABLE_NAME: {
-                'Keys': ddb_keys
-            }
-        }
-    )
-    check_many_encrypted_items(
-        actual=encrypted_result['Responses'][TEST_TABLE_NAME],
-        expected=items,
-        attribute_actions=check_attribute_actions,
-        transformer=ddb_to_dict
-    )
-
-    decrypted_result = e_client.batch_get_item(
-        RequestItems={
-            TEST_TABLE_NAME: {
-                'Keys': ddb_keys
-            }
-        }
-    )
-    assert_equal_lists_of_items(
-        actual=decrypted_result['Responses'][TEST_TABLE_NAME],
-        expected=items,
-        transformer=ddb_to_dict
-    )
-
-    _delete_result = e_client.batch_write_item(
-        RequestItems={
-            TEST_TABLE_NAME: [
-                {'DeleteRequest': {'Key': _key}}
-                for _key in ddb_keys
-            ]
-        }
-    )
     raw_scan_result = client.scan(TableName=TEST_TABLE_NAME)
     e_scan_result = e_client.scan(TableName=TEST_TABLE_NAME)
     assert not raw_scan_result['Items']
     assert not e_scan_result['Items']
-
-    del check_attribute_actions
-    del items
 
 
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
@@ -157,6 +109,12 @@ def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actio
 def test_ephemeral_item_cycle_slow(example_table, all_the_cmps, parametrized_actions, parametrized_item):
     """Test ALL THE CMPS against a small number of curated items."""
     _client_cycle_single_item_check(all_the_cmps, parametrized_actions, parametrized_item)
+
+
+@pytest.mark.slow
+def test_ephemeral_batch_item_cycle_slow(example_table, all_the_cmps, parametrized_actions, parametrized_item):
+    """Test ALL THE CMPS against a small number of curated items."""
+    _client_cycle_batch_items_check(all_the_cmps, parametrized_actions, parametrized_item)
 
 
 @pytest.mark.slow
