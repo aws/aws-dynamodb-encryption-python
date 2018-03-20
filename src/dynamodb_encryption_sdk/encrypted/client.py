@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 """"""
 import attr
+import botocore.client
 
 from . import CryptoConfig
 from .item import decrypt_dynamodb_item, encrypt_dynamodb_item
@@ -43,7 +44,7 @@ class EncryptedClient(object):
         We do not currently support the ``update_item`` method.
 
     """
-    _client = attr.ib()
+    _client = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(
         validator=attr.validators.instance_of(AttributeActions),

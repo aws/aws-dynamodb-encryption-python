@@ -12,6 +12,8 @@
 # language governing permissions and limitations under the License.
 """"""
 import attr
+from boto3.resources.base import ServiceResource
+from boto3.resources.collection import CollectionManager
 
 from . import CryptoConfig
 from .item import decrypt_python_item, encrypt_python_item
@@ -38,7 +40,7 @@ class EncryptedTablesCollectionManager(object):
     :param table_info_cache: Local cache from which to obtain TableInfo data
     :type table_info_cache: dynamodb_encryption_sdk.internal.utils.TableInfoCache
     """
-    _collection = attr.ib()
+    _collection = attr.ib(validator=attr.validators.instance_of(CollectionManager))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(validator=attr.validators.instance_of(AttributeActions))
     _table_info_cache = attr.ib(validator=attr.validators.instance_of(TableInfoCache))
@@ -122,7 +124,7 @@ class EncryptedResource(object):
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     """
-    _resource = attr.ib()
+    _resource = attr.ib(validator=attr.validators.instance_of(ServiceResource))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(
         validator=attr.validators.instance_of(AttributeActions),

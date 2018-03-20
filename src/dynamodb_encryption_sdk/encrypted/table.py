@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 """High-level helper class to provide a familiar interface to encrypted tables."""
 import attr
+from boto3.resources.base import ServiceResource
 
 from . import CryptoConfig
 from .item import decrypt_python_item, encrypt_python_item
@@ -51,7 +52,7 @@ class EncryptedTable(object):
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     """
-    _table = attr.ib()
+    _table = attr.ib(validator=attr.validators.instance_of(ServiceResource))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _table_info = attr.ib(
         validator=attr.validators.optional(attr.validators.instance_of(TableInfo)),
