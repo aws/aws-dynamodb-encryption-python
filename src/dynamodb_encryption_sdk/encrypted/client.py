@@ -14,7 +14,7 @@
 import attr
 import botocore.client
 
-from . import CryptoConfig
+from . import CryptoConfig, validate_get_arguments
 from .item import decrypt_dynamodb_item, encrypt_dynamodb_item
 from dynamodb_encryption_sdk.internal.utils import TableInfoCache
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
@@ -78,7 +78,7 @@ class EncryptedClient(object):
         :returns: crypto config and updated kwargs
         :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
         """
-        crypto_config = kwargs.pop('CryptoConfig', None)
+        crypto_config = kwargs.pop('crypto_config', None)
 
         if crypto_config is not None:
             return crypto_config, kwargs
@@ -104,9 +104,8 @@ class EncryptedClient(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.get_item
         """
+        validate_get_arguments(kwargs)
         crypto_config, ddb_kwargs = self._crypto_config(kwargs['TableName'], **kwargs)
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
         response = self._client.get_item(**ddb_kwargs)
         if 'Item' in response:
             response['Item'] = decrypt_dynamodb_item(
@@ -121,8 +120,6 @@ class EncryptedClient(object):
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.put_item
         """
         crypto_config, ddb_kwargs = self._crypto_config(kwargs['TableName'], **kwargs)
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
         ddb_kwargs['Item'] = encrypt_dynamodb_item(
             item=ddb_kwargs['Item'],
             crypto_config=crypto_config
@@ -135,9 +132,8 @@ class EncryptedClient(object):
         :param method: Method from underlying DynamoDB client object to use
         :type method: callable
         """
+        validate_get_arguments(kwargs)
         crypto_config, ddb_kwargs = self._crypto_config(kwargs['TableName'], **kwargs)
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
         response = method(**ddb_kwargs)
         for pos in range(len(response['Items'])):
             response['Items'][pos] = decrypt_dynamodb_item(
@@ -165,14 +161,18 @@ class EncryptedClient(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.batch_get_item
         """
-        # TODO: still trying to think of a sane way to allow per-table config for batch operations...
-        # TODO: get is fairly easy; put is hard...
+        for _table_name, table_kwargs in kwargs['RequestItems'].items():
+            validate_get_arguments(table_kwargs)
 
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
+        request_crypto_config = kwargs.pop('crypto_config', None)
+
         response = self._client.batch_get_item(**kwargs)
         for table_name, items in response['Responses'].items():
-            crypto_config = self._crypto_config(table_name)[0]
+            if request_crypto_config is not None:
+                crypto_config = request_crypto_config
+            else:
+                crypto_config = self._crypto_config(table_name)[0]
+
             for pos in range(len(items)):
                 items[pos] = decrypt_dynamodb_item(
                     item=items[pos],
@@ -185,10 +185,14 @@ class EncryptedClient(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.batch_write_item
         """
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
+        request_crypto_config = kwargs.pop('crypto_config', None)
+
         for table_name, items in kwargs['RequestItems'].items():
-            crypto_config = self._crypto_config(table_name)[0]
+            if request_crypto_config is not None:
+                crypto_config = request_crypto_config
+            else:
+                crypto_config = self._crypto_config(table_name)[0]
+
             for pos in range(len(items)):
                 for request_type, item in items[pos].items():
                     # We don't encrypt primary indexes, so we can ignore DeleteItem requests

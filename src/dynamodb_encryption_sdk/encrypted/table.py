@@ -14,7 +14,7 @@
 import attr
 from boto3.resources.base import ServiceResource
 
-from . import CryptoConfig
+from . import CryptoConfig, validate_get_arguments
 from .item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext, TableInfo
@@ -42,7 +42,7 @@ class EncryptedTable(object):
         We do not currently support the ``update_item`` method.
 
     :param table: Pre-configured boto3 DynamoDB Table object
-    :type table: TODO:
+    :type table: boto3.resources.base.ServiceResource
     :param materials_provider: Cryptographic materials provider to use
     :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
     :param table_info: Information about the target DynamoDB table
@@ -99,7 +99,7 @@ class EncryptedTable(object):
         :returns: crypto config and updated kwargs
         :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
         """
-        crypto_config = kwargs.pop('CryptoConfig', None)
+        crypto_config = kwargs.pop('crypto_config', None)
 
         if crypto_config is not None:
             return crypto_config, kwargs
@@ -116,9 +116,8 @@ class EncryptedTable(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.get_item
         """
+        validate_get_arguments(kwargs)
         crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
         response = self._table.get_item(**ddb_kwargs)
         if 'Item' in response:
             response['Item'] = decrypt_python_item(
@@ -133,8 +132,6 @@ class EncryptedTable(object):
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
         """
         crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
         ddb_kwargs['Item'] = encrypt_python_item(
             item=ddb_kwargs['Item'],
             crypto_config=crypto_config
@@ -147,9 +144,8 @@ class EncryptedTable(object):
         :param method: Method from underlying DynamoDB table object to use
         :type method: callable
         """
+        validate_get_arguments(kwargs)
         crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
         response = method(**ddb_kwargs)
         for pos in range(len(response['Items'])):
             response['Items'][pos] = decrypt_python_item(

@@ -15,7 +15,7 @@ import attr
 from boto3.resources.base import ServiceResource
 from boto3.resources.collection import CollectionManager
 
-from . import CryptoConfig
+from . import CryptoConfig, validate_get_arguments
 from .item import decrypt_python_item, encrypt_python_item
 from .table import EncryptedTable
 from dynamodb_encryption_sdk.internal.utils import TableInfoCache
@@ -116,7 +116,7 @@ class EncryptedResource(object):
         a custom ``CryptoConfig`` instance for this request.
 
     :param resource: Pre-configured boto3 DynamoDB service resource object
-    :type resource: TODO:
+    :type resource: boto3.resources.base.ServiceResource
     :param materials_provider: Cryptographic materials provider to use
     :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
     :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
@@ -181,18 +181,22 @@ class EncryptedResource(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.batch_get_item
         """
-        # TODO: still trying to think of a sane way to allow per-table config for batch operations...
-        # TODO: get is fairly easy; put is hard...
+        request_crypto_config = kwargs.pop('crypto_config', None)
 
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
+        for _table_name, table_kwargs in kwargs['RequestItems'].items():
+            validate_get_arguments(table_kwargs)
 
         response = self._resource.batch_get_item(**kwargs)
         for table_name, items in response['Responses'].items():
+            if request_crypto_config is not None:
+                crypto_config = request_crypto_config
+            else:
+                crypto_config = self._crypto_config(table_name)
+
             for pos in range(len(items)):
                 items[pos] = decrypt_python_item(
                     item=items[pos],
-                    crypto_config=self._crypto_config(table_name)
+                    crypto_config=crypto_config
                 )
         return response
 
@@ -201,16 +205,21 @@ class EncryptedResource(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.batch_write_item
         """
-        # TODO: update projection expression
-        # TODO: check for unsupported parameters
+        request_crypto_config = kwargs.pop('crypto_config', None)
+
         for table_name, items in kwargs['RequestItems'].items():
+            if request_crypto_config is not None:
+                crypto_config = request_crypto_config
+            else:
+                crypto_config = self._crypto_config(table_name)
+
             for pos in range(len(items)):
                 for request_type, item in items[pos].items():
                     # We don't encrypt primary indexes, so we can ignore DeleteItem requests
                     if request_type == 'PutRequest':
                         items[pos][request_type]['Item'] = encrypt_python_item(
                             item=item['Item'],
-                            crypto_config=self._crypto_config(table_name)
+                            crypto_config=crypto_config
                         )
         return self._resource.batch_write_item(**kwargs)
 
@@ -230,7 +239,6 @@ class EncryptedResource(object):
         :param attribute_actions: Table-level configuration of how to encrypt/sign attributes (optional)
         :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
         """
-        # TODO: arguments: do we want them to conform to method naming or constructor naming?
         table_kwargs = dict(
             table=self._resource.Table(name),
             materials_provider=kwargs.get('materials_provider', self._materials_provider),
