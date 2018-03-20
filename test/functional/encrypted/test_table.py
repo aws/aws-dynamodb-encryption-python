@@ -72,24 +72,24 @@ def test_ephemeral_item_cycle_slow(example_table, all_the_cmps, parametrized_act
 @pytest.mark.hypothesis
 @SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
-def test_ephemeral_item_cycle_hypothesis_slow(example_table, some_cmps, parametrized_actions, item):
+def test_ephemeral_item_cycle_hypothesis_slow(example_table, some_cmps, hypothesis_actions, item):
     """Test a small number of curated CMPs against a large number of items."""
-    _table_cycle_check(some_cmps, parametrized_actions, item)
+    _table_cycle_check(some_cmps, hypothesis_actions, item)
 
 
 @pytest.mark.veryslow
 @pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
-def test_ephemeral_item_cycle_hypothesis_veryslow(example_table, some_cmps, parametrized_actions, item):
+def test_ephemeral_item_cycle_hypothesis_veryslow(example_table, some_cmps, hypothesis_actions, item):
     """Test a small number of curated CMPs against ALL THE ITEMS."""
-    _table_cycle_check(some_cmps, parametrized_actions, item)
+    _table_cycle_check(some_cmps, hypothesis_actions, item)
 
 
 @pytest.mark.nope
 @pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
-def test_ephemeral_item_cycle_hypothesis_nope(example_table, all_the_cmps, parametrized_actions, item):
+def test_ephemeral_item_cycle_hypothesis_nope(example_table, all_the_cmps, hypothesis_actions, item):
     """Test ALL THE CMPs against ALL THE ITEMS."""
-    _table_cycle_check(all_the_cmps, parametrized_actions, item)
+    _table_cycle_check(all_the_cmps, hypothesis_actions, item)
