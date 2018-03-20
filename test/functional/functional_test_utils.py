@@ -393,6 +393,73 @@ def check_many_encrypted_items(actual, expected, attribute_actions, transformer=
         )
 
 
+def cycle_batch_item_check(
+        raw,
+        encrypted,
+        initial_actions,
+        initial_item,
+        write_transformer=_nop_transformer,
+        read_transformer=_nop_transformer
+):
+    """Common logic for cycling batch items."""
+    check_attribute_actions = initial_actions.copy()
+    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+    items = []
+    for key in TEST_BATCH_KEYS:
+        _item = initial_item.copy()
+        _item.update(key)
+        items.append(write_transformer(_item))
+
+    _put_result = encrypted.batch_write_item(
+        RequestItems={
+            TEST_TABLE_NAME: [
+                {'PutRequest': {'Item': _item}}
+                for _item in items
+            ]
+        }
+    )
+
+    ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
+    encrypted_result = raw.batch_get_item(
+        RequestItems={
+            TEST_TABLE_NAME: {
+                'Keys': ddb_keys
+            }
+        }
+    )
+    check_many_encrypted_items(
+        actual=encrypted_result['Responses'][TEST_TABLE_NAME],
+        expected=items,
+        attribute_actions=check_attribute_actions,
+        transformer=read_transformer
+    )
+
+    decrypted_result = encrypted.batch_get_item(
+        RequestItems={
+            TEST_TABLE_NAME: {
+                'Keys': ddb_keys
+            }
+        }
+    )
+    assert_equal_lists_of_items(
+        actual=decrypted_result['Responses'][TEST_TABLE_NAME],
+        expected=items,
+        transformer=read_transformer
+    )
+
+    _delete_result = encrypted.batch_write_item(
+        RequestItems={
+            TEST_TABLE_NAME: [
+                {'DeleteRequest': {'Key': _key}}
+                for _key in ddb_keys
+            ]
+        }
+    )
+
+    del check_attribute_actions
+    del items
+
+
 def cycle_item_check(plaintext_item, crypto_config):
     """Common logic for cycled item (plaintext->encrypted->decrypted) tests: used by many test suites."""
     ciphertext_item = encrypt_python_item(plaintext_item, crypto_config)
