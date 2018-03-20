@@ -248,58 +248,63 @@ def set_parametrized_cmp(metafunc):
             metafunc.parametrize(name, _all_possible_cmps(algorithm_generator))
 
 
+_ACTIONS = {
+    'hypothesis_actions': (
+        pytest.param(AttributeActions(default_action=ItemAction.ENCRYPT_AND_SIGN), id='encrypt all'),
+        pytest.param(AttributeActions(default_action=ItemAction.SIGN_ONLY), id='sign only all'),
+        pytest.param(AttributeActions(default_action=ItemAction.DO_NOTHING), id='do nothing'),
+    )
+}
+_ACTIONS['parametrized_actions'] = _ACTIONS['hypothesis_actions'] + (
+    pytest.param(
+        AttributeActions(
+            default_action=ItemAction.ENCRYPT_AND_SIGN,
+            attribute_actions={
+                'number_set': ItemAction.SIGN_ONLY,
+                'string_set': ItemAction.SIGN_ONLY,
+                'binary_set': ItemAction.SIGN_ONLY
+            }
+        ),
+        id='sign sets, encrypt everything else'
+    ),
+    pytest.param(
+        AttributeActions(
+            default_action=ItemAction.ENCRYPT_AND_SIGN,
+            attribute_actions={
+                'number_set': ItemAction.DO_NOTHING,
+                'string_set': ItemAction.DO_NOTHING,
+                'binary_set': ItemAction.DO_NOTHING
+            }
+        ),
+        id='ignore sets, encrypt everything else'
+    ),
+    pytest.param(
+        AttributeActions(
+            default_action=ItemAction.DO_NOTHING,
+            attribute_actions={'map': ItemAction.ENCRYPT_AND_SIGN}
+        ),
+        id='encrypt map, ignore everything else'
+    ),
+    pytest.param(
+        AttributeActions(
+            default_action=ItemAction.SIGN_ONLY,
+            attribute_actions={
+                'number_set': ItemAction.DO_NOTHING,
+                'string_set': ItemAction.DO_NOTHING,
+                'binary_set': ItemAction.DO_NOTHING,
+                'map': ItemAction.ENCRYPT_AND_SIGN
+            }
+        ),
+        id='ignore sets, encrypt map, sign everything else'
+    )
+)
+
+
 def set_parametrized_actions(metafunc):
     """Set parametrized values for attribute actions"""
-    if 'parametrized_actions' in metafunc.fixturenames:
-        metafunc.parametrize(
-            'parametrized_actions',
-            (
-                pytest.param(AttributeActions(default_action=ItemAction.ENCRYPT_AND_SIGN), id='encrypt all'),
-                pytest.param(AttributeActions(default_action=ItemAction.SIGN_ONLY), id='sign only all'),
-                pytest.param(AttributeActions(default_action=ItemAction.DO_NOTHING), id='do nothing'),
-                pytest.param(
-                    AttributeActions(
-                        default_action=ItemAction.ENCRYPT_AND_SIGN,
-                        attribute_actions={
-                            'number_set': ItemAction.SIGN_ONLY,
-                            'string_set': ItemAction.SIGN_ONLY,
-                            'binary_set': ItemAction.SIGN_ONLY
-                        }
-                    ),
-                    id='sign sets, encrypt everything else'
-                ),
-                pytest.param(
-                    AttributeActions(
-                        default_action=ItemAction.ENCRYPT_AND_SIGN,
-                        attribute_actions={
-                            'number_set': ItemAction.DO_NOTHING,
-                            'string_set': ItemAction.DO_NOTHING,
-                            'binary_set': ItemAction.DO_NOTHING
-                        }
-                    ),
-                    id='ignore sets, encrypt everything else'
-                ),
-                pytest.param(
-                    AttributeActions(
-                        default_action=ItemAction.DO_NOTHING,
-                        attribute_actions={'map': ItemAction.ENCRYPT_AND_SIGN}
-                    ),
-                    id='encrypt map, ignore everything else'
-                ),
-                pytest.param(
-                    AttributeActions(
-                        default_action=ItemAction.SIGN_ONLY,
-                        attribute_actions={
-                            'number_set': ItemAction.DO_NOTHING,
-                            'string_set': ItemAction.DO_NOTHING,
-                            'binary_set': ItemAction.DO_NOTHING,
-                            'map': ItemAction.ENCRYPT_AND_SIGN
-                        }
-                    ),
-                    id='ignore sets, encrypt map, sign everything else'
-                )
-            )
-        )
+    for name, actions in _ACTIONS.items():
+        if name in metafunc.fixturenames:
+            metafunc.parametrize(name, actions)
 
 
 def set_parametrized_item(metafunc):
@@ -352,6 +357,40 @@ def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
         # Otherwise, verify that it is the same as the original
         else:
             assert value == plaintext_item[name]
+
+
+def _matching_key(actual_item, expected):
+        expected_item = [
+            i for i in expected
+            if i['partition_attribute'] == actual_item['partition_attribute']
+            and i['sort_attribute'] == actual_item['sort_attribute']
+        ]
+        assert len(expected_item) == 1
+        return expected_item[0]
+
+
+def _nop_transformer(item):
+    return item
+
+
+def assert_equal_lists_of_items(actual, expected, transformer=_nop_transformer):
+    assert len(actual) == len(expected)
+
+    for actual_item in actual:
+        expected_item = _matching_key(actual_item, expected)
+        assert transformer(actual_item) == transformer(expected_item)
+
+
+def check_many_encrypted_items(actual, expected, attribute_actions, transformer=_nop_transformer):
+    assert len(actual) == len(expected)
+
+    for actual_item in actual:
+        expected_item = _matching_key(actual_item, expected)
+        check_encrypted_item(
+            plaintext_item=transformer(expected_item),
+            ciphertext_item=transformer(actual_item),
+            attribute_actions=attribute_actions
+        )
 
 
 def cycle_item_check(plaintext_item, crypto_config):

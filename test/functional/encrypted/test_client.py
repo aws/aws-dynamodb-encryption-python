@@ -17,6 +17,7 @@ import pytest
 
 from ..functional_test_utils import (
     check_encrypted_item, example_table, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
+    check_many_encrypted_items, assert_equal_lists_of_items,
     TEST_BATCH_KEYS, TEST_KEY, TEST_TABLE_NAME
 )
 from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
@@ -72,36 +73,6 @@ def _client_cycle_single_item_check(materials_provider, initial_actions, initial
     del check_attribute_actions
 
 
-def _matching_key(actual_item, expected):
-        expected_item = [
-            i for i in expected
-            if i['partition_attribute'] == actual_item['partition_attribute']
-            and i['sort_attribute'] == actual_item['sort_attribute']
-        ]
-        assert len(expected_item) == 1
-        return expected_item[0]
-
-
-def _assert_equal_lists_of_items(actual, expected):
-    assert len(actual) == len(expected)
-
-    for actual_item in actual:
-        expected_item = _matching_key(actual_item, expected)
-        assert ddb_to_dict(actual_item) == ddb_to_dict(expected_item)
-
-
-def _check_encrypted_items(actual, expected, attribute_actions):
-    assert len(actual) == len(expected)
-
-    for actual_item in actual:
-        expected_item = _matching_key(actual_item, expected)
-        check_encrypted_item(
-            plaintext_item=ddb_to_dict(expected_item),
-            ciphertext_item=ddb_to_dict(actual_item),
-            attribute_actions=attribute_actions
-        )
-
-
 def _client_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
     check_attribute_actions = initial_actions.copy()
     check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
@@ -135,7 +106,12 @@ def _client_cycle_batch_items_check(materials_provider, initial_actions, initial
             }
         }
     )
-    _check_encrypted_items(encrypted_result['Responses'][TEST_TABLE_NAME], items, check_attribute_actions)
+    check_many_encrypted_items(
+        actual=encrypted_result['Responses'][TEST_TABLE_NAME],
+        expected=items,
+        attribute_actions=check_attribute_actions,
+        transformer=ddb_to_dict
+    )
 
     decrypted_result = e_client.batch_get_item(
         RequestItems={
@@ -144,7 +120,11 @@ def _client_cycle_batch_items_check(materials_provider, initial_actions, initial
             }
         }
     )
-    _assert_equal_lists_of_items(decrypted_result['Responses'][TEST_TABLE_NAME], items)
+    assert_equal_lists_of_items(
+        actual=decrypted_result['Responses'][TEST_TABLE_NAME],
+        expected=items,
+        transformer=ddb_to_dict
+    )
 
     _delete_result = e_client.batch_write_item(
         RequestItems={
@@ -183,24 +163,24 @@ def test_ephemeral_item_cycle_slow(example_table, all_the_cmps, parametrized_act
 @pytest.mark.hypothesis
 @SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
-def test_ephemeral_item_cycle_hypothesis_slow(example_table, some_cmps, parametrized_actions, item):
+def test_ephemeral_item_cycle_hypothesis_slow(example_table, some_cmps, hypothesis_actions, item):
     """Test a small number of curated CMPs against a large number of items."""
-    _client_cycle_single_item_check(some_cmps, parametrized_actions, item)
+    _client_cycle_single_item_check(some_cmps, hypothesis_actions, item)
 
 
 @pytest.mark.veryslow
 @pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
-def test_ephemeral_item_cycle_hypothesis_veryslow(example_table, some_cmps, parametrized_actions, item):
+def test_ephemeral_item_cycle_hypothesis_veryslow(example_table, some_cmps, hypothesis_actions, item):
     """Test a small number of curated CMPs against ALL THE ITEMS."""
-    _client_cycle_single_item_check(some_cmps, parametrized_actions, item)
+    _client_cycle_single_item_check(some_cmps, hypothesis_actions, item)
 
 
 @pytest.mark.nope
 @pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
-def test_ephemeral_item_cycle_hypothesis_nope(example_table, all_the_cmps, parametrized_actions, item):
+def test_ephemeral_item_cycle_hypothesis_nope(example_table, all_the_cmps, hypothesis_actions, item):
     """Test ALL THE CMPs against ALL THE ITEMS."""
-    _client_cycle_single_item_check(all_the_cmps, parametrized_actions, item)
+    _client_cycle_single_item_check(all_the_cmps, hypothesis_actions, item)
