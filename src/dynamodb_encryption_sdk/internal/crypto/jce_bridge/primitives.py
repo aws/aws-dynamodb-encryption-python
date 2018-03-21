@@ -447,7 +447,11 @@ JAVA_MODE = {
 JAVA_PADDING = {
     'NoPadding': SimplePadding('NoPadding', _NoPadding),
     'PKCS1Padding': SimplePadding('PKCS1Padding', asymmetric_padding.PKCS1v15),
+    # PKCS7 padding is a generalization of PKCS5 padding.
     'PKCS5Padding': BlockSizePadding('PKCS5Padding', symmetric_padding.PKCS7),
+    # By default, Java incorrectly implements RSA OAEP for all hash functions besides SHA1.
+    # The same hashing algorithm should be used by both OAEP and the MGF, but by default
+    # Java always uses SHA1 for the MGF.
     'OAEPWithSHA-1AndMGF1Padding': OaepPadding(
         'OAEPWithSHA-1AndMGF1Padding', asymmetric_padding.OAEP, hashes.SHA1, asymmetric_padding.MGF1, hashes.SHA1
     ),
