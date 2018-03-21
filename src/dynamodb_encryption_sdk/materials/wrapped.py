@@ -34,7 +34,7 @@ _WRAPPING_TRANSFORMATION = {
 }
 
 
-@attr.s(hash=False)
+@attr.s
 class WrappedCryptographicMaterials(CryptographicMaterials):
     """Encryption/decryption key is a content key stored in the material description, wrapped
     by the wrapping key.

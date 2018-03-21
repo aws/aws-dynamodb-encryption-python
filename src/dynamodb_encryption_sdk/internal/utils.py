@@ -35,7 +35,7 @@ def sorted_key_map(item, transform=to_bytes):
     return sorted_items
 
 
-@attr.s(hash=False)
+@attr.s
 class TableInfoCache(object):
     """Very simple cache of TableInfo objects, providing configuration information about DynamoDB tables.
 

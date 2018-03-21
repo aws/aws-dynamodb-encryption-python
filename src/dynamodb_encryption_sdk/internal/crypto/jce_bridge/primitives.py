@@ -87,7 +87,7 @@ class JavaPadding(object):
         """Build an instance of this padding type."""
 
 
-@attr.s(hash=False)
+@attr.s
 class SimplePadding(JavaPadding):
     """Padding types that do not require any preparation."""
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
@@ -103,7 +103,7 @@ class SimplePadding(JavaPadding):
         return self.padding()
 
 
-@attr.s(hash=False)
+@attr.s
 class BlockSizePadding(JavaPadding):
     """Padding types that require a block size input."""
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
@@ -119,7 +119,7 @@ class BlockSizePadding(JavaPadding):
         return self.padding(block_size)
 
 
-@attr.s(hash=False)
+@attr.s
 class OaepPadding(JavaPadding):
     """OAEP padding types. These require more complex setup.
 
@@ -149,7 +149,7 @@ class OaepPadding(JavaPadding):
         )
 
 
-@attr.s(hash=False)
+@attr.s
 class JavaMode(object):
     """Bridge the gap from the Java encryption mode names and Python resources.
         https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
@@ -167,7 +167,7 @@ class JavaMode(object):
         return self.mode(iv)
 
 
-@attr.s(hash=False)
+@attr.s
 class JavaEncryptionAlgorithm(object):
     """Bridge the gap from the Java encryption algorithm names and Python resources.
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher

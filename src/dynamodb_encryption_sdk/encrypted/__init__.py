@@ -22,7 +22,7 @@ from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionConte
 __all__ = ('CryptoConfig',)
 
 
-@attr.s(hash=False)
+@attr.s
 class CryptoConfig(object):
     """Container for all configuration needed to encrypt or decrypt an item.
 

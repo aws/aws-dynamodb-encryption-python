@@ -20,7 +20,7 @@ from dynamodb_encryption_sdk.structures import EncryptionContext
 __all__ = ('StaticCryptographicMaterialsProvider',)
 
 
-@attr.s(hash=False)
+@attr.s
 class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Manually combine encryption and decryption materials for use as a cryptographic materials provider.
 

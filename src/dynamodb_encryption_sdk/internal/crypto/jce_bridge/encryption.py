@@ -21,7 +21,7 @@ from dynamodb_encryption_sdk.exceptions import JceTransformationError
 __all__ = ('JavaCipher',)
 
 
-@attr.s(hash=False)
+@attr.s
 class JavaCipher(object):
     """Defines the encryption cipher, mode, and padding type to use for encryption.
 

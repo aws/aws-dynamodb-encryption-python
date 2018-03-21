@@ -25,7 +25,7 @@ from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionConte
 __all__ = ('EncryptedResource',)
 
 
-@attr.s(hash=False)
+@attr.s
 class EncryptedTablesCollectionManager(object):
     """Tables collection manager that provides EncryptedTable objects.
 
@@ -100,7 +100,7 @@ class EncryptedTablesCollectionManager(object):
         return self._transform_table(self._collection.page_size, **kwargs)
 
 
-@attr.s(hash=False)
+@attr.s
 class EncryptedResource(object):
     """High-level helper class to provide a familiar interface to encrypted tables.
 
