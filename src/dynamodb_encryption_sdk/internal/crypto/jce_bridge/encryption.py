@@ -16,6 +16,7 @@ import attr
 from .primitives import (
     JAVA_ENCRYPTION_ALGORITHM, JavaEncryptionAlgorithm, JAVA_MODE, JavaMode, JAVA_PADDING, JavaPadding
 )
+from dynamodb_encryption_sdk.exceptions import JceTransformationError
 
 __all__ = ('JavaCipher',)
 
@@ -103,6 +104,22 @@ class JavaCipher(object):
             padding=self.padding.java_name
         )
 
+    @staticmethod
+    def _map_load_or_error(name_type, name, mappings):
+        """Load the requested name from mapping or raise an appropriate error.
+
+        :param str name_type: Type of thing to load. This is used in the error message if name is not found in mappings.
+        :param str name: Name to locate in mappings
+        :param dict mappings: Dict in which to look for name
+        """
+        try:
+            return mappings[name]
+        except KeyError:
+            raise JceTransformationError('Invalid {type} name: "{name}"'.format(
+                type=name_type,
+                name=name
+            ))
+
     @classmethod
     def from_transformation(cls, cipher_transformation):
         """Generates an JavaCipher object from the Java transformation.
@@ -120,9 +137,16 @@ class JavaCipher(object):
         if cipher_transformation == 'RSA':
             return cls.from_transformation('RSA/ECB/PKCS1Padding')
 
-        cipher_transformation = cipher_transformation.split('/')
-        return cls(
-            cipher=JAVA_ENCRYPTION_ALGORITHM[cipher_transformation[0]],
-            mode=JAVA_MODE[cipher_transformation[1]],
-            padding=JAVA_PADDING[cipher_transformation[2]]
-        )
+        cipher_transformation_parts = cipher_transformation.split('/')
+        if len(cipher_transformation_parts) != 3:
+            raise JceTransformationError(
+                'Invalid transformation: "{}": must be three parts ALGORITHM/MODE/PADDING or "AESWrap"'.format(
+                    cipher_transformation
+                )
+            )
+
+        cipher = cls._map_load_or_error('algorithm', cipher_transformation_parts[0], JAVA_ENCRYPTION_ALGORITHM)
+        mode = cls._map_load_or_error('mode', cipher_transformation_parts[1], JAVA_MODE)
+        padding = cls._map_load_or_error('padding', cipher_transformation_parts[2], JAVA_PADDING)
+
+        return cls(cipher, mode, padding)
