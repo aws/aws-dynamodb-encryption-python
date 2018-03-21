@@ -30,6 +30,8 @@ from dynamodb_encryption_sdk.exceptions import UnknownRegionError, UnwrappingErr
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
 from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
+from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
 from dynamodb_encryption_sdk.structures import EncryptionContext
 
@@ -115,44 +117,18 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         validator=attr.validators.instance_of(botocore.session.Session),
         default=attr.Factory(botocore.session.Session)
     )
-    _grant_tokens = attr.ib(default=attr.Factory(tuple))
-
-    @_grant_tokens.validator
-    def _grant_tokens_validator(self, attribute, value):
-        """Validate grant token values."""
-        if not isinstance(value, tuple):
-            raise TypeError('"grant_tokens" must be a tuple')
-
-        for token in value:
-            if not isinstance(token, six.string_types):
-                raise TypeError('"grant_tokens" must contain strings')
-
-    _material_description = attr.ib(default=attr.Factory(dict))
-
-    @_material_description.validator
-    def _material_description_validator(self, attribute, value):
-        """Validate material description values."""
-        if not isinstance(value, dict):
-            raise TypeError('"material_description" must be a dictionary')
-
-        for key, data in value.items():
-            if not (isinstance(key, six.string_types) and isinstance(data, six.string_types)):
-                raise TypeError('"material_description" must be a string-string dictionary')
-
-    _regional_clients = attr.ib(default=attr.Factory(dict))
-
-    @_regional_clients.validator
-    def regional_clients_validator(self, attribute, value):
-        """Validate regional clients values."""
-        if not isinstance(value, dict):
-            raise TypeError('"regional_clients" must be a dictionary')
-
-        for key, client in value.items():
-            if not isinstance(key, six.string_types):
-                raise TypeError('"regional_clients" region name must be a string')
-
-            if not isinstance(client, botocore.client.BaseClient):
-                raise TypeError('"regional_clients" client must be a botocore client')
+    _grant_tokens = attr.ib(
+        validator=iterable_validator(tuple, six.string_types),
+        default=attr.Factory(tuple)
+    )
+    _material_description = attr.ib(
+        validator=dictionary_validator(six.string_types, six.string_types),
+        default=attr.Factory(dict)
+    )
+    _regional_clients = attr.ib(
+        validator=dictionary_validator(six.string_types, botocore.client.BaseClient),
+        default=attr.Factory(dict)
+    )
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -330,9 +306,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
                 MaterialDescriptionKeys.ITEM_SIGNATURE_ALGORITHM.value
             )
         )
-        encrypted_initial_material = base64.b64decode(encryption_context.material_description.get(
+        encrypted_initial_material = base64.b64decode(to_bytes(encryption_context.material_description.get(
             MaterialDescriptionKeys.WRAPPED_DATA_KEY.value
-        ))
+        )))
         kms_params = dict(
             CiphertextBlob=encrypted_initial_material,
             EncryptionContext=kms_encryption_context
@@ -454,7 +430,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             MaterialDescriptionKeys.CONTENT_KEY_WRAPPING_ALGORITHM.value: 'kms',
             MaterialDescriptionKeys.CONTENT_ENCRYPTION_ALGORITHM.value: self._content_key_info.description,
             MaterialDescriptionKeys.ITEM_SIGNATURE_ALGORITHM.value: self._signing_key_info.description,
-            MaterialDescriptionKeys.WRAPPED_DATA_KEY.value: base64.b64encode(encrypted_initial_material)
+            MaterialDescriptionKeys.WRAPPED_DATA_KEY.value: to_str(base64.b64encode(encrypted_initial_material))
         })
         return RawEncryptionMaterials(
             signing_key=self._mac_key(initial_material, self._signing_key_info),

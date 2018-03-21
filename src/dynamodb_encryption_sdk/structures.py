@@ -17,6 +17,21 @@ import copy
 import six
 
 from .identifiers import ItemAction
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator
+
+
+def _validate_attribute_values_are_ddb_items(instance, attribute, value):
+    """Validate that dictionary values in ``value`` match the structure of DynamoDB JSON
+    items.
+
+    .. note::
+
+        We are not trying to validate the full structure of the item with this validator.
+        This is just meant to verify that the values roughly match the correct format.
+    """
+    for data in value.values():
+        if len(list(data.values())) != 1:
+            raise TypeError('"{}" values do not look like DynamoDB items'.format(attribute.name))
 
 
 @attr.s(hash=False)
@@ -41,13 +56,15 @@ class EncryptionContext(object):
         validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
         default=None
     )
-    # TODO: converter to make sure that attributes are in DDB form
     attributes = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(dict)),
+        validator=(
+            dictionary_validator(six.string_types, dict),
+            _validate_attribute_values_are_ddb_items
+        ),
         default=attr.Factory(dict)
     )
     material_description = attr.ib(
-        validator=attr.validators.instance_of(dict),
+        validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
         default=attr.Factory(dict)
     )
@@ -66,7 +83,7 @@ class AttributeActions(object):
         default=ItemAction.ENCRYPT_AND_SIGN
     )
     attribute_actions = attr.ib(
-        validator=attr.validators.instance_of(dict),
+        validator=dictionary_validator(six.string_types, ItemAction),
         default=attr.Factory(dict)
     )
 
@@ -127,8 +144,8 @@ class TableIndex(object):
     """
     partition = attr.ib(validator=attr.validators.instance_of(six.string_types))
     sort = attr.ib(
-        default=None,
-        validator=attr.validators.optional(attr.validators.instance_of(six.string_types))
+        validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
+        default=None
     )
 
     def __attrs_post_init__(self):
