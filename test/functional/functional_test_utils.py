@@ -467,4 +467,7 @@ def cycle_item_check(plaintext_item, crypto_config):
     check_encrypted_item(plaintext_item, ciphertext_item, crypto_config.attribute_actions)
 
     cycled_item = decrypt_python_item(ciphertext_item, crypto_config)
+
     assert cycled_item == plaintext_item
+    del ciphertext_item
+    del cycled_item
