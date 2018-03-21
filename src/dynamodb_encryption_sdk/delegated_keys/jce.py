@@ -65,7 +65,7 @@ _ALGORITHM_GENERATE_MAP = {
 }
 
 
-@attr.s(hash=False)
+@attr.s
 class JceNameLocalDelegatedKey(DelegatedKey):
     """Delegated key that uses JCE StandardName algorithm values to determine behavior.
 

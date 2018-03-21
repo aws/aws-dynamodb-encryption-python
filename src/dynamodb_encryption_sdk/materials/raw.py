@@ -34,7 +34,7 @@ from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMat
 __all__ = ('RawEncryptionMaterials', 'RawDecryptionMaterials')
 
 
-@attr.s(hash=False)
+@attr.s
 class RawEncryptionMaterials(EncryptionMaterials):
     """Encryption materials for use directly with delegated keys.
 
@@ -94,7 +94,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
         return self._encryption_key
 
 
-@attr.s(hash=False)
+@attr.s
 class RawDecryptionMaterials(DecryptionMaterials):
     """Encryption materials for use directly with delegated keys.
 

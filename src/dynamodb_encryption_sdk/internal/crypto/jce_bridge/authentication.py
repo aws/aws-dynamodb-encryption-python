@@ -46,7 +46,7 @@ class JavaAuthenticator(object):
         """"""
 
 
-@attr.s(hash=False)
+@attr.s
 class JavaMac(JavaAuthenticator):
     """Symmetric MAC authenticators.
 
@@ -108,7 +108,7 @@ class JavaMac(JavaAuthenticator):
         verifier.verify(signature)
 
 
-@attr.s(hash=False)
+@attr.s
 class JavaSignature(JavaAuthenticator):
     """Asymmetric signature authenticators.
 

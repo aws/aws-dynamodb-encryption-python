@@ -38,7 +38,7 @@ def _validate_attribute_values_are_ddb_items(instance, attribute, value):
             raise TypeError('"{}" values do not look like DynamoDB items'.format(attribute.name))
 
 
-@attr.s(hash=False)
+@attr.s
 class EncryptionContext(object):
     """Additional information about an encryption request.
 
@@ -74,7 +74,7 @@ class EncryptionContext(object):
     )
 
 
-@attr.s(hash=False)
+@attr.s
 class AttributeActions(object):
     """Configuration resource used to determine what action should be taken for a specific attribute.
 
@@ -157,7 +157,7 @@ class AttributeActions(object):
         )
 
 
-@attr.s(hash=False)
+@attr.s
 class TableIndex(object):
     """Describes a table index.
 
@@ -202,7 +202,7 @@ class TableIndex(object):
         )
 
 
-@attr.s(hash=False)
+@attr.s
 class TableInfo(object):
     """Description of a DynamoDB table.
 

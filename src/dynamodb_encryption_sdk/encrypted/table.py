@@ -22,7 +22,7 @@ from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionConte
 __all__ = ('EncryptedTable',)
 
 
-@attr.s(hash=False)
+@attr.s
 class EncryptedTable(object):
     """High-level helper class to provide a familiar interface to encrypted tables.
 
