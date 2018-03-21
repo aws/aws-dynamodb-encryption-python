@@ -31,6 +31,8 @@ from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 
+__all__ = ('RawEncryptionMaterials', 'RawDecryptionMaterials')
+
 
 @attr.s(hash=False)
 class RawEncryptionMaterials(EncryptionMaterials):

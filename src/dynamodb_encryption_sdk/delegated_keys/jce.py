@@ -25,6 +25,7 @@ from dynamodb_encryption_sdk.exceptions import JceTransformationError, Unwrappin
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
 
+__all__ = ('JceNameLocalDelegatedKey',)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 

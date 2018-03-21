@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """"""
+__all__ = ('LOGGING_NAME', 'MATERIAL_DESCRIPTION_VERSION')
 
-ENCODING = 'utf-8'
 LOGGING_NAME = 'dynamodb_encryption_sdk'
 MATERIAL_DESCRIPTION_VERSION = b'\00' * 4

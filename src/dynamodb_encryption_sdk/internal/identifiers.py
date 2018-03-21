@@ -19,6 +19,11 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
+__all__ = (
+    'ReservedAttributes', 'Tag', 'TagValues', 'TEXT_ENCODING',
+    'SignatureValues', 'MaterialDescriptionKeys', 'MaterialDescriptionValues'
+)
+
 #: Encoding to use for all text values.
 #: This is noted here for consistency but should not be changed.
 TEXT_ENCODING = 'utf-8'
