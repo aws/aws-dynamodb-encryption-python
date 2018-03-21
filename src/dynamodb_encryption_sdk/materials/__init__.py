@@ -23,6 +23,8 @@ import six
 
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 
+__all__ = ('CryptographicMaterials', 'EncryptionMaterials', 'DecryptionMaterials')
+
 
 @six.add_metaclass(abc.ABCMeta)
 class CryptographicMaterials(object):

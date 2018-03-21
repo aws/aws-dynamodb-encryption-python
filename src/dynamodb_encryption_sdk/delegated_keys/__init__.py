@@ -22,6 +22,8 @@ import six
 
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes
 
+__all__ = ('DelegatedKey',)
+
 
 @six.add_metaclass(abc.ABCMeta)
 class DelegatedKey(object):
