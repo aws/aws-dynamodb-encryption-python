@@ -17,7 +17,7 @@ import copy
 import six
 
 from .identifiers import ItemAction
-from dynamodb_encryption_sdk.internal.validators import dictionary_validator
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
 
 __all__ = ('EncryptionContext', 'AttributeActions', 'TableIndex', 'TableInfo')
 
@@ -178,7 +178,7 @@ class TableInfo(object):
         default=None
     )
     _indexed_attributes = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(set)),
+        validator=attr.validators.optional(iterable_validator(set, six.string_types)),
         default=None
     )
 
