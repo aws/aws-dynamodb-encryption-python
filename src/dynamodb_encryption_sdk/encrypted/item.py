@@ -66,7 +66,12 @@ def encrypt_dynamodb_item(item, crypto_config):
             encrypted_item[name] = attribute.copy()
             continue
 
-        encrypted_item[name] = encrypt_attribute(attribute, encryption_materials.encryption_key, algorithm_descriptor)
+        encrypted_item[name] = encrypt_attribute(
+            attribute_name=name,
+            attribute=attribute,
+            encryption_key=encryption_materials.encryption_key,
+            algorithm=algorithm_descriptor
+        )
 
     signature_attribute = sign_item(encrypted_item, encryption_materials.signing_key, crypto_config)
     encrypted_item[ReservedAttributes.SIGNATURE.value] = signature_attribute
@@ -154,7 +159,12 @@ def decrypt_dynamodb_item(item, crypto_config):
             decrypted_item[name] = attribute.copy()
             continue
 
-        decrypted_item[name] = decrypt_attribute(attribute, decryption_materials.decryption_key, algorithm_descriptor)
+        decrypted_item[name] = decrypt_attribute(
+            attribute_name=name,
+            attribute=attribute,
+            decryption_key=decryption_materials.decryption_key,
+            algorithm=algorithm_descriptor
+        )
     return decrypted_item
 
 

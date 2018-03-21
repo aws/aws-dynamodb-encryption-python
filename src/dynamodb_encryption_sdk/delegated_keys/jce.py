@@ -167,13 +167,14 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         """
         return self.algorithm == 'AES'
 
-    def _encrypt(self, algorithm, plaintext, additional_associated_data=None):
-        # type: (Text, bytes, Dict[Text, Text]) -> bytes
+    def _encrypt(self, algorithm, name, plaintext, additional_associated_data=None):
+        # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
         """
         Encrypt data.
 
         :param str algorithm: Java StandardName transformation string of algorithm to use to encrypt data
             https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
+        :param str name: Name associated with plaintext data
         :param bytes plaintext: Plaintext data to encrypt
         :param dict additional_associated_data: Not used by all delegated keys, but if it
             is, then if it is provided on encrypt it must be required on decrypt.
@@ -183,16 +184,13 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         encryptor = encryption.JavaCipher.from_transformation(algorithm)
         return encryptor.encrypt(self.__key, plaintext)
 
-    def _decrypt(self, algorithm, ciphertext, additional_associated_data=None):
-        # type: (Text, bytes, Dict[Text, Text]) -> bytes
-        """
-
-        """
-        # type: (Text, bytes, Dict[Text, Text]) -> bytes
+    def _decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):
+        # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
         """Encrypt data.
 
         :param str algorithm: Java StandardName transformation string of algorithm to use to decrypt data
             https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
+        :param str name: Name associated with ciphertext data
         :param bytes ciphertext: Ciphertext data to decrypt
         :param dict additional_associated_data: Not used by ``JceNameLocalDelegatedKey``
         :returns: Decrypted plaintext

@@ -58,11 +58,12 @@ class DelegatedKey(object):
         """
         cls._raise_not_implemented('generate')
 
-    def encrypt(self, algorithm, plaintext, additional_associated_data=None):
-        # type: (Text, bytes, Dict[Text, Text]) -> bytes
+    def encrypt(self, algorithm, name, plaintext, additional_associated_data=None):
+        # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
         """Encrypt data.
 
         :param str algorithm: Text description of algorithm to use to encrypt data
+        :param str name: Name associated with plaintext data
         :param bytes plaintext: Plaintext data to encrypt
         :param dict additional_associated_data: Not used by all delegated keys, but if it
             is, then if it is provided on encrypt it must be required on decrypt.
@@ -71,11 +72,12 @@ class DelegatedKey(object):
         """
         self._raise_not_implemented('encrypt')
 
-    def decrypt(self, algorithm, ciphertext, additional_associated_data=None):
-        # type: (Text, bytes, Dict[Text, Text]) -> bytes
+    def decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):
+        # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
         """Encrypt data.
 
         :param str algorithm: Text description of algorithm to use to decrypt data
+        :param str name: Name associated with ciphertext data
         :param bytes ciphertext: Ciphertext data to decrypt
         :param dict additional_associated_data: Not used by all delegated keys, but if it
             is, then if it is provided on encrypt it must be required on decrypt.

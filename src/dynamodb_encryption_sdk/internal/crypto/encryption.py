@@ -26,10 +26,11 @@ from dynamodb_encryption_sdk.internal.identifiers import Tag
 __all__ = ('encrypt_attribute', 'decrypt_attribute')
 
 
-def encrypt_attribute(attribute, encryption_key, algorithm):
-    # type: (dynamodb_types.RAW_ATTRIBUTE, DelegatedKey, Text) -> dynamodb_types.BINARY_ATTRIBUTE
+def encrypt_attribute(attribute_name, attribute, encryption_key, algorithm):
+    # type: (Text, dynamodb_types.RAW_ATTRIBUTE, DelegatedKey, Text) -> dynamodb_types.BINARY_ATTRIBUTE
     """Encrypt a single DynamoDB attribute.
 
+    :param str attribute_name: DynamoDB attribute name
     :param dict attribute: Plaintext DynamoDB attribute
     :param encryption_key: DelegatedKey to use to encrypt the attribute
     :type encryption_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
@@ -40,15 +41,17 @@ def encrypt_attribute(attribute, encryption_key, algorithm):
     serialized_attribute = serialize_attribute(attribute)
     encrypted_attribute = encryption_key.encrypt(
         algorithm=algorithm,
+        name=attribute_name,
         plaintext=serialized_attribute
     )
     return {Tag.BINARY.dynamodb_tag: encrypted_attribute}
 
 
-def decrypt_attribute(attribute, decryption_key, algorithm):
-    # type: (dynamodb_types.RAW_ATTRIBUTE, DelegatedKey, Text) -> dynamodb_types.RAW_ATTRIBUTE
+def decrypt_attribute(attribute_name, attribute, decryption_key, algorithm):
+    # type: (Text, dynamodb_types.RAW_ATTRIBUTE, DelegatedKey, Text) -> dynamodb_types.RAW_ATTRIBUTE
     """Decrypt a single DynamoDB attribute.
 
+    :param str attribute_name: DynamoDB attribute name
     :param dict attribute: Encrypted DynamoDB attribute
     :param encryption_key: DelegatedKey to use to encrypt the attribute
     :type encryption_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
@@ -59,6 +62,7 @@ def decrypt_attribute(attribute, decryption_key, algorithm):
     encrypted_attribute = attribute[Tag.BINARY.dynamodb_tag]
     decrypted_attribute = decryption_key.decrypt(
         algorithm=algorithm,
+        name=attribute_name,
         ciphertext=encrypted_attribute
     )
     return deserialize_attribute(decrypted_attribute)
