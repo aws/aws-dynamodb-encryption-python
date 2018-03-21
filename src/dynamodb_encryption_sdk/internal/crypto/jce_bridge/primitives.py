@@ -27,6 +27,12 @@ from dynamodb_encryption_sdk.exceptions import (
 )
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
 
+__all__ = (
+    'JavaPadding', 'SimplePadding', 'BlockSizePadding', 'OaepPadding',
+    'JavaMode',
+    'JavaEncryptionAlgorithm', 'JavaSymmetricEncryptionAlgorithm', 'JavaAsymmetricEncryptionAlgorithm',
+    'JAVA_ENCRYPTION_ALGORITHM', 'JAVA_MODE', 'JAVA_PADDING'
+)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 

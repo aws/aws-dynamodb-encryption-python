@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 from enum import Enum
 
+__all__ = ('LOGGER_NAME', 'ItemAction', 'EncryptionKeyTypes', 'KeyEncodingType')
 __version__ = '0.0.0'
 
 LOGGER_NAME = 'dynamodb_encryption_sdk'

@@ -14,6 +14,8 @@
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 from dynamodb_encryption_sdk.structures import EncryptionContext
 
+__all__ = ('CryptographicMaterialsProvider',)
+
 
 class CryptographicMaterialsProvider(object):
     """Base class for all cryptographic materials providers."""

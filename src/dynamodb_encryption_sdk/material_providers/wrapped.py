@@ -19,6 +19,8 @@ from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
 from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMaterials
 from dynamodb_encryption_sdk.structures import EncryptionContext
 
+__all__ = ('WrappedCryptographicMaterialsProvider',)
+
 
 @attr.s
 class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):

@@ -17,6 +17,8 @@ from . import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 from dynamodb_encryption_sdk.structures import EncryptionContext
 
+__all__ = ('StaticCryptographicMaterialsProvider',)
+
 
 @attr.s
 class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):

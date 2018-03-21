@@ -19,6 +19,8 @@ except ImportError:  # pragma: no cover
 
 from boto3.dynamodb.types import TypeSerializer, TypeDeserializer
 
+__all__ = ('dict_to_ddb', 'ddb_to_dict')
+
 
 def dict_to_ddb(item):
     # type: (Dict[str, Any]) -> Dict[str, Any]

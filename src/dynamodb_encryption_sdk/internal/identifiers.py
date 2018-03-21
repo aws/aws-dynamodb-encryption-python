@@ -19,6 +19,10 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
+__all__ = (
+    'ReservedAttributes', 'Tag', 'TagValues', 'SignatureValues', 'MaterialDescriptionKeys', 'MaterialDescriptionValues'
+)
+
 
 class ReservedAttributes(Enum):
     """Item attributes reserved for use by DynamoDBEncryptionClient"""
