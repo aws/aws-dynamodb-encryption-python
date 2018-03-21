@@ -53,7 +53,8 @@ def test_deserialize_attribute(attribute, serialized):
 @pytest.mark.parametrize('data, expected_type, expected_message', (
     (b'', DeserializationError, r'Empty serialized attribute data'),
     (b'_', DeserializationError, r'Malformed serialized data'),
-    (b'__', DeserializationError, r'Unsupported tag: *'),
+    (b'\x00_', DeserializationError, r'Unsupported tag: *'),
+    (b'__', DeserializationError, r'Invalid tag: reserved byte is not null'),
     (b'\x00M\x00\x00\x00\x01\x00\x00', DeserializationError, r'Malformed serialized map: *')
 ))
 def test_deserialize_attribute_errors(data, expected_type, expected_message):
