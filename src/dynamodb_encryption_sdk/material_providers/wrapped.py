@@ -20,7 +20,7 @@ from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMateri
 from dynamodb_encryption_sdk.structures import EncryptionContext
 
 
-@attr.s(hash=False)
+@attr.s
 class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Cryptographic materials provider to use ephemeral content encryption keys wrapped by delegated keys.
 

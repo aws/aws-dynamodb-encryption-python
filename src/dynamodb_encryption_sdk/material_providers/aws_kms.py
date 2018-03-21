@@ -60,7 +60,7 @@ class EncryptionContextKeys(Enum):
     TABLE_NAME = '*aws-kms-table*'
 
 
-@attr.s(hash=False)
+@attr.s
 class KeyInfo(object):
     """Identifying information for a specific key and how it should be used.
 
@@ -94,7 +94,7 @@ class KeyInfo(object):
         return cls(description, algorithm, key_length)
 
 
-@attr.s(hash=False)
+@attr.s
 class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Cryptographic materials provider for use with the AWS Key Management Service (KMS).
 

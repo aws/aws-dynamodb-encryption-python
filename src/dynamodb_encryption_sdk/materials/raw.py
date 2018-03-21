@@ -32,7 +32,7 @@ from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 
 
-@attr.s(hash=False)
+@attr.s
 class RawEncryptionMaterials(EncryptionMaterials):
     """Encryption materials for use directly with delegated keys.
 
@@ -92,7 +92,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
         return self._encryption_key
 
 
-@attr.s(hash=False)
+@attr.s
 class RawDecryptionMaterials(DecryptionMaterials):
     """Encryption materials for use directly with delegated keys.
 
