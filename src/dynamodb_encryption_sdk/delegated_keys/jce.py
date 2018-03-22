@@ -112,23 +112,25 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         # https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
         try:
             key_transformer = primitives.JAVA_ENCRYPTION_ALGORITHM[self.algorithm]
+        except KeyError:
+            pass
+        else:
             self.__key = key_transformer.load_key(self.key, self._key_type, self._key_encoding)
             self._enable_encryption()
             self._enable_wrap()
             return
-        except KeyError:
-            pass
 
         # Now try for authenticators
         # https://docs.oracle.com/javase/8/docs/api/javax/crypto/Mac.html
         # https://docs.oracle.com/javase/8/docs/api/java/security/Signature.html
         try:
             key_transformer = authentication.JAVA_AUTHENTICATOR[self.algorithm]
+        except KeyError:
+            pass
+        else:
             self.__key = key_transformer.load_key(self.key, self._key_type, self._key_encoding)
             self._enable_authentication()
             return
-        except KeyError:
-            pass
 
         raise JceTransformationError('Unknown algorithm: "{}"'.format(self.algorithm))
 
