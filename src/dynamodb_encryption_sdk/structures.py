@@ -70,6 +70,14 @@ class AttributeActions(object):
         default=attr.Factory(dict)
     )
 
+    def __attrs_post_init__(self):
+        # () -> None
+        """Determine if any actions should ever be taken with this configuration and record that for reference."""
+        # Enums are not hashable, but their names are unique
+        _unique_actions = set([self.default_action.name])
+        _unique_actions.update(set([action.name for action in self.attribute_actions.values()]))
+        self.take_no_actions = _unique_actions == set([ItemAction.DO_NOTHING.name])
+
     def action(self, attribute_name):
         # (text) -> ItemAction
         """Determines the correct ItemAction to apply to a supplied attribute based on this config."""

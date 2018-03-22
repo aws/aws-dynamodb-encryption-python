@@ -19,6 +19,7 @@ except ImportError:  # pragma: no cover
     pass
 
 from . import CryptoConfig
+from dynamodb_encryption_sdk.exceptions import DecryptionError
 from dynamodb_encryption_sdk.identifiers import ItemAction
 from dynamodb_encryption_sdk.internal.crypto.authentication import sign_item, verify_item_signature
 from dynamodb_encryption_sdk.internal.crypto.encryption import decrypt_attribute, encrypt_attribute
@@ -46,6 +47,10 @@ def encrypt_dynamodb_item(item, crypto_config):
     :returns: Encrypted and signed DynamoDB item
     :rtype: dict
     """
+    if crypto_config.attribute_actions.take_no_actions:
+        # If we explicitly have been told not to do anything to this item, just copy it.
+        return item.copy()
+
     # TODO: Check for attributes that we write
     crypto_config.materials_provider.refresh()
     encryption_materials = crypto_config.encryption_materials()
@@ -124,12 +129,19 @@ def decrypt_dynamodb_item(item, crypto_config):
     :returns: Plaintext DynamoDB item
     :rtype: dict
     """
+    unique_actions = set([crypto_config.attribute_actions.default_action.name])
+    unique_actions.update(set([action.name for action in crypto_config.attribute_actions.attribute_actions.values()]))
+
+    if crypto_config.attribute_actions.take_no_actions:
+        # If we explicitly have been told not to do anything to this item, just copy it.
+        return item.copy()
+
     try:
         signature_attribute = item.pop(ReservedAttributes.SIGNATURE.value)
     except KeyError:
         # The signature is always written, so if no signature is found then the item was not
-        # encrypted or signed, so just return a copy of the unmodified item.
-        return item.copy()
+        # encrypted or signed.
+        raise DecryptionError('No signature attribute found in item')
 
     inner_crypto_config = crypto_config.copy()
     # Retrieve the material description from the item if found.

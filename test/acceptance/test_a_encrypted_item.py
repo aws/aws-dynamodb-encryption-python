@@ -25,7 +25,7 @@ pytestmark = [pytest.mark.acceptance, pytest.mark.local]
     'materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions',
     load_scenarios()
 )
-def test_a_item_encryptor(
+def test_item_encryptor(
         materials_provider,
         table_name,
         table_index,

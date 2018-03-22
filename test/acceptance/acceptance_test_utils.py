@@ -222,15 +222,9 @@ def load_scenarios():
             decrypt_key=keys[scenario['keys']['decrypt']],
             verify_key=keys[scenario['keys']['verify']]
         )
-        for table_name, table_index, ciphertext_item, plaintext_item, attribute_actions in _expand_items(ciphertext_items, plaintext_items):
+        items = _expand_items(ciphertext_items, plaintext_items)
+        for table_name, table_index, ciphertext_item, plaintext_item, attribute_actions in items:
             item_index = _index(ciphertext_item, table_index.values())
-            if table_name == 'HashKeyOnly':
-                print('table', table_name)
-                print('index', item_index)
-                print('ct_item', ciphertext_item)
-                print('pt_item', plaintext_item)
-                print('actions', attribute_actions)
-                #raise Exception('????????')
             yield pytest.param(
                 materials_provider,
                 table_name,

@@ -41,7 +41,7 @@ def _get_from_cache(dk_class, algorithm, key_length):
         return key
 
 
-def _build_static_jce_cmp(encryption_algorithm, encryption_key_length, signing_algorithm, signing_key_length):
+def build_static_jce_cmp(encryption_algorithm, encryption_key_length, signing_algorithm, signing_key_length):
     """Build a StaticCryptographicMaterialsProvider using ephemeral JceNameLocalDelegatedKeys as specified."""
     encryption_key = _get_from_cache(JceNameLocalDelegatedKey, encryption_algorithm, encryption_key_length)
     authentication_key = _get_from_cache(JceNameLocalDelegatedKey, signing_algorithm, signing_key_length)
@@ -108,7 +108,7 @@ def _some_algorithm_pairs():
 
 
 _cmp_builders = {
-    'static': _build_static_jce_cmp,
+    'static': build_static_jce_cmp,
     'wrapped': _build_wrapped_jce_cmp
 }
 
@@ -242,7 +242,10 @@ def cycle_item_check(plaintext_item, crypto_config):
     # Verify that all expected attributes are present
     ciphertext_attributes = set(ciphertext_item.keys())
     plaintext_attributes = set(plaintext_item.keys())
-    assert ciphertext_attributes == plaintext_attributes.union(_reserved_attributes)
+    if crypto_config.attribute_actions.take_no_actions:
+        assert ciphertext_attributes == plaintext_attributes
+    else:
+        assert ciphertext_attributes == plaintext_attributes.union(_reserved_attributes)
 
     for name, value in ciphertext_item.items():
         # Skip the attributes we add

@@ -13,10 +13,14 @@
 import hypothesis
 import pytest
 
-from .functional_test_utils import cycle_item_check, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item
+from .functional_test_utils import (
+    build_static_jce_cmp, cycle_item_check, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item
+)
 from .hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
-from dynamodb_encryption_sdk.structures import EncryptionContext
+from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item
+from dynamodb_encryption_sdk.exceptions import DecryptionError
+from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
@@ -25,6 +29,20 @@ def pytest_generate_tests(metafunc):
     set_parametrized_actions(metafunc)
     set_parametrized_cmp(metafunc)
     set_parametrized_item(metafunc)
+
+
+def test_unsigned_item():
+    crypto_config = CryptoConfig(
+        materials_provider=build_static_jce_cmp('AES', 256, 'HmacSHA256', 256),
+        encryption_context=EncryptionContext(),
+        attribute_actions=AttributeActions()
+    )
+    item = {'test': 'no signature'}
+
+    with pytest.raises(DecryptionError) as exc_info:
+        decrypt_python_item(item, crypto_config)
+
+    exc_info.match(r'No signature attribute found in item')
 
 
 def test_ephemeral_item_cycle(some_cmps, parametrized_actions, parametrized_item):
