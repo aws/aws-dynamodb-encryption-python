@@ -243,8 +243,10 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         """
         attribute_type, attribute_value = list(attribute.items())[0]
         if attribute_type == 'B':
-            return base64.b64encode(attribute_value.value)
-        return attribute_value
+            return base64.b64encode(attribute_value.value).decode('utf-8')
+        if attribute_type == 'S':
+            return attribute_value
+        raise ValueError('Attribute of type "{}" cannot be used in KMS encryption context.'.format(attribute_type))
 
     def _kms_encryption_context(self, encryption_context, encryption_description, signing_description):
         # type: (EncryptionContext, Text, Text) -> Dict[str, str]
