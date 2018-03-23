@@ -1,0 +1,152 @@
+[
+    {
+        "attribute": {"NULL": true},
+        "serialized": "AAA="
+    },
+    {
+        "attribute": {"BOOL": true},
+        "serialized": "AD8B"
+    },
+    {
+        "attribute": {"BOOL": false},
+        "serialized": "AD8A"
+    },
+    {
+        "attribute": {"N": "55"},
+        "serialized": "AG4AAAACNTU="
+    },
+    {
+        "attribute": {"N": "55.34"},
+        "serialized": "AG4AAAAFNTUuMzQ="
+    },
+    {
+        "attribute": {
+            "NS": [
+                "1.23",
+                "34",
+                "35",
+                "55.2"
+            ]
+        },
+        "serialized": "AE4AAAAEAAAABDEuMjMAAAACMzQAAAACMzUAAAAENTUuMg=="
+    },
+    {
+        "attribute": {"S": "test ascii string"},
+        "serialized": "AHMAAAARdGVzdCBhc2NpaSBzdHJpbmc="
+    },
+    {
+        "attribute": {
+            "SS": [
+                "another ascii string",
+                "test ascii string"
+            ]
+        },
+        "serialized": "AFMAAAACAAAAFGFub3RoZXIgYXNjaWkgc3RyaW5nAAAAEXRlc3QgYXNjaWkgc3RyaW5n"
+    },
+    {
+        "attribute": {"B": "AAECAw=="},
+        "serialized": "AGIAAAAEAAECAw=="
+    },
+    {
+        "attribute": {"B": "YW4gYXNjaWkgYnl0ZSBzdHJpbmc="},
+        "serialized": "AGIAAAAUYW4gYXNjaWkgYnl0ZSBzdHJpbmc="
+    },
+    {
+        "attribute": {
+            "BS": [
+                "AAECAw==",
+                "YW4gYXNjaWkgYnl0ZSBzdHJpbmc="
+            ]
+        },
+        "serialized": "AEIAAAACAAAABAABAgMAAAAUYW4gYXNjaWkgYnl0ZSBzdHJpbmc="
+    },
+    {
+        "attribute": {
+            "L": [
+                {"N": "55.34"},
+                {"B": "YW4gYXNjaWkgYnl0ZSBzdHJpbmc="},
+                {"S": "test ascii string"}
+            ]
+        },
+        "serialized": "AEwAAAADAG4AAAAFNTUuMzQAYgAAABRhbiBhc2NpaSBieXRlIHN0cmluZwBzAAAAEXRlc3QgYXNjaWkgc3RyaW5n"
+    },
+    {
+        "attribute": {
+            "M": {
+                "one thing": {"NULL": true},
+                "maybe a bool?": {"BOOL": false},
+                "and a list too": {
+                    "L": [
+                        {"N": "55.34"},
+                        {"B": "YW4gYXNjaWkgYnl0ZSBzdHJpbmc="},
+                        {"S": "test ascii string"}
+                    ]
+                }
+            }
+        },
+        "serialized": "AE0AAAADAHMAAAAOYW5kIGEgbGlzdCB0b28ATAAAAAMAbgAAAAU1NS4zNABiAAAAFGFuIGFzY2lpIGJ5dGUgc3RyaW5nAHMAAAARdGVzdCBhc2NpaSBzdHJpbmcAcwAAAA1tYXliZSBhIGJvb2w/AD8AAHMAAAAJb25lIHRoaW5nAAA="
+    },
+    {
+        "attribute": {
+            "M": {
+                "complex_map": {"M": {
+                    "a": {"L": [
+                        {"S": "asdf"},
+                        {"N": "99"},
+                        {"M": {
+                            "c": {"BOOL": true},
+                            "b": {"NULL": true}
+                        }}
+                    ]}
+                }},
+                "another_key": {"BOOL": false}
+            }
+        },
+        "serialized": "AE0AAAACAHMAAAALYW5vdGhlcl9rZXkAPwAAcwAAAAtjb21wbGV4X21hcABNAAAAAQBzAAAAAWEATAAAAAMAcwAAAARhc2RmAG4AAAACOTkATQAAAAIAcwAAAAFiAAAAcwAAAAFjAD8B"
+    },
+    {
+        "attribute": {"M": {
+            "SingleMap": {"M": {
+                "FOO": {"S": "BAR"}
+            }},
+            "InnerList": {"L": [
+                {"S": "ComplexList"},
+                {"N": "5"},
+                {"B": "AAECAwQF"},
+                {"L": [
+                    {"BOOL": true},
+                    {"NULL": true},
+                    {"NULL": true},
+                    {"L": [
+                        {"BOOL": false}
+                    ]},
+                    {"M": {
+                        "Pink": {"S": "Floyd"},
+                        "Version": {"N": "1"},
+                        "Test": {"BOOL": true}
+                    }}
+                ]},
+                {"NULL": true},
+                {"M": {
+                    "True": {"BOOL": true},
+                    "List": {"L": [
+                        {"N": "5"},
+                        {"N": "4"},
+                        {"N": "3"},
+                        {"N": "2"},
+                        {"N": "1"}
+                    ]},
+                    "Map": {"M": {
+                        "Nested": {"BOOL": true}
+                    }}
+                }}
+            ]},
+            "StringSet": {"SS": [
+                "bar",
+                "baz",
+                "foo"
+            ]}
+        }},
+        "serialized": "AE0AAAADAHMAAAAJSW5uZXJMaXN0AEwAAAAGAHMAAAALQ29tcGxleExpc3QAbgAAAAE1AGIAAAAGAAECAwQFAEwAAAAFAD8BAAAAAABMAAAAAQA/AABNAAAAAwBzAAAABFBpbmsAcwAAAAVGbG95ZABzAAAABFRlc3QAPwEAcwAAAAdWZXJzaW9uAG4AAAABMQAAAE0AAAADAHMAAAAETGlzdABMAAAABQBuAAAAATUAbgAAAAE0AG4AAAABMwBuAAAAATIAbgAAAAExAHMAAAADTWFwAE0AAAABAHMAAAAGTmVzdGVkAD8BAHMAAAAEVHJ1ZQA/AQBzAAAACVNpbmdsZU1hcABNAAAAAQBzAAAAA0ZPTwBzAAAAA0JBUgBzAAAACVN0cmluZ1NldABTAAAAAwAAAANiYXIAAAADYmF6AAAAA2Zvbw=="
+    }
+]

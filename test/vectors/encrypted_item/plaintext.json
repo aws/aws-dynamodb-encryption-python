@@ -1,0 +1,277 @@
+{
+    "actions": {
+        "mixed": {
+            "default": "encrypt",
+            "override": {
+                "version": "sign",
+                "stringValue": "sign",
+                "doubleValue": "sign",
+                "doubleSet": "sign",
+                "intValue": "nothing"
+            }
+        },
+        "encrypt": {
+            "default": "encrypt",
+            "override": {
+                "version": "sign"
+            }
+        },
+        "sign": {
+            "default": "sign"
+        },
+        "nothing": {
+            "default": "nothing"
+        }
+    },
+    "items": {
+        "TableName": {
+            "index": {
+                "partition": "hashKey",
+                "sort": "rangeKey"
+            },
+            "items": [
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "0"
+                        },
+                        "rangeKey": {
+                            "N": "1"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "0"
+                        },
+                        "rangeKey": {
+                            "N": "2"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "0"
+                        },
+                        "rangeKey": {
+                            "N": "3"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "1"
+                        },
+                        "rangeKey": {
+                            "N": "1"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "1"
+                        },
+                        "rangeKey": {
+                            "N": "2"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "1"
+                        },
+                        "rangeKey": {
+                            "N": "3"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "5"
+                        },
+                        "rangeKey": {
+                            "N": "1"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "6"
+                        },
+                        "rangeKey": {
+                            "N": "2"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "7"
+                        },
+                        "rangeKey": {
+                            "N": "3"
+                        }
+                    },
+                    "action": "encrypt",
+                    "exact": true
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "5"
+                        },
+                        "rangeKey": {
+                            "N": "7"
+                        }
+                    },
+                    "action": "encrypt"
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "6"
+                        },
+                        "rangeKey": {
+                            "N": "8"
+                        }
+                    },
+                    "action": "mixed"
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "8"
+                        },
+                        "rangeKey": {
+                            "N": "10"
+                        }
+                    },
+                    "action": "sign"
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "N": "7"
+                        },
+                        "rangeKey": {
+                            "N": "9"
+                        }
+                    },
+                    "action": "nothing"
+                }
+            ]
+        },
+        "HashKeyOnly": {
+            "index": {
+                "partition": "hashKey"
+            },
+            "items": [
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "S": "Foo"
+                        }
+                    },
+                    "action": "encrypt"
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "S": "Bar"
+                        }
+                    },
+                    "action": "encrypt"
+                },
+                {
+                    "attributes": {
+                        "hashKey": {
+                            "S": "Baz"
+                        }
+                    },
+                    "action": "encrypt"
+                }
+            ]
+        }
+    },
+    "versions": {
+        "TableName": {
+            "v0": [
+                "base"
+            ],
+            "v1": [
+                "base",
+                "doubles"
+            ]
+        }
+    },
+    "attributes": {
+        "base": {
+            "stringValue": {
+                "S": "Hello world!"
+            },
+            "intValue": {
+                "N": "123"
+            },
+            "byteArrayValue": {
+                "B": "AAECAwQF"
+            },
+            "stringSet": {
+                "SS": [
+                    "Goodbye",
+                    "Cruel",
+                    "World",
+                    "?"
+                ]
+            },
+            "intSet": {
+                "NS": [
+                    "1",
+                    "200",
+                    "10",
+                    "15",
+                    "0"
+                ]
+            },
+            "version": {
+                "N": "0"
+            }
+        },
+        "doubles": {
+            "doubleValue": {
+                "N": "15"
+            },
+            "doubleSet": {
+                "NS": [
+                    "15",
+                    "7.6",
+                    "-3",
+                    "-34.2",
+                    "0"
+                ]
+            }
+        }
+    }
+}

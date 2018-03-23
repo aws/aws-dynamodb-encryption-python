@@ -1,0 +1,60 @@
+[
+    {
+        "table": "ExampleTableName",
+        "item": {
+            "a_number": {
+                "value": {"N": "55"},
+                "action": "encrypt"
+            }
+        },
+        "string_to_sign": "9sgaD2yFEAmIplAUwJS+KesIRv1Xw0Q/DVnzVNZqp/U4+5C1DIfNg97Pu2hKprvFT1nzJNuMvsdX9zwUYqSJqjlBFaxOsJqklCk0iBayA4EnsPnjpSA3KuEAyhn7CP1QYD1mapH53y+ljTvr5TAcGBTbydPe4VTANZOIHuHviQ8="
+    },
+    {
+        "table": "ExampleTableName",
+        "item": {
+            "a_number": {
+                "value": {"N": "55"},
+                "action": "sign"
+            }
+        },
+        "string_to_sign": "9sgaD2yFEAmIplAUwJS+KesIRv1Xw0Q/DVnzVNZqp/U4+5C1DIfNg97Pu2hKprvFT1nzJNuMvsdX9zwUYqSJqstA59rchhYbl5jeSFEvMy0hwUH8weKKCG/eSjN1qrG1YD1mapH53y+ljTvr5TAcGBTbydPe4VTANZOIHuHviQ8="
+    },
+    {
+        "table": "ExampleTableName",
+        "item": {
+            "a_number": {
+                "value": {"N": "55"},
+                "action": "nothing"
+            }
+        },
+        "string_to_sign": "9sgaD2yFEAmIplAUwJS+KesIRv1Xw0Q/DVnzVNZqp/U="
+    },
+    {
+        "table": "ExampleTableName",
+        "item": {
+            "a_number": {
+                "value": {"N": "55"},
+                "action": "nothing"
+            },
+            "some_string": {
+                "value": {"S": "test ascii string"},
+                "action": "sign"
+            },
+            "bytes": {
+                "value": {"B": "YW4gYXNjaWkgYnl0ZSBzdHJpbmc="},
+                "action": "encrypt"
+            },
+            "list_of_stuff": {
+                "value": {
+                    "L": [
+                        {"N": "55.34"},
+                        {"B": "YW4gYXNjaWkgYnl0ZSBzdHJpbmc="},
+                        {"S": "test ascii string"}
+                    ]
+                },
+                "action": "encrypt"
+            }
+        },
+        "string_to_sign": "9sgaD2yFEAmIplAUwJS+KesIRv1Xw0Q/DVnzVNZqp/UncInZHAvfTy5oYrp+SgdgURlDH10T9ybdNSsG8bIGqTlBFaxOsJqklCk0iBayA4EnsPnjpSA3KuEAyhn7CP1QvuXxYe5x5afhZUv3xkXlofC611Cw5eAlbNdEaMf1xKGE96hSpUnIMULGeHZTXUI2ydB2gfFa9+W0FInbJtdwEjlBFaxOsJqklCk0iBayA4EnsPnjpSA3KuEAyhn7CP1QyIKWBxib2u7/xzb6bZmy+BHoUuSg5pgwcqIfCofBkyJTmjdP9D3OLolP1AYapUXm9/WXLUDumhZ2kB+5ISX/7stA59rchhYbl5jeSFEvMy0hwUH8weKKCG/eSjN1qrG1bSWEI5OScw844jVePhRaqST4raDsPSjQVLzgN1rEAl8="
+    }
+]
