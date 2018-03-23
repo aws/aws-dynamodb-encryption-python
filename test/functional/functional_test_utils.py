@@ -340,7 +340,7 @@ def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
     # Verify that all expected attributes are present
     ciphertext_attributes = set(ciphertext_item.keys())
     plaintext_attributes = set(plaintext_item.keys())
-    if crypto_config.attribute_actions.take_no_actions:
+    if attribute_actions.take_no_actions:
         assert ciphertext_attributes == plaintext_attributes
     else:
         assert ciphertext_attributes == plaintext_attributes.union(_reserved_attributes)
