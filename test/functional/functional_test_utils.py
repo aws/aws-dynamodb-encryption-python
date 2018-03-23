@@ -115,6 +115,9 @@ _cmp_builders = {
 
 def _all_possible_cmps(algorithm_generator):
     """Generate all possible cryptographic materials providers based on the supplied generator."""
+    # The AES combinations do the same thing, but this makes sure that the AESWrap name works as expected.
+    yield _build_wrapped_jce_cmp('AESWrap', 32, 'HmacSHA256', 32)
+
     for builder_info, args in itertools.product(_cmp_builders.items(), algorithm_generator()):
         builder_type, builder_func = builder_info
         encryption_algorithm, encryption_key_length, signing_algorithm, signing_key_length = args

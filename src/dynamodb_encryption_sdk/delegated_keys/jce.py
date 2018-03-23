@@ -146,7 +146,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         """
         # Normalize to allow generating both encryption and signing keys
         algorithm_lookup = algorithm.upper()
-        if 'HMAC' in algorithm_lookup or algorithm_lookup == 'AES':
+        if 'HMAC' in algorithm_lookup or algorithm_lookup in ('AES', 'AESWRAP'):
             algorithm_lookup = 'SYMMETRIC'
         elif 'RSA' in algorithm_lookup:
             algorithm_lookup = 'RSA'

@@ -186,6 +186,26 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
 
+    def _disabled_encrypt(self, *args, **kwargs):
+        """Catcher for algorithms that do not support encryption."""
+        raise NotImplementedError('"encrypt" is not supported by the "{}" algorithm'.format(self.java_name))
+
+    def _disabled_decrypt(self, *args, **kwargs):
+        """Catcher for algorithms that do not support decryption."""
+        raise NotImplementedError('"decrypt" is not supported by the "{}" algorithm'.format(self.java_name))
+
+    def _disable_encryption(self):
+        # () -> None
+        """Enable encryption methods for ciphers that support them."""
+        self.encrypt = self._disabled_encrypt
+        self.decrypt = self._disabled_decrypt
+
+    def __attrs_post_init__(self):
+        # () -> None
+        """Disable encryption if algorithm is AESWrap."""
+        if self.java_name == 'AESWrap':
+            self._disable_encryption()
+
     def load_key(self, key, key_type, key_encoding):
         """Load a key from bytes.
 
@@ -219,7 +239,7 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
         :returns: Wrapped key
         :rtype: bytes
         """
-        if self.java_name != 'AES':
+        if self.java_name not in ('AES', 'AESWrap'):
             raise NotImplementedError('"wrap" is not supported by the "{}" cipher'.format(self.java_name))
 
         try:
@@ -242,7 +262,7 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
         :returns: Unwrapped key
         :rtype: bytes
         """
-        if self.java_name != 'AES':
+        if self.java_name not in ('AES', 'AESWrap'):
             raise NotImplementedError('"unwrap" is not supported by this cipher')
 
         try:
@@ -428,7 +448,8 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
 JAVA_ENCRYPTION_ALGORITHM = {
     'RSA': JavaAsymmetricEncryptionAlgorithm('RSA', rsa),
-    'AES': JavaSymmetricEncryptionAlgorithm('AES', algorithms.AES)
+    'AES': JavaSymmetricEncryptionAlgorithm('AES', algorithms.AES),
+    'AESWrap': JavaSymmetricEncryptionAlgorithm('AESWrap', algorithms.AES)
     # TODO: Should we support these?
     # DES : pretty sure we don't want to support this
     # DESede : pretty sure we don't want to support this

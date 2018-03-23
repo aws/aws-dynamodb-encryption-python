@@ -130,17 +130,19 @@ class JavaCipher(object):
         :returns: JavaCipher instance
         :rtype: dynamodb_encryption_sdk.internal.structures.EncryptionClient
         """
-        # TODO: I'm pretty sure these are sane defaults, but verify with someone more familiar with JCE.
         if cipher_transformation == 'AESWrap':
-            return cls.from_transformation('AES/GCM/NoPadding')
+            # AESWrap does not support encrypt or decrypt, so mode and padding are never
+            # used, but we use ECB and NoPadding as placeholders to simplify handling.
+            return cls.from_transformation('AESWrap/ECB/NoPadding')
 
         if cipher_transformation == 'RSA':
+            # RSA does not use mode, but as with JCE, we use ECB as a placeholder to simplify handling.
             return cls.from_transformation('RSA/ECB/PKCS1Padding')
 
         cipher_transformation_parts = cipher_transformation.split('/')
         if len(cipher_transformation_parts) != 3:
             raise JceTransformationError(
-                'Invalid transformation: "{}": must be three parts ALGORITHM/MODE/PADDING or "AESWrap"'.format(
+                'Invalid transformation: "{}": must be three parts ALGORITHM/MODE/PADDING, "RSA", or "AESWrap"'.format(
                     cipher_transformation
                 )
             )
