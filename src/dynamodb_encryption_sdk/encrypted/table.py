@@ -33,7 +33,7 @@ class EncryptedTable(object):
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#table
 
         If you want to provide per-request cryptographic details, the ``put_item``, ``get_item``,
-        ``query``, and ``scan`` methods will also a ``CryptoConfig`` parameter, defining
+        ``query``, and ``scan`` methods will also accept a ``crypto_config`` parameter, defining
         a custom ``CryptoConfig`` instance for this request.
 
     .. warning::

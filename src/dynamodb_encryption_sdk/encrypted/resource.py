@@ -28,6 +28,15 @@ class EncryptedTablesCollectionManager(object):
     """Tables collection manager that provides EncryptedTable objects.
 
     https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.tables
+
+    :param collection: Pre-configured boto3 DynamoDB table collection manager
+    :type collection: boto3.resources.collection.CollectionManager
+    :param materials_provider: Cryptographic materials provider to use
+    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+    :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
+    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param table_info_cache: Local cache from which to obtain TableInfo data
+    :type table_info_cache: dynamodb_encryption_sdk.internal.utils.TableInfoCache
     """
     _collection = attr.ib()
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
@@ -99,6 +108,10 @@ class EncryptedResource(object):
         work as a drop-in replacement once configured.
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#service-resource
+
+        If you want to provide per-request cryptographic details, the ``batch_write_item``
+        and ``batch_get_item`` methods will also accept a ``crypto_config`` parameter, defining
+        a custom ``CryptoConfig`` instance for this request.
 
     :param resource: Pre-configured boto3 DynamoDB service resource object
     :type resource: TODO:
@@ -202,14 +215,17 @@ class EncryptedResource(object):
     def Table(self, name, **kwargs):
         """Creates an EncryptedTable resource.
 
+        If any of the optional configuration values are not provided, the corresponding values
+        for this ``EncryptedResource`` will be used.
+
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.Table
 
         :param name: The table name.
-        :param materials_provider: Cryptographic materials provider to use
+        :param materials_provider: Cryptographic materials provider to use (optional)
         :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
-        :param table_info: Information about the target DynamoDB table
+        :param table_info: Information about the target DynamoDB table (optional)
         :type table_info: dynamodb_encryption_sdk.structures.TableInfo
-        :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
+        :param attribute_actions: Table-level configuration of how to encrypt/sign attributes (optional)
         :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
         """
         # TODO: arguments: do we want them to conform to method naming or constructor naming?
