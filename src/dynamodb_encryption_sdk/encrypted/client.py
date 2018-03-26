@@ -34,6 +34,11 @@ class EncryptedClient(object):
 
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#client
 
+        If you want to provide per-request cryptographic details, the ``put_item``, ``get_item``,
+        ``query``, ``scan``, ``batch_write_item``, and ``batch_get_item`` methods will also
+        accept a ``crypto_config`` parameter, defining a custom ``CryptoConfig`` instance
+        for this request.
+
     .. warning::
 
         We do not currently support the ``update_item`` method.
