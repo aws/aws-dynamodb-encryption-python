@@ -16,7 +16,7 @@ import pytest
 
 from ...functional_test_vector_generators import material_description_test_vectors
 from ...hypothesis_strategies import material_descriptions, SLOW_SETTINGS, VERY_SLOW_SETTINGS
-from dynamodb_encryption_sdk.exceptions import InvalidMaterialsetError, InvalidMaterialsetVersionError
+from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
 from dynamodb_encryption_sdk.internal.formatting.material_description import (
     deserialize as deserialize_material_description, serialize as serialize_material_description
 )
@@ -31,8 +31,8 @@ def test_serialize_material_description(material_description, serialized):
 
 
 @pytest.mark.parametrize('data, expected_type, expected_message', (
-    ({'test': 5}, InvalidMaterialsetError, 'Invalid name or value in material description: *'),
-    ({5: 'test'}, InvalidMaterialsetError, 'Invalid name or value in material description: *'),
+    ({'test': 5}, InvalidMaterialDescriptionError, 'Invalid name or value in material description: *'),
+    ({5: 'test'}, InvalidMaterialDescriptionError, 'Invalid name or value in material description: *'),
 ))
 def test_serialize_material_description_errors(data, expected_type, expected_message):
     with pytest.raises(expected_type) as exc_info:
@@ -49,17 +49,17 @@ def test_deserialize_material_description(material_description, serialized):
 
 @pytest.mark.parametrize('data, expected_type, expected_message', (
     # Invalid version
-    ({'B': b'\x00\x00\x00\x01'}, InvalidMaterialsetVersionError, r'Invalid material description version: *'),
+    ({'B': b'\x00\x00\x00\x01'}, InvalidMaterialDescriptionVersionError, r'Invalid material description version: *'),
     # Malformed version
-    ({'B': b'\x00\x00\x00'}, InvalidMaterialsetError, r'Malformed material description version'),
+    ({'B': b'\x00\x00\x00'}, InvalidMaterialDescriptionError, r'Malformed material description version'),
     # Invalid attribute type
-    ({'S': 'not bytes'}, InvalidMaterialsetError, r'Invalid material description'),
+    ({'S': 'not bytes'}, InvalidMaterialDescriptionError, r'Invalid material description'),
     # Invalid data: not a DDB attribute
-    (b'bare bytes', InvalidMaterialsetError, r'Invalid material description'),
+    (b'bare bytes', InvalidMaterialDescriptionError, r'Invalid material description'),
     # Partial entry
     (
         {'B': b'\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01A\x00\x00\x00\x01'},
-        InvalidMaterialsetError,
+        InvalidMaterialDescriptionError,
         r'Invalid material description'
     )
 ))

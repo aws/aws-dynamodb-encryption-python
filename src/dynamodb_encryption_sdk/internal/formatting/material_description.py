@@ -17,7 +17,7 @@ import struct
 
 from .deserialize import decode_value, unpack_value
 from .serialize import encode_value
-from dynamodb_encryption_sdk.exceptions import InvalidMaterialsetError, InvalidMaterialsetVersionError
+from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
 from dynamodb_encryption_sdk.internal.defaults import LOGGING_NAME, MATERIAL_DESCRIPTION_VERSION
 from dynamodb_encryption_sdk.internal.identifiers import Tag
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
@@ -42,7 +42,7 @@ def serialize(material_description):
             material_description_bytes.extend(encode_value(to_bytes(name)))
             material_description_bytes.extend(encode_value(to_bytes(value)))
         except (TypeError, struct.error):
-            raise InvalidMaterialsetError('Invalid name or value in material description: "{name}"="{value}"'.format(
+            raise InvalidMaterialDescriptionError('Invalid name or value in material description: "{name}"="{value}"'.format(
                 name=name,
                 value=value
             ))
@@ -57,7 +57,7 @@ def deserialize(serialized_material_description):
     :param dict serialized_material_description: DynamoDB attribute value containing serialized material description.
     :returns: Material description dictionary
     :rtype: dict
-    :raises InvalidMaterialsetError: if material description is invalid or malformed
+    :raises InvalidMaterialDescriptionError: if material description is invalid or malformed
     """
     try:
         _raw_material_description = serialized_material_description[Tag.BINARY.dynamodb_tag]
@@ -67,7 +67,7 @@ def deserialize(serialized_material_description):
     except (TypeError, KeyError):
         message = 'Invalid material description'
         _LOGGER.exception(message)
-        raise InvalidMaterialsetError(message)
+        raise InvalidMaterialDescriptionError(message)
     # We don't currently do anything with the version, but do check to make sure it is the one we know about.
     _read_version(material_description_bytes)
 
@@ -80,7 +80,7 @@ def deserialize(serialized_material_description):
     except struct.error:
         message = 'Invalid material description'
         _LOGGER.exception(message)
-        raise InvalidMaterialsetError(message)
+        raise InvalidMaterialDescriptionError(message)
     return material_description
 
 
@@ -90,14 +90,14 @@ def _read_version(material_description_bytes):
 
     :param material_description_bytes: serializezd material description
     :type material_description_bytes: io.BytesIO
-    :raises InvalidMaterialsetError: if malformed version
-    :raises InvalidMaterialsetVersionError: if unknown version is found
+    :raises InvalidMaterialDescriptionError: if malformed version
+    :raises InvalidMaterialDescriptionVersionError: if unknown version is found
     """
     try:
         (version,) = unpack_value('>4s', material_description_bytes)
     except struct.error:
         message = 'Malformed material description version'
         _LOGGER.exception(message)
-        raise InvalidMaterialsetError(message)
+        raise InvalidMaterialDescriptionError(message)
     if version != MATERIAL_DESCRIPTION_VERSION:
-        raise InvalidMaterialsetVersionError('Invalid material description version: {}'.format(repr(version)))
+        raise InvalidMaterialDescriptionVersionError('Invalid material description version: {}'.format(repr(version)))
