@@ -77,7 +77,7 @@ class EncryptedTable(object):
 
         # Clone the attribute actions before we modify them
         self._attribute_actions = self._attribute_actions.copy()
-        self._attribute_actions.set_index_keys(*self._table_info.all_index_keys())
+        self._attribute_actions.set_index_keys(*self._table_info.protected_index_keys())
 
     def __getattr__(self, name):
         """Catch any method/attribute lookups that are not defined in this class and try
