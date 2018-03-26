@@ -28,14 +28,12 @@ class DeserializationError(DynamodbEncryptionSdkError):
     """Otherwise undifferentiated errors encountered while deserializing data."""
 
 
-class InvalidMaterialsetError(DeserializationError):
+class InvalidMaterialDescriptionError(DeserializationError):
     """Raised when errors are encountered processing a material description."""
-    # TODO: MaterialDescription, not Materialset...
 
 
-class InvalidMaterialsetVersionError(DeserializationError):
+class InvalidMaterialDescriptionVersionError(DeserializationError):
     """Raised when a material description is encountered with an invalid version."""
-    # TODO: MaterialDescription, not Materialset...
 
 
 class InvalidAlgorithmError(DynamodbEncryptionSdkError):
