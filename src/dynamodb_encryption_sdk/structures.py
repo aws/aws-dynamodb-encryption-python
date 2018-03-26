@@ -158,7 +158,7 @@ class TableIndex(object):
     def __attrs_post_init__(self):
         """Set the ``attributes`` attribute for ease of access later."""
         self.attributes = set([self.partition])
-        if self.sort is None:
+        if self.sort is not None:
             self.attributes.add(self.sort)
 
     @classmethod
