@@ -38,17 +38,14 @@ class CryptoConfig(object):
     attribute_actions = attr.ib(validator=attr.validators.instance_of(AttributeActions))
 
     def __attrs_post_init__(self):
-        """Make sure that restricted, indexed, attributes are not being encrypted."""
+        """Make sure that primary index attributes are not being encrypted."""
         if self.encryption_context.partition_key_name is not None:
             if self.attribute_actions.action(self.encryption_context.partition_key_name) is ItemAction.ENCRYPT_AND_SIGN:
-                raise Exception('TODO:Cannot encrypt partition key')
+                raise InvalidArgumentError('Cannot encrypt partition key')
 
         if self.encryption_context.sort_key_name is not None:
             if self.attribute_actions.action(self.encryption_context.sort_key_name) is ItemAction.ENCRYPT_AND_SIGN:
-                raise Exception('TODO:Cannot encrypt sort key')
-
-        # TODO: secondary indexes?
-        # TODO: our own restricted attributes?
+                raise InvalidArgumentError('Cannot encrypt sort key')
 
     def decryption_materials(self):
         """Load decryption materials from instance resources.

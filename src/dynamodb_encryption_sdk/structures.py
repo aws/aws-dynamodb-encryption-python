@@ -17,6 +17,7 @@ import copy
 import six
 
 from .identifiers import ItemAction
+from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
 
 __all__ = ('EncryptionContext', 'AttributeActions', 'TableIndex', 'TableInfo')
@@ -92,6 +93,10 @@ class AttributeActions(object):
     def __attrs_post_init__(self):
         # () -> None
         """Determine if any actions should ever be taken with this configuration and record that for reference."""
+        for attribute in ReservedAttributes:
+            if attribute.value in self.attribute_actions:
+                raise ValueError('No override behavior can be set for reserved attribute "{}"'.format(attribute.value))
+
         # Enums are not hashable, but their names are unique
         _unique_actions = set([self.default_action.name])
         _unique_actions.update(set([action.name for action in self.attribute_actions.values()]))
@@ -156,6 +161,31 @@ class TableIndex(object):
         if self.sort is None:
             self.attributes.add(self.sort)
 
+    @classmethod
+    def from_key_schema(cls, key_schema):
+        # type: (Iterable[Dict[Text, Text]]) -> TableIndex
+        """Build a TableIndex from the key schema returned by DescribeTable.
+
+        [
+            {
+                "KeyType": "HASH"|"RANGE",
+                "AttributeName": ""
+            },
+        ]
+
+        :param list key_schema: KeySchema from DescribeTable response
+        :returns: New TableIndex that describes the provided schema
+        :rtype: dynamodb_encryption_sdk.structures.TableIndex
+        """
+        index = {
+            key['KeyType']: key['AttributeName']
+            for key in key_schema
+        }
+        return cls(
+            partition=index['HASH'],
+            sort=index.get('RANGE', None)
+        )
+
 
 @attr.s(hash=False)
 class TableInfo(object):
@@ -165,50 +195,49 @@ class TableInfo(object):
     :param bool all_encrypting_secondary_indexes: Should we allow secondary index attributes to be encrypted?
     :param primary_index: Description of primary index
     :type primary_index: dynamodb_encryption_sdk.structures.TableIndex
-    :param indexed_attributes: Listing of all indexes attribute names
-    :type indexed_attributes: set of str
+    :param secondary_indexes: Set of TableIndex objects describing any secondary indexes
+    :type secondary_indexes: set of dynamodb_encryption_sdk.structures.TableIndex
     """
     name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    allow_encrypting_secondary_indexes = attr.ib(
-        validator=attr.validators.instance_of(bool),
-        default=False
-    )
     _primary_index = attr.ib(
         validator=attr.validators.optional(attr.validators.instance_of(TableIndex)),
         default=None
     )
-    _indexed_attributes = attr.ib(
-        validator=attr.validators.optional(iterable_validator(set, six.string_types)),
+    _secondary_indexes = attr.ib(
+        validator=attr.validators.optional(iterable_validator(set, TableIndex)),
         default=None
     )
 
     @property
     def primary_index(self):
         # type: () -> TableIndex
-        """"""
+        """Return the primary TableIndex.
+
+        :returns: primary index description
+        :rtype: TableIndex
+        :raises AttributeError: if primary index is unknown
+        """
         if self._primary_index is None:
-            raise Exception('TODO:Indexes unknown. Run refresh_indexed_attributes')
+            raise AttributeError('Indexes unknown. Run refresh_indexed_attributes')
         return self._primary_index
 
     @property
-    def indexed_attributes(self):
-        # type: () -> TableIndex
-        # TODO: Think about merging this and all_index_keys
-        """"""
-        if self._indexed_attributes is None:
-            raise Exception('TODO:Indexes unknown. Run refresh_indexed_attributes')
-        return self._indexed_attributes
+    def secondary_indexes(self):
+        # type: () -> Set[TableIndex]
+        """Return the primary TableIndex.
 
-    def all_index_keys(self):
+        :returns: secondary index descriptions
+        :rtype: TableIndex
+        :raises AttributeError: if secondary indexes are unknown
+        """
+        if self._secondary_indexes is None:
+            raise AttributeError('Indexes unknown. Run refresh_indexed_attributes')
+        return self._secondary_indexes
+
+    def protected_index_keys(self):
         # type: () -> Set[Text]
         """Provide a set containing the names of all indexed attributes that must not be encrypted."""
-        if self._primary_index is None:
-            return set()
-
-        if self.allow_encrypting_secondary_indexes:
-            return self.primary_index.attributes
-
-        return self.indexed_attributes
+        return self.primary_index.attributes
 
     @property
     def encryption_context_values(self):
@@ -232,21 +261,12 @@ class TableInfo(object):
         :type client: TODO:
         """
         table = client.describe_table(TableName=self.name)['Table']
-        primary_index = {
-            key['KeyType']: key['AttributeName']
-            for key in table['KeySchema']
-        }
-        indexed_attributes = set(primary_index.values())
-        self._primary_index = TableIndex(
-            partition=primary_index['HASH'],
-            sort=primary_index.get('RANGE', None)
-        )
+        self._primary_index = TableIndex.from_key_schema(table['KeySchema'])
+
+        self._secondary_indexes = set()
         for group in ('LocalSecondaryIndexes', 'GlobalSecondaryIndexes'):
             try:
                 for index in table[group]:
-                    indexed_attributes.update(set([
-                        key['AttributeName'] for key in index['KeySchema']
-                    ]))
+                    self._secondary_indexes.add(TableIndex.from_key_schema(index['KeySchema']))
             except KeyError:
                 pass  # Not all tables will have secondary indexes.
-        self._indexed_attributes = indexed_attributes
