@@ -258,7 +258,7 @@ class TableInfo(object):
         """Use the provided boto3 DynamoDB client to determine all indexes for this table.
 
         :param client: Pre-configured boto3 DynamoDB client
-        :type client: TODO:
+        :type client: botocore.client.BaseClient
         """
         table = client.describe_table(TableName=self.name)['Table']
         self._primary_index = TableIndex.from_key_schema(table['KeySchema'])

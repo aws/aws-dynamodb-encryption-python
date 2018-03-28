@@ -21,6 +21,7 @@ import six
 
 from .primitives import load_rsa_key
 from dynamodb_encryption_sdk.exceptions import InvalidAlgorithmError, SignatureVerificationError, SigningError
+from dynamodb_encryption_sdk.internal.validators import callable_validator
 
 __all__ = ('JavaAuthenticator', 'JavaMac', 'JavaSignature', 'JAVA_AUTHENTICATOR')
 
@@ -54,8 +55,8 @@ class JavaMac(JavaAuthenticator):
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Mac
     """
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    algorithm_type = attr.ib()
-    hash_type = attr.ib()
+    algorithm_type = attr.ib(validator=callable_validator)
+    hash_type = attr.ib(validator=callable_validator)
 
     def _build_hmac_signer(self, key):
         """"""
@@ -117,8 +118,8 @@ class JavaSignature(JavaAuthenticator):
     """
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     algorithm_type = attr.ib()
-    hash_type = attr.ib()
-    padding_type = attr.ib()
+    hash_type = attr.ib(validator=callable_validator)
+    padding_type = attr.ib(validator=callable_validator)
 
     def validate_algorithm(self, algorithm):
         # type: (Text) -> None
