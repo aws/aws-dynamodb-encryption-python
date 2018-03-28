@@ -67,3 +67,15 @@ def iterable_validator(iterable_type, member_type):
                 ))
 
     return _validate_tuple
+
+
+def callable_validator(instance, attribute, value):
+    """Validate that an attribute value is callable.
+
+    :raises TypeError: if ``value`` is not callable
+    """
+    if not callable(value):
+        raise TypeError('"{name}" value "{value}" must be callable'.format(
+            name=attribute.name,
+            value=value
+        ))

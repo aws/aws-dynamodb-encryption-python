@@ -26,6 +26,7 @@ from dynamodb_encryption_sdk.exceptions import (
     DecryptionError, EncryptionError, InvalidAlgorithmError, UnwrappingError, WrappingError
 )
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
+from dynamodb_encryption_sdk.internal.validators import callable_validator
 
 __all__ = (
     'JavaPadding', 'SimplePadding', 'BlockSizePadding', 'OaepPadding',
@@ -91,7 +92,7 @@ class JavaPadding(object):
 class SimplePadding(JavaPadding):
     """Padding types that do not require any preparation."""
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    padding = attr.ib()
+    padding = attr.ib(validator=callable_validator)
 
     def build(self, block_size=None):
         # type: (int) -> ANY
@@ -107,7 +108,7 @@ class SimplePadding(JavaPadding):
 class BlockSizePadding(JavaPadding):
     """Padding types that require a block size input."""
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    padding = attr.ib()
+    padding = attr.ib(validator=callable_validator)
 
     def build(self, block_size):
         # type: (int) -> ANY
@@ -130,10 +131,10 @@ class OaepPadding(JavaPadding):
         Java always uses SHA1 for the MGF.
     """
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    padding = attr.ib()
-    digest = attr.ib()
-    mgf = attr.ib()
-    mgf_digest = attr.ib()
+    padding = attr.ib(validator=callable_validator)
+    digest = attr.ib(validator=callable_validator)
+    mgf = attr.ib(validator=callable_validator)
+    mgf_digest = attr.ib(validator=callable_validator)
 
     def build(self, block_size=None):
         # type: (int) -> ANY
@@ -155,7 +156,7 @@ class JavaMode(object):
         https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    mode = attr.ib()
+    mode = attr.ib(validator=callable_validator)
 
     def build(self, iv):
         # type: (int) -> ANY
@@ -443,7 +444,7 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
         :rtype: bytes
         """
         if hasattr(key, 'public_bytes'):
-            raise NotImplementedError('TODO:"decrypt" is not supported by public keys')
+            raise NotImplementedError('"decrypt" is not supported by public keys')
         try:
             return key.decrypt(data, padding.build())
         except Exception:

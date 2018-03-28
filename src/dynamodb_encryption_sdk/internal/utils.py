@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 """"""
 import attr
+import botocore.client
 
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 from dynamodb_encryption_sdk.structures import TableInfo
@@ -40,10 +41,11 @@ class TableInfoCache(object):
     """Very simple cache of TableInfo objects, providing configuration information about DynamoDB tables.
 
     :param client: Boto3 DynamoDB client
+    :type client: botocore.client.BaseClient
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table.
     """
-    _client = attr.ib()
+    _client = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
     _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool))
 
     def __attrs_post_init__(self):
