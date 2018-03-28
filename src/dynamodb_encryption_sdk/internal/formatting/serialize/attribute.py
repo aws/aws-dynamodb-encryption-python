@@ -24,14 +24,14 @@ except ImportError:  # pragma: no cover
 from boto3.dynamodb.types import Binary, DYNAMODB_CONTEXT
 
 from dynamodb_encryption_sdk.exceptions import SerializationError
-from dynamodb_encryption_sdk.internal.defaults import LOGGING_NAME
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
 from dynamodb_encryption_sdk.internal.formatting.serialize import encode_length, encode_value
 from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 from dynamodb_encryption_sdk.internal.utils import sorted_key_map
 
 __all__ = ('serialize_attribute',)
-_LOGGER = logging.getLogger(LOGGING_NAME)
+_LOGGER = logging.getLogger(LOGGER_NAME)
 _RESERVED = b'\x00'
 
 

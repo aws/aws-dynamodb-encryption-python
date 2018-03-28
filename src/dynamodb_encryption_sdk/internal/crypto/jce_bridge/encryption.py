@@ -13,10 +13,10 @@
 """Cipher resource for JCE bridge."""
 import attr
 
-from .primitives import (
-    JAVA_ENCRYPTION_ALGORITHM, JavaEncryptionAlgorithm, JAVA_MODE, JavaMode, JAVA_PADDING, JavaPadding
-)
 from dynamodb_encryption_sdk.exceptions import JceTransformationError
+from .primitives import (
+    JAVA_ENCRYPTION_ALGORITHM, JAVA_MODE, JAVA_PADDING, JavaEncryptionAlgorithm, JavaMode, JavaPadding
+)
 
 __all__ = ('JavaCipher',)
 
@@ -31,6 +31,7 @@ class JavaCipher(object):
     :param mode: TODO:
     :param padding: TODO:
     """
+
     cipher = attr.ib(validator=attr.validators.instance_of(JavaEncryptionAlgorithm))
     mode = attr.ib(validator=attr.validators.instance_of(JavaMode))
     padding = attr.ib(validator=attr.validators.instance_of(JavaPadding))

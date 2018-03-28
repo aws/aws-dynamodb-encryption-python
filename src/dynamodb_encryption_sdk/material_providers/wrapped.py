@@ -13,11 +13,11 @@
 """Cryptographic materials provider to use ephemeral content encryption keys wrapped by delegated keys."""
 import attr
 
-from . import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
 from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMaterials
-from dynamodb_encryption_sdk.structures import EncryptionContext
+from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
+from . import CryptographicMaterialsProvider
 
 __all__ = ('WrappedCryptographicMaterialsProvider',)
 
@@ -43,6 +43,7 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         ``unwrapping_key`` must be provided if providing decryption materials or loading
         materials from material description
     """
+
     _signing_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
     _wrapping_key = attr.ib(
         validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
@@ -54,6 +55,7 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     )
 
     def _build_materials(self, encryption_context):
+        # type: (EncryptionContext) -> WrappedCryptographicMaterials
         """Construct
 
         :param encryption_context: Encryption context for request

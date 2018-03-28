@@ -12,28 +12,34 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider for use with the AWS Key Management Service (KMS)."""
 from __future__ import division
+
 import base64
 from enum import Enum
 
 import attr
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 import boto3
 import botocore.client
 import botocore.session
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 import six
 
-from . import CryptographicMaterialsProvider
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnknownRegionError, UnwrappingError, WrappingError
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
-from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
-from dynamodb_encryption_sdk.structures import EncryptionContext
+from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
+from . import CryptographicMaterialsProvider
 
 __all__ = ('AwsKmsCryptographicMaterialsProvider',)
 
@@ -49,12 +55,14 @@ _KDF_ALG = 'HmacSHA256'
 
 class HkdfInfo(Enum):
     """Info strings used for HKDF calculations."""
+
     ENCRYPTION = b'Encryption'
     SIGNING = b'Signing'
 
 
 class EncryptionContextKeys(Enum):
     """Special keys for use in the AWS KMS encryption context."""
+
     CONTENT_ENCRYPTION_ALGORITHM = '*' + MaterialDescriptionKeys.CONTENT_ENCRYPTION_ALGORITHM.value + '*'
     SIGNATURE_ALGORITHM = '*' + MaterialDescriptionKeys.ITEM_SIGNATURE_ALGORITHM.value + '*'
     TABLE_NAME = '*aws-kms-table*'
@@ -68,6 +76,7 @@ class KeyInfo(object):
     :param str algorithm: algorithm identifier
     :param int length: Key length in bits
     """
+
     description = attr.ib(validator=attr.validators.instance_of(six.string_types))
     algorithm = attr.ib(validator=attr.validators.instance_of(six.string_types))
     length = attr.ib(validator=attr.validators.instance_of(six.integer_types))
@@ -112,6 +121,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     :param dict regional_clients: Dictionary mapping AWS region names to pre-configured boto3
         KMS clients (optional)
     """
+
     _key_id = attr.ib(validator=attr.validators.instance_of(six.string_types))
     _botocore_session = attr.ib(
         validator=attr.validators.instance_of(botocore.session.Session),

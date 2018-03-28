@@ -14,12 +14,12 @@
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 
-from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
-from dynamodb_encryption_sdk.encrypted import CryptoConfig
+from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.encrypted import CryptoConfig  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.identifiers import ItemAction
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.internal.identifiers import SignatureValues, Tag
-from dynamodb_encryption_sdk.structures import AttributeActions
+from dynamodb_encryption_sdk.structures import AttributeActions  # noqa pylint: disable=unused-import
 
 __all__ = ('sign_item', 'verify_item_signature')
 

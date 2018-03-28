@@ -12,13 +12,13 @@
 # language governing permissions and limitations under the License.
 """Functions to handle encrypting and decrypting DynamoDB attributes."""
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import text  # pylint: disable=unused-import
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # pylint: disable=unused-import
+    from typing import Text  # noqa pylint: disable=unused-import
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
+from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.internal.formatting.deserialize.attribute import deserialize_attribute
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.internal.identifiers import Tag
