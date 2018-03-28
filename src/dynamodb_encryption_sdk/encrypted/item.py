@@ -12,13 +12,11 @@
 # language governing permissions and limitations under the License.
 """Top-level functions for encrypting and decrypting DynamoDB items."""
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Callable, Dict  # pylint: disable=unused-import
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # pylint: disable=unused-import
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from . import CryptoConfig
 from dynamodb_encryption_sdk.exceptions import DecryptionError, EncryptionError
 from dynamodb_encryption_sdk.identifiers import ItemAction
 from dynamodb_encryption_sdk.internal.crypto.authentication import sign_item, verify_item_signature
@@ -26,9 +24,11 @@ from dynamodb_encryption_sdk.internal.crypto.encryption import decrypt_attribute
 from dynamodb_encryption_sdk.internal.formatting.material_description import (
     deserialize as deserialize_material_description, serialize as serialize_material_description
 )
-from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys, MaterialDescriptionValues
 from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
-from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
+from dynamodb_encryption_sdk.internal.identifiers import (
+    MaterialDescriptionKeys, MaterialDescriptionValues, ReservedAttributes
+)
+from . import CryptoConfig  # noqa pylint: disable=unused-import
 
 __all__ = ('encrypt_dynamodb_item', 'encrypt_python_item', 'decrypt_dynamodb_item', 'decrypt_python_item')
 

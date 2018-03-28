@@ -20,10 +20,10 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 import six
 
-from . import DelegatedKey
 from dynamodb_encryption_sdk.exceptions import JceTransformationError, UnwrappingError
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
+from . import DelegatedKey
 
 __all__ = ('JceNameLocalDelegatedKey',)
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -76,6 +76,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
     :param key_encoding: Identifies how the provided key is encoded
     :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingTypes
     """
+
     key = attr.ib(validator=attr.validators.instance_of(bytes), repr=False)
     _algorithm = attr.ib(validator=attr.validators.instance_of(six.string_types))
     _key_type = attr.ib(validator=attr.validators.instance_of(EncryptionKeyTypes))

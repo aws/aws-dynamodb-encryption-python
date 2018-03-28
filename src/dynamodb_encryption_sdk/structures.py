@@ -10,10 +10,10 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
-import attr
+"""Common structures used by the DynamoDB Encryption Client."""
 import copy
 
+import attr
 import six
 
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
@@ -48,6 +48,7 @@ class EncryptionContext(object):
     :param dict attributes: Plaintext item attributes
     :param dict material_description: Material description to use with this request
     """
+
     table_name = attr.ib(
         validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
         default=None
@@ -82,6 +83,7 @@ class AttributeActions(object):
     :type default_action: dynamodb_encryption_sdk.identifiers.ItemAction
     :param dict attribute_actions: Dictionary mapping attribute names to specific actions
     """
+
     default_action = attr.ib(
         validator=attr.validators.instance_of(ItemAction),
         default=ItemAction.ENCRYPT_AND_SIGN
@@ -164,6 +166,7 @@ class TableIndex(object):
     :param str partition: Name of the partition attribute
     :param str sort: Name of the sort attribute (optional)
     """
+
     partition = attr.ib(validator=attr.validators.instance_of(six.string_types))
     sort = attr.ib(
         validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
@@ -204,7 +207,7 @@ class TableIndex(object):
 
 @attr.s
 class TableInfo(object):
-    """Description of a DynamoDB table.
+    """Describes a DynamoDB table.
 
     :param str name: Table name
     :param bool all_encrypting_secondary_indexes: Should we allow secondary index attributes to be encrypted?
@@ -213,6 +216,7 @@ class TableInfo(object):
     :param secondary_indexes: Set of TableIndex objects describing any secondary indexes
     :type secondary_indexes: set of dynamodb_encryption_sdk.structures.TableIndex
     """
+
     name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     _primary_index = attr.ib(
         validator=attr.validators.optional(attr.validators.instance_of(TableIndex)),

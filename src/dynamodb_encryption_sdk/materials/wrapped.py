@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials to use ephemeral content encryption keys wrapped by delegated keys."""
 from __future__ import division
+
 import base64
 import copy
 
@@ -26,7 +27,7 @@ from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import CryptographicMaterials
 
-__all__ = ('WrappedRawCryptographicMaterials',)
+__all__ = ('WrappedCryptographicMaterials',)
 _DEFAULT_CONTENT_ENCRYPTION_ALGORITHM = 'AES/256'
 _WRAPPING_TRANSFORMATION = {
     'AES': 'AESWrap',
@@ -57,6 +58,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
 
     :param dict material_description: Material description to use with these cryptographic materials
     """
+
     _signing_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
     _wrapping_key = attr.ib(
         validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),

@@ -10,17 +10,17 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""High-level helper class to provide a familiar interface to encrypted tables."""
 import attr
 from boto3.resources.base import ServiceResource
 from boto3.resources.collection import CollectionManager
 
-from . import CryptoConfig, validate_get_arguments
-from .item import decrypt_python_item, encrypt_python_item
-from .table import EncryptedTable
 from dynamodb_encryption_sdk.internal.utils import TableInfoCache
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
+from . import CryptoConfig, validate_get_arguments
+from .item import decrypt_python_item, encrypt_python_item
+from .table import EncryptedTable
 
 __all__ = ('EncryptedResource',)
 
@@ -40,6 +40,7 @@ class EncryptedTablesCollectionManager(object):
     :param table_info_cache: Local cache from which to obtain TableInfo data
     :type table_info_cache: dynamodb_encryption_sdk.internal.utils.TableInfoCache
     """
+
     _collection = attr.ib(validator=attr.validators.instance_of(CollectionManager))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(validator=attr.validators.instance_of(AttributeActions))
@@ -124,6 +125,7 @@ class EncryptedResource(object):
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     """
+
     _resource = attr.ib(validator=attr.validators.instance_of(ServiceResource))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(

@@ -10,12 +10,18 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""Otherwise undifferentiated utility resources."""
 import attr
 import botocore.client
 
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 from dynamodb_encryption_sdk.structures import TableInfo
+
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Dict, Text  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
 
 __all__ = ('sorted_key_map', 'TableInfoCache')
 
@@ -45,12 +51,13 @@ class TableInfoCache(object):
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table.
     """
+
     _client = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
     _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool))
 
     def __attrs_post_init__(self):
         """Set up the empty cache."""
-        self._all_tables_info = {}
+        self._all_tables_info = {}  # type: Dict[Text, TableInfo]
 
     def table_info(self, table_name):
         """Collect a TableInfo object for the specified table, creating and adding it to

@@ -10,11 +10,11 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""Unique identifiers for internal use only."""
 from enum import Enum
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, ByteString, Dict, List, Text, Union  # pylint: disable=unused-import
+    from typing import Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -31,6 +31,7 @@ TEXT_ENCODING = 'utf-8'
 
 class ReservedAttributes(Enum):
     """Item attributes reserved for use by DynamoDBEncryptionClient"""
+
     MATERIAL_DESCRIPTION = '*amzn-ddb-map-desc*'
     SIGNATURE = '*amzn-ddb-map-sig*'
 
@@ -64,6 +65,7 @@ class Tag(Enum):
 
 class TagValues(Enum):
     """Static values to use when serializing attribute values."""
+
     FALSE = b'\x00'
     TRUE = b'\x01'
 
@@ -76,6 +78,7 @@ class SignatureValues(Enum):
         The only time we actually use these values, we use the SHA256 hash of the value, so
         we pre-compute these hashes here.
     """
+
     ENCRYPTED = (
         b'ENCRYPTED',
         b"9A\x15\xacN\xb0\x9a\xa4\x94)4\x88\x16\xb2\x03\x81'\xb0\xf9\xe3\xa5 7*\xe1\x00\xca\x19\xfb\x08\xfdP"
@@ -98,6 +101,7 @@ class SignatureValues(Enum):
 
 class MaterialDescriptionKeys(Enum):
     """Static keys for use when building and reading material descriptions."""
+
     ATTRIBUTE_ENCRYPTION_MODE = 'amzn-ddb-map-sym-mode'
     SIGNING_KEY_ALGORITHM = 'amzn-ddb-map-signingAlg'
     WRAPPED_DATA_KEY = 'amzn-ddb-env-key'
@@ -108,4 +112,5 @@ class MaterialDescriptionKeys(Enum):
 
 class MaterialDescriptionValues(Enum):
     """Static default values for use when building material descriptions."""
+
     CBC_PKCS5_ATTRIBUTE_ENCRYPTION = '/CBC/PKCS5Padding'
