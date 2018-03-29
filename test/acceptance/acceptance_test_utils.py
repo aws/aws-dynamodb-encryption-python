@@ -10,29 +10,31 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+"""Helper tools for use with acceptance tests."""
 import base64
 from collections import defaultdict
 import json
 import os
 import sys
+
+import pytest
+from six.moves.urllib.parse import urlparse
+
+from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
+from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials
+from dynamodb_encryption_sdk.structures import AttributeActions
+
 sys.path.append(os.path.join(
     os.path.abspath(os.path.dirname(__file__)),
     '..',
     'functional'
 ))
 
-import pytest
-from six.moves.urllib.parse import urlparse
-
-
-from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
-from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
-from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
-from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, ItemAction, KeyEncodingType
-from dynamodb_encryption_sdk.structures import AttributeActions
-
-import functional_test_vector_generators
+# Convenience imports
+import functional_test_vector_generators  # noqa: E402,I100
 
 _ENCRYPTED_ITEM_VECTORS_DIR = os.path.join(
     os.path.abspath(os.path.dirname(__file__)),
@@ -64,7 +66,6 @@ def _decode_item(item):
 
 
 def _build_plaintext_items(plaintext_file, version):
-    """"""
     with open(plaintext_file) as f:
         plaintext_data = json.load(f)
 
