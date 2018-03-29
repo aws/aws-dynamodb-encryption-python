@@ -76,17 +76,18 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
 
     def __attrs_post_init__(self):
         """Prepare the content key."""
-        self._content_key_algorithm = self.material_description.get(
+        self._content_key_algorithm = self.material_description.get(  # pylint: disable=attribute-defined-outside-init
             MaterialDescriptionKeys.CONTENT_ENCRYPTION_ALGORITHM.value,
             _DEFAULT_CONTENT_ENCRYPTION_ALGORITHM
         )
 
         if MaterialDescriptionKeys.WRAPPED_DATA_KEY.value in self.material_description:
-            self._content_key = self._content_key_from_material_description()
+            self._content_key = self._content_key_from_material_description()  # noqa pylint: disable=attribute-defined-outside-init
         else:
-            self._content_key, self._material_description = self._generate_content_key()
+            self._content_key, self._material_description = self._generate_content_key()  # noqa pylint: disable=attribute-defined-outside-init
 
-    def _wrapping_transformation(self, algorithm):
+    @staticmethod
+    def _wrapping_transformation(algorithm):
         """Convert the specified algorithm name to the desired wrapping algorithm transformation.
 
         :param str algorithm: Algorithm name

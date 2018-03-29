@@ -36,6 +36,7 @@ __all__ = ('RawEncryptionMaterials', 'RawDecryptionMaterials')
 
 @attr.s
 class RawEncryptionMaterials(EncryptionMaterials):
+    # inheritance confuses pylint: disable=abstract-method
     """Encryption materials for use directly with delegated keys.
 
     .. note::
@@ -97,6 +98,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
 
 @attr.s
 class RawDecryptionMaterials(DecryptionMaterials):
+    # inheritance confuses pylint: disable=abstract-method
     """Encryption materials for use directly with delegated keys.
 
     .. note::

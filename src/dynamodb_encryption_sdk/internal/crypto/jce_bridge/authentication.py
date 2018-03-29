@@ -279,6 +279,9 @@ class JavaSignature(JavaAuthenticator):
             raise SignatureVerificationError(message)
 
 
+# Additional possible JCE names that we might support in the future if needed
+# HmacSHA1
+# SHA(1|224|256|384|512)with(|EC)DSA
 JAVA_AUTHENTICATOR = {
     'HmacSHA224': JavaMac('HmacSHA224', hmac.HMAC, hashes.SHA224),
     'HmacSHA256': JavaMac('HmacSHA256', hmac.HMAC, hashes.SHA256),
@@ -288,7 +291,4 @@ JAVA_AUTHENTICATOR = {
     'SHA256withRSA': JavaSignature('SHA256withRSA', rsa, hashes.SHA256, padding.PKCS1v15),
     'SHA384withRSA': JavaSignature('SHA384withRSA', rsa, hashes.SHA384, padding.PKCS1v15),
     'SHA512withRSA': JavaSignature('SHA512withRSA', rsa, hashes.SHA512, padding.PKCS1v15)
-    # Additional possible JCE names that we might support in the future if needed
-    # HmacSHA1
-    # SHA(1|224|256|384|512)with(|EC)DSA
 }

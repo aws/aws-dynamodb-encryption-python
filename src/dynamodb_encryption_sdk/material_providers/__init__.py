@@ -22,6 +22,7 @@ class CryptographicMaterialsProvider(object):
 
     def decryption_materials(self, encryption_context):
         # type: (EncryptionContext) -> DecryptionMaterials
+        # pylint: disable=unused-argument,no-self-use
         """Return decryption materials.
 
         :param encryption_context: Encryption context for request
@@ -32,6 +33,7 @@ class CryptographicMaterialsProvider(object):
 
     def encryption_materials(self, encryption_context):
         # type: (EncryptionContext) -> EncryptionMaterials
+        # pylint: disable=unused-argument,no-self-use
         """Return encryption materials.
 
         :param encryption_context: Encryption context for request
@@ -41,6 +43,8 @@ class CryptographicMaterialsProvider(object):
         raise AttributeError('No encryption materials available')
 
     def refresh(self):
+        # type: () -> None
+        # pylint: disable=unused-argument,no-self-use
         """Ask this instance to refresh the cryptographic materials.
 
         .. note::

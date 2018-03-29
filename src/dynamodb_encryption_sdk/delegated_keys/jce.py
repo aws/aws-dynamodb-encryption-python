@@ -67,6 +67,7 @@ _ALGORITHM_GENERATE_MAP = {
 
 @attr.s
 class JceNameLocalDelegatedKey(DelegatedKey):
+    # pylint: disable=too-many-instance-attributes
     """Delegated key that uses JCE StandardName algorithm values to determine behavior.
 
     :param bytes key: Raw key bytes
@@ -117,7 +118,11 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         except KeyError:
             pass
         else:
-            self.__key = key_transformer.load_key(self.key, self._key_type, self._key_encoding)
+            self.__key = key_transformer.load_key(  # attrs confuses pylint: disable=attribute-defined-outside-init
+                self.key,
+                self._key_type,
+                self._key_encoding
+            )
             self._enable_encryption()
             self._enable_wrap()
             return
@@ -130,7 +135,11 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         except KeyError:
             pass
         else:
-            self.__key = key_transformer.load_key(self.key, self._key_type, self._key_encoding)
+            self.__key = key_transformer.load_key(  # attrs confuses pylint: disable=attribute-defined-outside-init
+                self.key,
+                self._key_type,
+                self._key_encoding
+            )
             self._enable_authentication()
             return
 
@@ -173,6 +182,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     def _encrypt(self, algorithm, name, plaintext, additional_associated_data=None):
         # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument
         """
         Encrypt data.
 
@@ -190,6 +200,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     def _decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):
         # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument
         """Encrypt data.
 
         :param str algorithm: Java StandardName transformation string of algorithm to use to decrypt data
@@ -205,6 +216,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     def _wrap(self, algorithm, content_key, additional_associated_data=None):
         # type: (Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument
         """Wrap content key.
 
         :param str algorithm: Text description of algorithm to use to wrap key
@@ -221,6 +233,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     def _unwrap(self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None):
         # type: (Text, bytes, Text, EncryptionKeyTypes, Dict[Text, Text]) -> DelegatedKey
+        # pylint: disable=unused-argument
         """Wrap content key.
 
         :param str algorithm: Text description of algorithm to use to unwrap key

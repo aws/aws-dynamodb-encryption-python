@@ -24,7 +24,7 @@ from .identifiers import ItemAction
 __all__ = ('EncryptionContext', 'AttributeActions', 'TableIndex', 'TableInfo')
 
 
-def _validate_attribute_values_are_ddb_items(instance, attribute, value):
+def _validate_attribute_values_are_ddb_items(instance, attribute, value):  # pylint: disable=unused-argument
     """Validate that dictionary values in ``value`` match the structure of DynamoDB JSON
     items.
 
@@ -40,6 +40,7 @@ def _validate_attribute_values_are_ddb_items(instance, attribute, value):
 
 @attr.s
 class EncryptionContext(object):
+    # pylint: disable=too-few-public-methods
     """Additional information about an encryption request.
 
     :param str table_name: Table name
@@ -103,7 +104,8 @@ class AttributeActions(object):
         # Enums are not hashable, but their names are unique
         _unique_actions = set([self.default_action.name])
         _unique_actions.update(set([action.name for action in self.attribute_actions.values()]))
-        self.take_no_actions = _unique_actions == set([ItemAction.DO_NOTHING.name])
+        no_actions = _unique_actions == set([ItemAction.DO_NOTHING.name])
+        self.take_no_actions = no_actions  # attrs confuses pylint: disable=attribute-defined-outside-init
 
     def action(self, attribute_name):
         # (text) -> ItemAction
@@ -161,6 +163,7 @@ class AttributeActions(object):
 
 @attr.s
 class TableIndex(object):
+    # pylint: disable=too-few-public-methods
     """Describes a table index.
 
     :param str partition: Name of the partition attribute
@@ -175,7 +178,7 @@ class TableIndex(object):
 
     def __attrs_post_init__(self):
         """Set the ``attributes`` attribute for ease of access later."""
-        self.attributes = set([self.partition])
+        self.attributes = set([self.partition])  # attrs confuses pylint: disable=attribute-defined-outside-init
         if self.sort is not None:
             self.attributes.add(self.sort)
 
