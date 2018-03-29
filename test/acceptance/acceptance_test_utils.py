@@ -18,7 +18,7 @@ import os
 import sys
 
 import pytest
-from six.moves.urllib.parse import urlparse
+from six.moves.urllib.parse import urlparse  # moves confuse pylint: disable=wrong-import-order
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
@@ -34,7 +34,7 @@ sys.path.append(os.path.join(
 ))
 
 # Convenience imports
-import functional_test_vector_generators  # noqa: E402,I100
+import functional_test_vector_generators  # noqa: E402,I100 pylint: disable=import-error,wrong-import-position
 
 _ENCRYPTED_ITEM_VECTORS_DIR = os.path.join(
     os.path.abspath(os.path.dirname(__file__)),
@@ -66,6 +66,7 @@ def _decode_item(item):
 
 
 def _build_plaintext_items(plaintext_file, version):
+    # pylint: disable=too-many-locals
     with open(plaintext_file) as f:
         plaintext_data = json.load(f)
 
@@ -209,6 +210,7 @@ def _expand_items(ciphertext_items, plaintext_items):
 
 
 def load_scenarios():
+    # pylint: disable=too-many-locals
     with open(_SCENARIO_FILE) as f:
         scenarios = json.load(f)
     keys_file = _filename_from_uri(scenarios['keys'])

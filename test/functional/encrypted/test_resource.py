@@ -18,7 +18,7 @@ from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from ..functional_test_utils import (
     cycle_batch_item_check, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item, TEST_TABLE_NAME
 )
-from ..functional_test_utils import example_table  # noqa
+from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 

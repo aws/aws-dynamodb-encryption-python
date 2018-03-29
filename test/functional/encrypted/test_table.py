@@ -20,7 +20,7 @@ from ..functional_test_utils import (
     check_encrypted_item, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
     TEST_KEY, TEST_TABLE_NAME
 )
-from ..functional_test_utils import example_table  # noqa
+from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]

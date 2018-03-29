@@ -362,13 +362,13 @@ def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
 
 
 def _matching_key(actual_item, expected):
-        expected_item = [
-            i for i in expected
-            if i['partition_attribute'] == actual_item['partition_attribute'] and
-            i['sort_attribute'] == actual_item['sort_attribute']
-        ]
-        assert len(expected_item) == 1
-        return expected_item[0]
+    expected_item = [
+        i for i in expected
+        if i['partition_attribute'] == actual_item['partition_attribute'] and
+        i['sort_attribute'] == actual_item['sort_attribute']
+    ]
+    assert len(expected_item) == 1
+    return expected_item[0]
 
 
 def _nop_transformer(item):

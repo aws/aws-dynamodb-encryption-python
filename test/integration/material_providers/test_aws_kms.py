@@ -16,7 +16,7 @@ import pytest
 
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.structures import EncryptionContext
-from ..integration_test_utils import aws_kms_cmp  # noqa
+from ..integration_test_utils import aws_kms_cmp  # noqa pylint: disable=unused-import
 from ..integration_test_utils import functional_test_utils, hypothesis_strategies
 
 pytestmark = pytest.mark.integ
