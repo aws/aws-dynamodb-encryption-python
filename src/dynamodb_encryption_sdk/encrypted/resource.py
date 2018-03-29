@@ -17,10 +17,11 @@ import attr
 from boto3.resources.base import ServiceResource
 from boto3.resources.collection import CollectionManager
 
-from dynamodb_encryption_sdk.internal.utils import decrypt_batch_get_item, encrypt_batch_write_item, TableInfoCache
+from dynamodb_encryption_sdk.internal.utils import (
+    crypto_config_from_cache, decrypt_batch_get_item, encrypt_batch_write_item, TableInfoCache
+)
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
-from . import CryptoConfig
+from dynamodb_encryption_sdk.structures import AttributeActions
 from .item import decrypt_python_item, encrypt_python_item
 from .table import EncryptedTable
 
@@ -137,6 +138,12 @@ class EncryptedResource(object):
             client=self._resource.meta.client,
             auto_refresh_table_indexes=self._auto_refresh_table_indexes
         )
+        self._crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            crypto_config_from_cache,
+            materials_provider=self._materials_provider,
+            attribute_actions=self._attribute_actions,
+            table_info_cache=self._table_info_cache
+        )
         self.tables = EncryptedTablesCollectionManager(  # attrs confuses pylint: disable=attribute-defined-outside-init
             collection=self._resource.tables,
             materials_provider=self._materials_provider,
@@ -165,24 +172,6 @@ class EncryptedResource(object):
         :raises AttributeError: if attribute is not found on provided resource object
         """
         return getattr(self._resource, name)
-
-    def _crypto_config(self, table_name):
-        """Pull all encryption-specific parameters from the request and use them to build a crypto config.
-
-        :returns: crypto config
-        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig
-        """
-        table_info = self._table_info_cache.table_info(table_name)
-
-        attribute_actions = self._attribute_actions.copy()
-        attribute_actions.set_index_keys(*table_info.protected_index_keys())
-
-        crypto_config = CryptoConfig(
-            materials_provider=self._materials_provider,
-            encryption_context=EncryptionContext(**table_info.encryption_context_values),
-            attribute_actions=attribute_actions
-        )
-        return crypto_config
 
     def Table(self, name, **kwargs):
         # naming chosen to align with boto3 resource name, so pylint: disable=invalid-name

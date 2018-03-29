@@ -16,10 +16,12 @@ from functools import partial
 import attr
 from boto3.resources.base import ServiceResource
 
-from dynamodb_encryption_sdk.internal.utils import decrypt_get_item, decrypt_multi_get, encrypt_put_item
+from dynamodb_encryption_sdk.internal.utils import (
+    crypto_config_from_kwargs, crypto_config_from_table_info,
+    decrypt_get_item, decrypt_multi_get, encrypt_put_item
+)
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext, TableInfo
-from . import CryptoConfig
+from dynamodb_encryption_sdk.structures import AttributeActions, TableInfo
 from .item import decrypt_python_item, encrypt_python_item
 
 __all__ = ('EncryptedTable',)
@@ -84,6 +86,15 @@ class EncryptedTable(object):
         self._attribute_actions = self._attribute_actions.copy()
         self._attribute_actions.set_index_keys(*self._table_info.protected_index_keys())
 
+        self._crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            crypto_config_from_kwargs,
+            fallback=partial(
+                crypto_config_from_table_info,
+                materials_provider=self._materials_provider,
+                attribute_actions=self._attribute_actions,
+                table_info=self._table_info
+            )
+        )
         self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_get_item,
             decrypt_method=decrypt_python_item,
@@ -122,21 +133,3 @@ class EncryptedTable(object):
     def update_item(self, **kwargs):
         """Update item is not yet supported."""
         raise NotImplementedError('"update_item" is not yet implemented')
-
-    def _crypto_config(self, **kwargs):
-        """Pull all encryption-specific parameters from the request and use them to build a crypto config.
-
-        :returns: crypto config and updated kwargs
-        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
-        """
-        crypto_config = kwargs.pop('crypto_config', None)
-
-        if crypto_config is not None:
-            return crypto_config, kwargs
-
-        crypto_config = CryptoConfig(
-            materials_provider=self._materials_provider,
-            encryption_context=EncryptionContext(**self._table_info.encryption_context_values),
-            attribute_actions=self._attribute_actions
-        )
-        return crypto_config, kwargs
