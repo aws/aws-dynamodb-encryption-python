@@ -25,8 +25,8 @@ sys.path.append(os.path.join(
 ))
 
 # Convenience imports
-import functional_test_utils  # noqa: E402,F401,I100
-import hypothesis_strategies  # noqa: E402,F401,I100
+import functional_test_utils  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
+import hypothesis_strategies  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
 
 AWS_KMS_KEY_ID = 'AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID'
 
