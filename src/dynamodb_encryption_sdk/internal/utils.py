@@ -14,9 +14,10 @@
 import attr
 import botocore.client
 
+from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
-from dynamodb_encryption_sdk.structures import TableInfo
+from dynamodb_encryption_sdk.structures import EncryptionContext, TableInfo
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Callable, Dict, Text  # noqa pylint: disable=unused-import
@@ -26,6 +27,7 @@ except ImportError:  # pragma: no cover
 
 __all__ = (
     'sorted_key_map', 'TableInfoCache',
+    'crypto_config_from_kwargs', 'crypto_config_from_table_info', 'crypto_config_from_cache',
     'decrypt_get_item', 'decrypt_multi_get', 'decrypt_batch_get_item',
     'encrypt_put_item', 'encrypt_batch_write_item'
 )
@@ -97,6 +99,50 @@ def validate_get_arguments(kwargs):
         raise InvalidArgumentError('Scan "Select" value of "{}" is not supported'.format(kwargs['Select']))
 
 
+def crypto_config_from_kwargs(fallback, **kwargs):
+    """Pull all encryption-specific parameters from the request and use them to build a crypto config.
+
+    :returns: crypto config and updated kwargs
+    :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
+    """
+    try:
+        crypto_config = kwargs.pop('crypto_config')
+    except KeyError:
+        try:
+            fallback_kwargs = {'table_name': kwargs['TableName']}
+        except KeyError:
+            fallback_kwargs = {}
+        crypto_config = fallback(**fallback_kwargs)
+    return crypto_config, kwargs
+
+
+def crypto_config_from_table_info(materials_provider, attribute_actions, table_info):
+    """Build a crypto config from the provided values and table info.
+
+    :returns: crypto config and updated kwargs
+    :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
+    """
+    return CryptoConfig(
+        materials_provider=materials_provider,
+        encryption_context=EncryptionContext(**table_info.encryption_context_values),
+        attribute_actions=attribute_actions
+    )
+
+
+def crypto_config_from_cache(materials_provider, attribute_actions, table_info_cache, table_name):
+    """Build a crypto config from the provided values, loading the table info from the provided cache.
+
+    :returns: crypto config and updated kwargs
+    :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
+    """
+    table_info = table_info_cache.table_info(table_name)
+
+    attribute_actions = attribute_actions.copy()
+    attribute_actions.set_index_keys(*table_info.protected_index_keys())
+
+    return crypto_config_from_table_info(materials_provider, attribute_actions, table_info)
+
+
 def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwargs):
     # type: (Callable, Callable, Callable, **Any) -> Dict
     # TODO: narrow this down
@@ -156,7 +202,7 @@ def decrypt_batch_get_item(decrypt_method, crypto_config_method, read_method, **
         if request_crypto_config is not None:
             crypto_config = request_crypto_config
         else:
-            crypto_config = crypto_config_method(table_name)
+            crypto_config = crypto_config_method(table_name=table_name)
 
         for pos, value in enumerate(items):
             items[pos] = decrypt_method(
@@ -198,7 +244,7 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
         if request_crypto_config is not None:
             crypto_config = request_crypto_config
         else:
-            crypto_config = crypto_config_method(table_name)
+            crypto_config = crypto_config_method(table_name=table_name)
 
         for pos, value in enumerate(items):
             for request_type, item in value.items():

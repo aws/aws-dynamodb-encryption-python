@@ -17,12 +17,12 @@ import attr
 import botocore.client
 
 from dynamodb_encryption_sdk.internal.utils import (
+    crypto_config_from_cache, crypto_config_from_kwargs,
     decrypt_batch_get_item, decrypt_get_item, decrypt_multi_get,
     encrypt_batch_write_item, encrypt_put_item, TableInfoCache
 )
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
-from . import CryptoConfig
+from dynamodb_encryption_sdk.structures import AttributeActions
 from .item import decrypt_dynamodb_item, encrypt_dynamodb_item
 
 __all__ = ('EncryptedClient',)
@@ -30,7 +30,7 @@ __all__ = ('EncryptedClient',)
 
 @attr.s
 class EncryptedClient(object):
-    # pylint: disable=too-few-public-methods
+    # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """High-level helper class to provide a familiar interface to encrypted tables.
 
     .. note::
@@ -68,40 +68,50 @@ class EncryptedClient(object):
             client=self._client,
             auto_refresh_table_indexes=self._auto_refresh_table_indexes
         )
+        self._table_crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            crypto_config_from_cache,
+            materials_provider=self._materials_provider,
+            attribute_actions=self._attribute_actions,
+            table_info_cache=self._table_info_cache
+        )
+        self._item_crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            crypto_config_from_kwargs,
+            fallback=self._table_crypto_config
+        )
         self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_get_item,
             decrypt_method=decrypt_dynamodb_item,
-            crypto_config_method=self._table_crypto_config,
+            crypto_config_method=self._item_crypto_config,
             read_method=self._client.get_item
         )
         self.put_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             encrypt_put_item,
             encrypt_method=encrypt_dynamodb_item,
-            crypto_config_method=self._table_crypto_config,
+            crypto_config_method=self._item_crypto_config,
             write_method=self._client.put_item
         )
         self.query = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_multi_get,
             decrypt_method=decrypt_dynamodb_item,
-            crypto_config_method=self._table_crypto_config,
+            crypto_config_method=self._item_crypto_config,
             read_method=self._client.query
         )
         self.scan = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_multi_get,
             decrypt_method=decrypt_dynamodb_item,
-            crypto_config_method=self._table_crypto_config,
+            crypto_config_method=self._item_crypto_config,
             read_method=self._client.scan
         )
         self.batch_get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_batch_get_item,
             decrypt_method=decrypt_dynamodb_item,
-            crypto_config_method=self._batch_crypto_config,
+            crypto_config_method=self._table_crypto_config,
             read_method=self._client.batch_get_item
         )
         self.batch_write_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             encrypt_batch_write_item,
             encrypt_method=encrypt_dynamodb_item,
-            crypto_config_method=self._batch_crypto_config,
+            crypto_config_method=self._table_crypto_config,
             write_method=self._client.batch_write_item
         )
 
@@ -114,47 +124,6 @@ class EncryptedClient(object):
         :raises AttributeError: if attribute is not found on provided client object
         """
         return getattr(self._client, name)
-
-    def _crypto_config(self, table_name, **kwargs):
-        """Pull all encryption-specific parameters from the request and use them to build a crypto config.
-
-        :returns: crypto config and updated kwargs
-        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
-        """
-        crypto_config = kwargs.pop('crypto_config', None)
-
-        if crypto_config is not None:
-            return crypto_config, kwargs
-
-        table_info = self._table_info_cache.table_info(table_name)
-
-        attribute_actions = self._attribute_actions.copy()
-        attribute_actions.set_index_keys(*table_info.protected_index_keys())
-
-        crypto_config = CryptoConfig(
-            materials_provider=self._materials_provider,
-            encryption_context=EncryptionContext(**table_info.encryption_context_values),
-            attribute_actions=attribute_actions
-        )
-        return crypto_config, kwargs
-
-    def _table_crypto_config(self, **kwargs):
-        """Pull all encryption-specific parameters from the request and use them to build
-        a crypto config for a single-table operation.
-
-        :returns: crypto config and updated kwargs
-        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
-        """
-        return self._crypto_config(kwargs['TableName'], **kwargs)
-
-    def _batch_crypto_config(self, table_name):
-        """Build a crypto config for a specific table.
-
-        :param str table_name: Table for which to build crypto config
-        :returns: crypto config
-        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig
-        """
-        return self._crypto_config(table_name)[0]
 
     def update_item(self, **kwargs):
         """Update item is not yet supported."""
