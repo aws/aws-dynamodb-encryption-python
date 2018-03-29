@@ -19,6 +19,7 @@ def dictionary_validator(key_type, value_type):
     """Validator for ``attrs`` that performs deep type checking of dictionaries."""
 
     def _validate_dictionary(instance, attribute, value):
+        # pylint: disable=unused-argument
         """Validate that a dictionary is structured as expected.
 
         :raises TypeError: if ``value`` is not a dictionary
@@ -48,6 +49,7 @@ def iterable_validator(iterable_type, member_type):
     """Validator for ``attrs`` that performs deep type checking of iterables."""
 
     def _validate_tuple(instance, attribute, value):
+        # pylint: disable=unused-argument
         """Validate that a dictionary is structured as expected.
 
         :raises TypeError: if ``value`` is not of ``iterable_type`` type
@@ -70,6 +72,7 @@ def iterable_validator(iterable_type, member_type):
 
 
 def callable_validator(instance, attribute, value):
+    # pylint: disable=unused-argument
     """Validate that an attribute value is callable.
 
     :raises TypeError: if ``value`` is not callable

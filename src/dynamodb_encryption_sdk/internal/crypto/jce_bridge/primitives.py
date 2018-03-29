@@ -79,6 +79,7 @@ class _NoPadding(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class JavaPadding(object):
+    # pylint: disable=too-few-public-methods
     """Bridge the gap from the Java padding names and Python resources.
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
@@ -90,6 +91,7 @@ class JavaPadding(object):
 
 @attr.s
 class SimplePadding(JavaPadding):
+    # pylint: disable=too-few-public-methods
     """Padding types that do not require any preparation."""
 
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
@@ -107,6 +109,7 @@ class SimplePadding(JavaPadding):
 
 @attr.s
 class BlockSizePadding(JavaPadding):
+    # pylint: disable=too-few-public-methods
     """Padding types that require a block size input."""
 
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
@@ -124,6 +127,7 @@ class BlockSizePadding(JavaPadding):
 
 @attr.s
 class OaepPadding(JavaPadding):
+    # pylint: disable=too-few-public-methods
     """OAEP padding types. These require more complex setup.
 
     .. warning::
@@ -155,6 +159,7 @@ class OaepPadding(JavaPadding):
 
 @attr.s
 class JavaMode(object):
+    # pylint: disable=too-few-public-methods
     """Bridge the gap from the Java encryption mode names and Python resources.
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
@@ -174,6 +179,7 @@ class JavaMode(object):
 
 @attr.s
 class JavaEncryptionAlgorithm(object):
+    # pylint: disable=too-few-public-methods
     """Bridge the gap from the Java encryption algorithm names and Python resources.
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
@@ -289,6 +295,7 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             raise UnwrappingError(error_message)
 
     def encrypt(self, key, data, mode, padding):
+        # this can be disabled by _disable_encryption, so pylint: disable=method-hidden
         """Encrypt data using the supplied values.
 
         :param bytes key: Loaded encryption key
@@ -320,6 +327,7 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             raise EncryptionError(error_message)
 
     def decrypt(self, key, data, mode, padding):
+        # this can be disabled by _disable_encryption, so pylint: disable=method-hidden
         """Decrypt data using the supplied values.
 
         :param bytes key: Loaded decryption key
@@ -426,6 +434,7 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
         return _KEY_LOADERS[self.cipher](key, key_type, key_encoding)
 
     def encrypt(self, key, data, mode, padding):
+        # pylint: disable=unused-argument,no-self-use
         """Encrypt data using the supplied values.
 
         :param bytes key: Loaded encryption key
@@ -449,6 +458,7 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             raise EncryptionError(error_message)
 
     def decrypt(self, key, data, mode, padding):
+        # pylint: disable=unused-argument,no-self-use
         """Decrypt data using the supplied values.
 
         :param bytes key: Loaded decryption key

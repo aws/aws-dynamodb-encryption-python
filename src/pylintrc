@@ -1,6 +1,10 @@
 [BASIC]
 # Allow function names up to 50 characters
 function-rgx = [a-z_][a-z0-9_]{2,50}$
+# Whitelist argument names: iv
+argument-rgx = ([a-z_][a-z0-9_]{2,30}$)|(^iv$)
+# Whitelist variable names: iv
+variable-rgx = ([a-z_][a-z0-9_]{2,30}$)|(^iv$)
 
 [DESIGN]
 max-args = 10

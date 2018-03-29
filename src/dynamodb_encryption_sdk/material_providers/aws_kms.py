@@ -70,6 +70,7 @@ class EncryptionContextKeys(Enum):
 
 @attr.s
 class KeyInfo(object):
+    # pylint: disable=too-few-public-methods
     """Identifying information for a specific key and how it should be used.
 
     :param str description: algorithm identifier joined with key length in bits
@@ -143,19 +144,19 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     def __attrs_post_init__(self):
         # type: () -> None
         """Load the content and signing key info."""
-        self._content_key_info = KeyInfo.from_material_description(
+        self._content_key_info = KeyInfo.from_material_description(  # pylint: disable=attribute-defined-outside-init
             material_description=self._material_description,
             description_key=MaterialDescriptionKeys.CONTENT_ENCRYPTION_ALGORITHM.value,
             default_algorithm=_DEFAULT_CONTENT_ENCRYPTION_ALGORITHM,
             default_key_length=_DEFAULT_CONTENT_KEY_LENGTH
         )
-        self._signing_key_info = KeyInfo.from_material_description(
+        self._signing_key_info = KeyInfo.from_material_description(  # pylint: disable=attribute-defined-outside-init
             material_description=self._material_description,
             description_key=MaterialDescriptionKeys.ITEM_SIGNATURE_ALGORITHM.value,
             default_algorithm=_DEFAULT_SIGNING_ALGORITHM,
             default_key_length=_DEFAULT_SIGNING_KEY_LENGTH
         )
-        self._regional_clients = {}
+        self._regional_clients = {}  # type: Dict[Text, botocore.client.BaseClient]  # noqa pylint: disable=attribute-defined-outside-init
 
     def _add_regional_client(self, region_name):
         # type: (Text) -> None
@@ -191,6 +192,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
 
     def _select_key_id(self, encryption_context):
         # type: (EncryptionContext) -> Text
+        # pylint: disable=unused-argument
         """Select the desired key id.
 
         .. note::
@@ -207,6 +209,8 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         return self._key_id
 
     def _validate_key_id(self, key_id, encryption_context):
+        # type: (EncryptionContext) -> None
+        # pylint: disable=unused-argument,no-self-use
         """Validate the selected key id.
 
         .. note::

@@ -25,6 +25,15 @@ from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes  # noqa pylin
 __all__ = ('DelegatedKey',)
 
 
+def _raise_not_implemented(method_name):
+    """Raises a standardized ``NotImplementedError`` to report that the specified method
+    is not supported.
+
+    :raises NotImplementedError: when called
+    """
+    raise NotImplementedError('"{}" is not supported by this DelegatedKey'.format(method_name))
+
+
 @six.add_metaclass(abc.ABCMeta)
 class DelegatedKey(object):
     """Delegated keys are black boxes that encrypt, decrypt, sign, and verify data and wrap
@@ -42,16 +51,10 @@ class DelegatedKey(object):
         # type: () -> Text
         """Text description of algorithm used by this delegated key."""
 
-    def _raise_not_implemented(self, method_name):
-        """Raises a standardized ``NotImplementedError`` to report that the specified method
-        is not supported.
-
-        :raises NotImplementedError: when called
-        """
-        raise NotImplementedError('"{}" is not supported by this DelegatedKey'.format(method_name))
-
     @classmethod
     def generate(cls, algorithm, key_length):
+        # type: (Text, int) -> None
+        # pylint: disable=unused-argument,no-self-use
         """Generate an instance of this DelegatedKey using the specified algorithm and key length.
 
         :param str algorithm: Text description of algorithm to be used
@@ -59,10 +62,11 @@ class DelegatedKey(object):
         :returns: Generated delegated key
         :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
         """
-        cls._raise_not_implemented('generate')
+        _raise_not_implemented('generate')
 
     def encrypt(self, algorithm, name, plaintext, additional_associated_data=None):
         # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument,no-self-use
         """Encrypt data.
 
         :param str algorithm: Text description of algorithm to use to encrypt data
@@ -73,10 +77,11 @@ class DelegatedKey(object):
         :returns: Encrypted ciphertext
         :rtype: bytes
         """
-        self._raise_not_implemented('encrypt')
+        _raise_not_implemented('encrypt')
 
     def decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):
         # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument,no-self-use
         """Encrypt data.
 
         :param str algorithm: Text description of algorithm to use to decrypt data
@@ -87,10 +92,11 @@ class DelegatedKey(object):
         :returns: Decrypted plaintext
         :rtype: bytes
         """
-        self._raise_not_implemented('decrypt')
+        _raise_not_implemented('decrypt')
 
     def wrap(self, algorithm, content_key, additional_associated_data=None):
         # type: (Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument,no-self-use
         """Wrap content key.
 
         :param str algorithm: Text description of algorithm to use to wrap key
@@ -100,10 +106,11 @@ class DelegatedKey(object):
         :returns: Wrapped key
         :rtype: bytes
         """
-        self._raise_not_implemented('wrap')
+        _raise_not_implemented('wrap')
 
     def unwrap(self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None):
         # type: (Text, bytes, Text, EncryptionKeyTypes, Dict[Text, Text]) -> DelegatedKey
+        # pylint: disable=unused-argument,no-self-use
         """Wrap content key.
 
         :param str algorithm: Text description of algorithm to use to unwrap key
@@ -116,10 +123,11 @@ class DelegatedKey(object):
         :returns: Delegated key using unwrapped key
         :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
         """
-        self._raise_not_implemented('unwrap')
+        _raise_not_implemented('unwrap')
 
     def sign(self, algorithm, data):
         # type: (Text, bytes) -> bytes
+        # pylint: disable=unused-argument,no-self-use
         """Sign data.
 
         :param str algorithm: Text description of algorithm to use to sign data
@@ -127,20 +135,22 @@ class DelegatedKey(object):
         :returns: Signature value
         :rtype: bytes
         """
-        self._raise_not_implemented('sign')
+        _raise_not_implemented('sign')
 
     def verify(self, algorithm, signature, data):
         # type: (Text, bytes, bytes) -> None
+        # pylint: disable=unused-argument,no-self-use
         """Sign data.
 
         :param str algorithm: Text description of algorithm to use to verify signature
         :param bytes signature: Signature to verify
         :param bytes data: Data over which to verify signature
         """
-        self._raise_not_implemented('verify')
+        _raise_not_implemented('verify')
 
     def signing_algorithm(self):
         # type: () -> Text
+        # pylint: disable=no-self-use
         """Provides a description that can inform an appropriate cryptographic materials
         provider about how to build a DelegatedKey for signature verification. If implemented,
         the return value of this method is included in the material description written to
@@ -149,4 +159,4 @@ class DelegatedKey(object):
         :returns: Signing algorithm identifier
         :rtype: str
         """
-        self._raise_not_implemented('signing_algorithm')
+        _raise_not_implemented('signing_algorithm')
