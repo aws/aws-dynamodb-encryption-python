@@ -10,14 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Helper tools for attribute de/serialization functional tests."""
+"""Helper tools for collecting test vectors for use in functional tests."""
 import base64
-from decimal import Decimal
 import codecs
+from decimal import Decimal
 import json
 import os
 
 from boto3.dynamodb.types import Binary
+
 from dynamodb_encryption_sdk.identifiers import ItemAction
 from dynamodb_encryption_sdk.structures import AttributeActions
 
@@ -41,7 +42,7 @@ _STRING_TO_SIGN_TEST_VECTORS_FILE = os.path.join(
 )
 
 
-def decode_value(value, transform_binary=False):
+def decode_value(value, transform_binary=False):  # noqa: C901
     def _decode_string(_value):
         return _value
 

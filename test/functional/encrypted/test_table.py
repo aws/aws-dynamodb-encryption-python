@@ -10,17 +10,18 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""Functional tests for ``dynamodb_encryption_sdk.encrypted.table``."""
 import boto3
 import hypothesis
 import pytest
 
+from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from ..functional_test_utils import (
-    check_encrypted_item, example_table, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
+    check_encrypted_item, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
     TEST_KEY, TEST_TABLE_NAME
 )
+from ..functional_test_utils import example_table  # noqa
 from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
-from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
@@ -44,7 +45,7 @@ def _table_cycle_check(materials_provider, initial_actions, initial_item):
         attribute_actions=initial_actions,
     )
 
-    _put_result = e_table.put_item(Item=item)
+    _put_result = e_table.put_item(Item=item)  # noqa
 
     encrypted_result = table.get_item(Key=TEST_KEY)
     check_encrypted_item(item, encrypted_result['Item'], check_attribute_actions)

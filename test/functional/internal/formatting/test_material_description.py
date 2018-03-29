@@ -14,12 +14,12 @@
 import hypothesis
 import pytest
 
-from ...functional_test_vector_generators import material_description_test_vectors
-from ...hypothesis_strategies import material_descriptions, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
 from dynamodb_encryption_sdk.internal.formatting.material_description import (
     deserialize as deserialize_material_description, serialize as serialize_material_description
 )
+from ...functional_test_vector_generators import material_description_test_vectors
+from ...hypothesis_strategies import material_descriptions, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 

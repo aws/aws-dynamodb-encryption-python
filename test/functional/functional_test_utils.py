@@ -10,9 +10,11 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+"""Helper tools for use in tests."""
 from __future__ import division
-import copy
+
 from collections import defaultdict
+import copy
 from decimal import Decimal
 import itertools
 
@@ -28,7 +30,7 @@ from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
-from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
+from dynamodb_encryption_sdk.structures import AttributeActions
 
 _DELEGATED_KEY_CACHE = defaultdict(lambda: defaultdict(dict))
 TEST_TABLE_NAME = 'my_table'
@@ -39,7 +41,7 @@ TEST_INDEX = {
     },
     'sort_attribute': {
         'type': 'N',
-        'value':  Decimal('99.233')
+        'value': Decimal('99.233')
     }
 }
 TEST_KEY = {name: value['value'] for name, value in TEST_INDEX.items()}
@@ -51,7 +53,7 @@ TEST_BATCH_INDEXES = [
         },
         'sort_attribute': {
             'type': 'N',
-            'value':  Decimal('99.233')
+            'value': Decimal('99.233')
         }
     },
     {
@@ -61,7 +63,7 @@ TEST_BATCH_INDEXES = [
         },
         'sort_attribute': {
             'type': 'N',
-            'value':  Decimal('92986745')
+            'value': Decimal('92986745')
         }
     },
     {
@@ -71,7 +73,7 @@ TEST_BATCH_INDEXES = [
         },
         'sort_attribute': {
             'type': 'N',
-            'value':  Decimal('2231.0001')
+            'value': Decimal('2231.0001')
         }
     },
     {
@@ -81,7 +83,7 @@ TEST_BATCH_INDEXES = [
         },
         'sort_attribute': {
             'type': 'N',
-            'value':  Decimal('732342')
+            'value': Decimal('732342')
         }
     }
 ]
@@ -301,7 +303,7 @@ _ACTIONS['parametrized_actions'] = _ACTIONS['hypothesis_actions'] + (
 
 
 def set_parametrized_actions(metafunc):
-    """Set parametrized values for attribute actions"""
+    """Set parametrized values for attribute actions."""
     for name, actions in _ACTIONS.items():
         if name in metafunc.fixturenames:
             metafunc.parametrize(name, actions)
@@ -362,8 +364,8 @@ def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
 def _matching_key(actual_item, expected):
         expected_item = [
             i for i in expected
-            if i['partition_attribute'] == actual_item['partition_attribute']
-            and i['sort_attribute'] == actual_item['sort_attribute']
+            if i['partition_attribute'] == actual_item['partition_attribute'] and
+            i['sort_attribute'] == actual_item['sort_attribute']
         ]
         assert len(expected_item) == 1
         return expected_item[0]
@@ -401,7 +403,7 @@ def cycle_batch_item_check(
         write_transformer=_nop_transformer,
         read_transformer=_nop_transformer
 ):
-    """Common logic for cycling batch items."""
+    """Check that cycling (plaintext->encrypted->decrypted) item batch has the expected results."""
     check_attribute_actions = initial_actions.copy()
     check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
     items = []
@@ -410,7 +412,7 @@ def cycle_batch_item_check(
         _item.update(key)
         items.append(write_transformer(_item))
 
-    _put_result = encrypted.batch_write_item(
+    _put_result = encrypted.batch_write_item(  # noqa
         RequestItems={
             TEST_TABLE_NAME: [
                 {'PutRequest': {'Item': _item}}
@@ -447,7 +449,7 @@ def cycle_batch_item_check(
         transformer=read_transformer
     )
 
-    _delete_result = encrypted.batch_write_item(
+    _delete_result = encrypted.batch_write_item(  # noqa
         RequestItems={
             TEST_TABLE_NAME: [
                 {'DeleteRequest': {'Key': _key}}
@@ -461,7 +463,7 @@ def cycle_batch_item_check(
 
 
 def cycle_item_check(plaintext_item, crypto_config):
-    """Common logic for cycled item (plaintext->encrypted->decrypted) tests: used by many test suites."""
+    """Check that cycling (plaintext->encrypted->decrypted) an item has the expected results."""
     ciphertext_item = encrypt_python_item(plaintext_item, crypto_config)
 
     check_encrypted_item(plaintext_item, ciphertext_item, crypto_config.attribute_actions)

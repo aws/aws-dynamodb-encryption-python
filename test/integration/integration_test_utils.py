@@ -10,26 +10,30 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+"""Helper utilities for integration tests."""
 import os
 import sys
+
+import pytest
+
+from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
+
 sys.path.append(os.path.join(
     os.path.abspath(os.path.dirname(__file__)),
     '..',
     'functional'
 ))
 
-import pytest
-
-from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
-
-import functional_test_utils, hypothesis_strategies
+# Convenience imports
+import functional_test_utils  # noqa: E402,F401,I100
+import hypothesis_strategies  # noqa: E402,F401,I100
 
 AWS_KMS_KEY_ID = 'AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID'
 
 
 @pytest.fixture
 def cmk_arn():
-    """Retrieves the target CMK ARN from environment variable."""
+    """Retrieve the target CMK ARN from environment variable."""
     arn = os.environ.get(AWS_KMS_KEY_ID, None)
     if arn is None:
         raise ValueError(
