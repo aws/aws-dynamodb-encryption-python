@@ -11,14 +11,16 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """High-level helper class to provide a familiar interface to encrypted tables."""
+from functools import partial
+
 import attr
 from boto3.resources.base import ServiceResource
 from boto3.resources.collection import CollectionManager
 
-from dynamodb_encryption_sdk.internal.utils import TableInfoCache
+from dynamodb_encryption_sdk.internal.utils import decrypt_batch_get_item, encrypt_batch_write_item, TableInfoCache
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
-from . import CryptoConfig, validate_get_arguments
+from . import CryptoConfig
 from .item import decrypt_python_item, encrypt_python_item
 from .table import EncryptedTable
 
@@ -27,6 +29,7 @@ __all__ = ('EncryptedResource',)
 
 @attr.s
 class EncryptedTablesCollectionManager(object):
+    # pylint: disable=too-few-public-methods
     """Tables collection manager that provides EncryptedTable objects.
 
     https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.tables
@@ -45,6 +48,25 @@ class EncryptedTablesCollectionManager(object):
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(validator=attr.validators.instance_of(AttributeActions))
     _table_info_cache = attr.ib(validator=attr.validators.instance_of(TableInfoCache))
+
+    def __attrs_post_init__(self):
+        """Set up the translation methods."""
+        self.all = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            self._transform_table,
+            self._collection.all
+        )
+        self.filter = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            self._transform_table,
+            self._collection.filter
+        )
+        self.limit = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            self._transform_table,
+            self._collection.limit
+        )
+        self.page_size = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            self._transform_table,
+            self._collection.page_size
+        )
 
     def __getattr__(self, name):
         """Catch any method/attribute lookups that are not defined in this class and try
@@ -71,38 +93,10 @@ class EncryptedTablesCollectionManager(object):
                 attribute_actions=self._attribute_actions
             )
 
-    def all(self):
-        """Creates an iterable of all EncryptedTable resources in the collection.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.all
-        """
-        return self._transform_table(self._collection.all)
-
-    def filter(self, **kwargs):
-        """Creates an iterable of all EncryptedTable resources in the collection filtered by kwargs passed to method.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.filter
-        """
-        return self._transform_table(self._collection.filter, **kwargs)
-
-    def limit(self, **kwargs):
-        """Creates an iterable up to a specified amount of EncryptedTable resources in the collection.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.limit
-        """
-        return self._transform_table(self._collection.limit, **kwargs)
-
-    def page_size(self, **kwargs):
-        """Creates an iterable of all EncryptedTable resources in the collection, but limits
-        the number of items returned by each service call by the specified amount.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.page_size
-        """
-        return self._transform_table(self._collection.page_size, **kwargs)
-
 
 @attr.s
 class EncryptedResource(object):
+    # pylint: disable=too-few-public-methods
     """High-level helper class to provide a familiar interface to encrypted tables.
 
     .. note::
@@ -138,16 +132,28 @@ class EncryptedResource(object):
     )
 
     def __attrs_post_init__(self):
-        """Set up the table info cache and the encrypted tables collection manager."""
-        self._table_info_cache = TableInfoCache(
+        """Set up the table info cache, encrypted tables collection manager, and translation methods."""
+        self._table_info_cache = TableInfoCache(  # attrs confuses pylint: disable=attribute-defined-outside-init
             client=self._resource.meta.client,
             auto_refresh_table_indexes=self._auto_refresh_table_indexes
         )
-        self.tables = EncryptedTablesCollectionManager(
+        self.tables = EncryptedTablesCollectionManager(  # attrs confuses pylint: disable=attribute-defined-outside-init
             collection=self._resource.tables,
             materials_provider=self._materials_provider,
             attribute_actions=self._attribute_actions,
             table_info_cache=self._table_info_cache
+        )
+        self.batch_get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            decrypt_batch_get_item,
+            decrypt_method=decrypt_python_item,
+            crypto_config_method=self._crypto_config,
+            read_method=self._resource.batch_get_item
+        )
+        self.batch_write_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            encrypt_batch_write_item,
+            encrypt_method=encrypt_python_item,
+            crypto_config_method=self._crypto_config,
+            write_method=self._resource.batch_write_item
         )
 
     def __getattr__(self, name):
@@ -178,54 +184,8 @@ class EncryptedResource(object):
         )
         return crypto_config
 
-    def batch_get_item(self, **kwargs):
-        """Transparently decrypt multiple items after getting them from a batch get item request.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.batch_get_item
-        """
-        request_crypto_config = kwargs.pop('crypto_config', None)
-
-        for _table_name, table_kwargs in kwargs['RequestItems'].items():
-            validate_get_arguments(table_kwargs)
-
-        response = self._resource.batch_get_item(**kwargs)
-        for table_name, items in response['Responses'].items():
-            if request_crypto_config is not None:
-                crypto_config = request_crypto_config
-            else:
-                crypto_config = self._crypto_config(table_name)
-
-            for pos in range(len(items)):
-                items[pos] = decrypt_python_item(
-                    item=items[pos],
-                    crypto_config=crypto_config
-                )
-        return response
-
-    def batch_write_item(self, **kwargs):
-        """Transparently encrypt multiple items before writing them with a batch write item request.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.batch_write_item
-        """
-        request_crypto_config = kwargs.pop('crypto_config', None)
-
-        for table_name, items in kwargs['RequestItems'].items():
-            if request_crypto_config is not None:
-                crypto_config = request_crypto_config
-            else:
-                crypto_config = self._crypto_config(table_name)
-
-            for pos in range(len(items)):
-                for request_type, item in items[pos].items():
-                    # We don't encrypt primary indexes, so we can ignore DeleteItem requests
-                    if request_type == 'PutRequest':
-                        items[pos][request_type]['Item'] = encrypt_python_item(
-                            item=item['Item'],
-                            crypto_config=crypto_config
-                        )
-        return self._resource.batch_write_item(**kwargs)
-
     def Table(self, name, **kwargs):
+        # naming chosen to align with boto3 resource name, so pylint: disable=invalid-name
         """Creates an EncryptedTable resource.
 
         If any of the optional configuration values are not provided, the corresponding values

@@ -11,13 +11,18 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """High-level helper class to provide a familiar interface to encrypted tables."""
+from functools import partial
+
 import attr
 import botocore.client
 
-from dynamodb_encryption_sdk.internal.utils import TableInfoCache
+from dynamodb_encryption_sdk.internal.utils import (
+    decrypt_batch_get_item, decrypt_get_item, decrypt_multi_get,
+    encrypt_batch_write_item, encrypt_put_item, TableInfoCache
+)
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
-from . import CryptoConfig, validate_get_arguments
+from . import CryptoConfig
 from .item import decrypt_dynamodb_item, encrypt_dynamodb_item
 
 __all__ = ('EncryptedClient',)
@@ -25,6 +30,7 @@ __all__ = ('EncryptedClient',)
 
 @attr.s
 class EncryptedClient(object):
+    # pylint: disable=too-few-public-methods
     """High-level helper class to provide a familiar interface to encrypted tables.
 
     .. note::
@@ -57,10 +63,46 @@ class EncryptedClient(object):
     )
 
     def __attrs_post_init__(self):
-        """Set up the table info cache."""
-        self._table_info_cache = TableInfoCache(
+        """Set up the table info cache and translation methods."""
+        self._table_info_cache = TableInfoCache(  # attrs confuses pylint: disable=attribute-defined-outside-init
             client=self._client,
             auto_refresh_table_indexes=self._auto_refresh_table_indexes
+        )
+        self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            decrypt_get_item,
+            decrypt_method=decrypt_dynamodb_item,
+            crypto_config_method=self._table_crypto_config,
+            read_method=self._client.get_item
+        )
+        self.put_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            encrypt_put_item,
+            encrypt_method=encrypt_dynamodb_item,
+            crypto_config_method=self._table_crypto_config,
+            write_method=self._client.put_item
+        )
+        self.query = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            decrypt_multi_get,
+            decrypt_method=decrypt_dynamodb_item,
+            crypto_config_method=self._table_crypto_config,
+            read_method=self._client.query
+        )
+        self.scan = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            decrypt_multi_get,
+            decrypt_method=decrypt_dynamodb_item,
+            crypto_config_method=self._table_crypto_config,
+            read_method=self._client.scan
+        )
+        self.batch_get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            decrypt_batch_get_item,
+            decrypt_method=decrypt_dynamodb_item,
+            crypto_config_method=self._batch_crypto_config,
+            read_method=self._client.batch_get_item
+        )
+        self.batch_write_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            encrypt_batch_write_item,
+            encrypt_method=encrypt_dynamodb_item,
+            crypto_config_method=self._batch_crypto_config,
+            write_method=self._client.batch_write_item
         )
 
     def __getattr__(self, name):
@@ -96,110 +138,24 @@ class EncryptedClient(object):
         )
         return crypto_config, kwargs
 
+    def _table_crypto_config(self, **kwargs):
+        """Pull all encryption-specific parameters from the request and use them to build
+        a crypto config for a single-table operation.
+
+        :returns: crypto config and updated kwargs
+        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
+        """
+        return self._crypto_config(kwargs['TableName'], **kwargs)
+
+    def _batch_crypto_config(self, table_name):
+        """Build a crypto config for a specific table.
+
+        :param str table_name: Table for which to build crypto config
+        :returns: crypto config
+        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig
+        """
+        return self._crypto_config(table_name)[0]
+
     def update_item(self, **kwargs):
         """Update item is not yet supported."""
         raise NotImplementedError('"update_item" is not yet implemented')
-
-    def get_item(self, **kwargs):
-        """Transparently decrypt an item after getting it from the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.get_item
-        """
-        validate_get_arguments(kwargs)
-        crypto_config, ddb_kwargs = self._crypto_config(kwargs['TableName'], **kwargs)
-        response = self._client.get_item(**ddb_kwargs)
-        if 'Item' in response:
-            response['Item'] = decrypt_dynamodb_item(
-                item=response['Item'],
-                crypto_config=crypto_config
-            )
-        return response
-
-    def put_item(self, **kwargs):
-        """Transparently encrypt an item before putting it to the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.put_item
-        """
-        crypto_config, ddb_kwargs = self._crypto_config(kwargs['TableName'], **kwargs)
-        ddb_kwargs['Item'] = encrypt_dynamodb_item(
-            item=ddb_kwargs['Item'],
-            crypto_config=crypto_config
-        )
-        return self._client.put_item(**ddb_kwargs)
-
-    def _encrypted_multi_get_single_table(self, method, **kwargs):
-        """Transparently decrypt multiple items after getting them from the table.
-
-        :param method: Method from underlying DynamoDB client object to use
-        :type method: callable
-        """
-        validate_get_arguments(kwargs)
-        crypto_config, ddb_kwargs = self._crypto_config(kwargs['TableName'], **kwargs)
-        response = method(**ddb_kwargs)
-        for pos in range(len(response['Items'])):
-            response['Items'][pos] = decrypt_dynamodb_item(
-                item=response['Items'][pos],
-                crypto_config=crypto_config
-            )
-        return response
-
-    def query(self, **kwargs):
-        """Transparently decrypt multiple items after getting them from a query request to the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.query
-        """
-        return self._encrypted_multi_get_single_table(self._client.query, **kwargs)
-
-    def scan(self, **kwargs):
-        """Transparently decrypt multiple items after getting them from a scan request to the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.scan
-        """
-        return self._encrypted_multi_get_single_table(self._client.scan, **kwargs)
-
-    def batch_get_item(self, **kwargs):
-        """Transparently decrypt multiple items after getting them from a batch get item request.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.batch_get_item
-        """
-        for _table_name, table_kwargs in kwargs['RequestItems'].items():
-            validate_get_arguments(table_kwargs)
-
-        request_crypto_config = kwargs.pop('crypto_config', None)
-
-        response = self._client.batch_get_item(**kwargs)
-        for table_name, items in response['Responses'].items():
-            if request_crypto_config is not None:
-                crypto_config = request_crypto_config
-            else:
-                crypto_config = self._crypto_config(table_name)[0]
-
-            for pos in range(len(items)):
-                items[pos] = decrypt_dynamodb_item(
-                    item=items[pos],
-                    crypto_config=crypto_config
-                )
-        return response
-
-    def batch_write_item(self, **kwargs):
-        """Transparently encrypt multiple items before writing them with a batch write item request.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Client.batch_write_item
-        """
-        request_crypto_config = kwargs.pop('crypto_config', None)
-
-        for table_name, items in kwargs['RequestItems'].items():
-            if request_crypto_config is not None:
-                crypto_config = request_crypto_config
-            else:
-                crypto_config = self._crypto_config(table_name)[0]
-
-            for pos in range(len(items)):
-                for request_type, item in items[pos].items():
-                    # We don't encrypt primary indexes, so we can ignore DeleteItem requests
-                    if request_type == 'PutRequest':
-                        items[pos][request_type]['Item'] = encrypt_dynamodb_item(
-                            item=item['Item'],
-                            crypto_config=crypto_config
-                        )
-        return self._client.batch_write_item(**kwargs)
