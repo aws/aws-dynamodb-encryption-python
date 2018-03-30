@@ -83,6 +83,29 @@ class KeyInfo(object):
     length = attr.ib(validator=attr.validators.instance_of(six.integer_types))
 
     @classmethod
+    def from_description(cls, description, default_key_length=None):
+        # type: (Text) -> KeyInfo
+        """Load key info from key info description.
+
+        :param str description: Key info description
+        :param int default_key_length: Key length to use if not found in description
+        """
+        description_parts = description.split('/', 1)
+        algorithm = description_parts[0]
+        try:
+            key_length = int(description_parts[1])
+        except IndexError:
+            if default_key_length is None:
+                raise ValueError(
+                    'Description "{}" does not contain key length and no default key length is provided'.format(
+                        description
+                    )
+                )
+
+            key_length = default_key_length
+        return cls(description, algorithm, key_length)
+
+    @classmethod
     def from_material_description(cls, material_description, description_key, default_algorithm, default_key_length):
         # type: (Dict[Text, Text], Text, Text, int) -> KeyInfo
         """Load key info from material description.
@@ -90,18 +113,12 @@ class KeyInfo(object):
         :param dict material_description: Material description to read
         :param str description_key: Material description key containing desired key info description
         :param str default_algorithm: Algorithm name to use if not found in material description
-        :param int default_key_length: Key length to use if not found in material description
+        :param int default_key_length: Key length to use if not found in key info description
         :returns: Key info loaded from material description, with defaults applied if necessary
         :rtype: dynamodb_encryption_sdk.material_providers.aws_kms.KeyInfo
         """
         description = material_description.get(description_key, default_algorithm)
-        description_parts = description.split('/', 1)
-        algorithm = description_parts[0]
-        try:
-            key_length = int(description_parts[1])
-        except IndexError:
-            key_length = default_key_length
-        return cls(description, algorithm, key_length)
+        return cls.from_description(description, default_key_length)
 
 
 @attr.s
@@ -234,7 +251,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         attribute_type, attribute_value = list(attribute.items())[0]
         if attribute_type == 'B':
             return base64.b64encode(attribute_value.value).decode(TEXT_ENCODING)
-        if attribute_type == 'S':
+        if attribute_type in ('S', 'N'):
             return attribute_value
         raise ValueError('Attribute of type "{}" cannot be used in KMS encryption context.'.format(attribute_type))
 
@@ -255,14 +272,22 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         }
 
         if encryption_context.partition_key_name is not None:
-            partition_key_attribute = encryption_context.attributes.get(encryption_context.partition_key_name)
-            kms_encryption_context[encryption_context.partition_key_name] = self._attribute_to_value(
-                partition_key_attribute
-            )
+            try:
+                partition_key_attribute = encryption_context.attributes[encryption_context.partition_key_name]
+            except KeyError:
+                pass
+            else:
+                kms_encryption_context[encryption_context.partition_key_name] = self._attribute_to_value(
+                    partition_key_attribute
+                )
 
         if encryption_context.sort_key_name is not None:
-            sort_key_attribute = encryption_context.attributes.get(encryption_context.sort_key_name)
-            kms_encryption_context[encryption_context.sort_key_name] = self._attribute_to_value(sort_key_attribute)
+            try:
+                sort_key_attribute = encryption_context.attributes[encryption_context.sort_key_name]
+            except KeyError:
+                pass
+            else:
+                kms_encryption_context[encryption_context.sort_key_name] = self._attribute_to_value(sort_key_attribute)
 
         if encryption_context.table_name is not None:
             kms_encryption_context[_TABLE_NAME_EC_KEY] = encryption_context.table_name

@@ -78,9 +78,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
         # by dynamodb.TypeSerializer, so all numbers are str. However, TypeSerializer
         # leaves trailing zeros if they are defined in the Decimal call, but we need to
         # strip all trailing zeros.
-        decimal_value = DYNAMODB_CONTEXT.create_decimal(value)
-        raw_value = '{:f}'.format(decimal_value.normalize())
-        return to_bytes(raw_value)
+        decimal_value = DYNAMODB_CONTEXT.create_decimal(value).normalize()
+        return '{0:f}'.format(decimal_value).encode('utf-8')
 
     def _serialize_number(_attribute):
         # type: (str) -> bytes

@@ -90,8 +90,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :rtype: dynamodb_encryption_sdk.internal.dynamodb_types.STRING
         """
         raw_value = codecs.decode(value, TEXT_ENCODING)
-        decimal_value = Decimal(to_str(raw_value))
-        return str(decimal_value.normalize())
+        decimal_value = Decimal(to_str(raw_value)).normalize()
+        return '{0:f}'.format(decimal_value)
 
     def _deserialize_number(stream):
         # type: (io.BytesIO) -> Dict[str, dynamodb_types.STRING]

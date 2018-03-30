@@ -71,6 +71,16 @@
             },
             "plaintext": "file://plaintext.json",
             "ciphertext": "file://ciphertext/wrapped-aes-hmac-1.json"
+        },
+        {
+            "version": "v1",
+            "provider": "awskms",
+            "keys": {
+                "decrypt": "awsKmsUsWest2",
+                "verify": "awsKmsUsWest2"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/aws-kms-direct-1.json"
         }
     ]
 }
