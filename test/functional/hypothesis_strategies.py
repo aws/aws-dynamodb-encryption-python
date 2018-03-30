@@ -51,6 +51,15 @@ NEGATIVE_NUMBER_RANGE = NumberRange(
 )
 
 
+def _valid_ddb_number(value):
+    try:
+        DYNAMODB_CONTEXT.create_decimal(float(value))
+    except Exception:
+        return False
+    else:
+        return True
+
+
 ddb_string = text(
     min_size=1,
     max_size=MAX_ITEM_BYTES,
@@ -64,17 +73,17 @@ ddb_string_set = sets(ddb_string, min_size=1)
 
 def _ddb_fraction_to_decimal(val):
     """Hypothesis does not support providing a custom Context, so working around that."""
-    return DYNAMODB_CONTEXT.create_decimal(Decimal(val.numerator) / Decimal(val.denominator))
+    return Decimal(val.numerator) / Decimal(val.denominator)
 
 
 _ddb_positive_numbers = fractions(
     min_value=POSITIVE_NUMBER_RANGE.min,
     max_value=POSITIVE_NUMBER_RANGE.max
-).map(_ddb_fraction_to_decimal)
+).map(_ddb_fraction_to_decimal).filter(_valid_ddb_number)
 _ddb_negative_numbers = fractions(
     min_value=NEGATIVE_NUMBER_RANGE.min,
     max_value=NEGATIVE_NUMBER_RANGE.max
-).map(_ddb_fraction_to_decimal)
+).map(_ddb_fraction_to_decimal).filter(_valid_ddb_number)
 
 ddb_number = _ddb_negative_numbers | just(Decimal('0')) | _ddb_positive_numbers
 ddb_number_set = sets(ddb_number, min_size=1)
