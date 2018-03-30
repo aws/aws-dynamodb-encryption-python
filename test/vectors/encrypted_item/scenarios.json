@@ -61,6 +61,16 @@
             },
             "plaintext": "file://plaintext.json",
             "ciphertext": "file://ciphertext/wrapped-rsa-rsa-3.json"
+        },
+        {
+            "version": "v1",
+            "provider": "wrapped",
+            "keys": {
+                "decrypt": "aesKey",
+                "verify": "hmacKey"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/wrapped-aes-hmac-1.json"
         }
     ]
 }
