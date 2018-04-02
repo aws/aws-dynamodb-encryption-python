@@ -13,7 +13,7 @@
 """Unique identifiers used by the DynamoDB Encryption Client."""
 from enum import Enum
 
-__all__ = ('LOGGER_NAME', 'ItemAction', 'EncryptionKeyTypes', 'KeyEncodingType')
+__all__ = ('LOGGER_NAME', 'ItemAction', 'EncryptionKeyType', 'KeyEncodingType')
 __version__ = '0.0.0'
 
 LOGGER_NAME = 'dynamodb_encryption_sdk'
@@ -42,7 +42,7 @@ class ItemAction(Enum):
         return self.value == other.value
 
 
-class EncryptionKeyTypes(Enum):
+class EncryptionKeyType(Enum):
     """Supported types of encryption keys."""
 
     SYMMETRIC = 0

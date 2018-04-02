@@ -15,6 +15,7 @@ from __future__ import division
 
 import base64
 from enum import Enum
+import logging
 
 import attr
 import boto3
@@ -33,7 +34,7 @@ except ImportError:  # pragma: no cover
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnknownRegionError, UnwrappingError, WrappingError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
@@ -42,6 +43,7 @@ from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint:
 from . import CryptographicMaterialsProvider
 
 __all__ = ('AwsKmsCryptographicMaterialsProvider',)
+_LOGGER = logging.getLogger(LOGGER_NAME)
 
 _COVERED_ATTR_CTX_KEY = 'aws-kms-ec-attr'
 _TABLE_NAME_EC_KEY = '*aws-kms-table*'
@@ -186,6 +188,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
                 region_name=region_name,
                 botocore_session=self._botocore_session
             ).client('kms')
+        return self._regional_clients[region_name]
 
     def _client(self, key_id):
         """Returns a boto3 KMS client for the appropriate region.
@@ -323,7 +326,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             response = self._client(key_id).generate_data_key(**kms_params)
             return response['Plaintext'], response['CiphertextBlob']
         except (botocore.exceptions.ClientError, KeyError):
-            raise WrappingError('TODO:SOMETHING')
+            message = 'Failed to generate materials using AWS KMS'
+            _LOGGER.exception(message)
+            raise WrappingError(message)
 
     def _decrypt_initial_material(self, encryption_context):
         # type: () -> bytes
@@ -359,7 +364,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             response = self._client(key_id).decrypt(**kms_params)
             return response['Plaintext']
         except (botocore.exceptions.ClientError, KeyError):
-            raise UnwrappingError('TODO:SOMETHING')
+            message = 'Failed to unwrap AWS KMS protected materials'
+            _LOGGER.exception(message)
+            raise UnwrappingError(message)
 
     def _hkdf(self, initial_material, key_length, info):
         # type: (bytes, int, Text) -> bytes
@@ -396,7 +403,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         return JceNameLocalDelegatedKey(
             key=raw_key,
             algorithm=key_info.algorithm,
-            key_type=EncryptionKeyTypes.SYMMETRIC,
+            key_type=EncryptionKeyType.SYMMETRIC,
             key_encoding=KeyEncodingType.RAW
         )
 
