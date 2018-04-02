@@ -197,18 +197,17 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         :returns: Boto3 KMS client for requested key id
         :rtype: botocore.client.KMS
         """
-        region = self._botocore_session.get_config_variable('region')
-        if region is None:
-            try:
-                region_name = key_id.split(':', 4)[3]
-                region = region_name
-            except IndexError:
-                if region is None:
-                    raise UnknownRegionError(
-                        'No default region found and no region determinable from key id: {}'.format(key_id)
-                    )
-        self._add_regional_client(region)
-        return self._regional_clients[region]
+        try:
+            key_region = key_id.split(':', 4)[3]
+            region = key_region
+        except IndexError:
+            session_region = self._botocore_session.get_config_variable('region')
+            if session_region is None:
+                raise UnknownRegionError(
+                    'No region determinable from key id: {} and no default region found in session'.format(key_id)
+                )
+            region = session_region
+        return self._add_regional_client(region)
 
     def _select_key_id(self, encryption_context):
         # type: (EncryptionContext) -> Text

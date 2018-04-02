@@ -274,6 +274,28 @@ def test_add_regional_client_unknown_region(default_kms_cmp, patch_boto3_session
     assert test is patch_boto3_session.return_value.client.return_value
 
 
+def test_client_use_region_from_session(default_kms_cmp, patch_add_regional_client):
+    mock_session = MagicMock()
+    mock_session.get_config_variable.return_value = sentinel.region
+    default_kms_cmp._botocore_session = mock_session
+
+    test = default_kms_cmp._client('')
+
+    patch_add_regional_client.assert_called_once_with(sentinel.region)
+    assert test is patch_add_regional_client.return_value
+
+
+def test_client_use_region_from_key_id(default_kms_cmp, patch_add_regional_client):
+    mock_session = MagicMock()
+    mock_session.get_config_variable.return_value = sentinel.region
+    default_kms_cmp._botocore_session = mock_session
+
+    test = default_kms_cmp._client(_KEY_ID)
+
+    patch_add_regional_client.assert_called_once_with(_REGION)
+    assert test is patch_add_regional_client.return_value
+
+
 def test_client_no_region_found(default_kms_cmp):
     mock_session = MagicMock()
     mock_session.get_config_variable.return_value = None
@@ -282,7 +304,7 @@ def test_client_no_region_found(default_kms_cmp):
     with pytest.raises(UnknownRegionError) as excinfo:
         default_kms_cmp._client('')
 
-    excinfo.match(r'No default region found and no region determinable from key id:*')
+    excinfo.match(r'No region determinable from key id:*')
 
 
 def test_select_id(default_kms_cmp):
