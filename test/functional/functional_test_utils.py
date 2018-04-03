@@ -25,6 +25,7 @@ import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
+from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
@@ -402,7 +403,8 @@ def cycle_batch_item_check(
         initial_actions,
         initial_item,
         write_transformer=_nop_transformer,
-        read_transformer=_nop_transformer
+        read_transformer=_nop_transformer,
+        table_name=TEST_TABLE_NAME
 ):
     """Check that cycling (plaintext->encrypted->decrypted) item batch has the expected results."""
     check_attribute_actions = initial_actions.copy()
@@ -415,7 +417,7 @@ def cycle_batch_item_check(
 
     _put_result = encrypted.batch_write_item(  # noqa
         RequestItems={
-            TEST_TABLE_NAME: [
+            table_name: [
                 {'PutRequest': {'Item': _item}}
                 for _item in items
             ]
@@ -425,13 +427,13 @@ def cycle_batch_item_check(
     ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
     encrypted_result = raw.batch_get_item(
         RequestItems={
-            TEST_TABLE_NAME: {
+            table_name: {
                 'Keys': ddb_keys
             }
         }
     )
     check_many_encrypted_items(
-        actual=encrypted_result['Responses'][TEST_TABLE_NAME],
+        actual=encrypted_result['Responses'][table_name],
         expected=items,
         attribute_actions=check_attribute_actions,
         transformer=read_transformer
@@ -439,20 +441,20 @@ def cycle_batch_item_check(
 
     decrypted_result = encrypted.batch_get_item(
         RequestItems={
-            TEST_TABLE_NAME: {
+            table_name: {
                 'Keys': ddb_keys
             }
         }
     )
     assert_equal_lists_of_items(
-        actual=decrypted_result['Responses'][TEST_TABLE_NAME],
+        actual=decrypted_result['Responses'][table_name],
         expected=items,
         transformer=read_transformer
     )
 
     _delete_result = encrypted.batch_write_item(  # noqa
         RequestItems={
-            TEST_TABLE_NAME: [
+            table_name: [
                 {'DeleteRequest': {'Key': _key}}
                 for _key in ddb_keys
             ]
@@ -482,10 +484,10 @@ def table_cycle_check(materials_provider, initial_actions, initial_item, table_n
     item = initial_item.copy()
     item.update(TEST_KEY)
 
-    table_kwargs = {}
+    kwargs = {}
     if region_name is not None:
-        table_kwargs['region_name'] = region_name
-    table = boto3.resource('dynamodb', **table_kwargs).Table(table_name)
+        kwargs['region_name'] = region_name
+    table = boto3.resource('dynamodb', **kwargs).Table(table_name)
     e_table = EncryptedTable(
         table=table,
         materials_provider=materials_provider,
@@ -503,3 +505,28 @@ def table_cycle_check(materials_provider, initial_actions, initial_item, table_n
     e_table.delete_item(Key=TEST_KEY)
     del item
     del check_attribute_actions
+
+
+def resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
+    kwargs = {}
+    if region_name is not None:
+        kwargs['region_name'] = region_name
+    resource = boto3.resource('dynamodb', **kwargs)
+    e_resource = EncryptedResource(
+        resource=resource,
+        materials_provider=materials_provider,
+        attribute_actions=initial_actions
+    )
+
+    cycle_batch_item_check(
+        raw=resource,
+        encrypted=e_resource,
+        initial_actions=initial_actions,
+        initial_item=initial_item,
+        table_name=table_name
+    )
+
+    raw_scan_result = resource.Table(table_name).scan()
+    e_scan_result = e_resource.Table(table_name).scan()
+    assert not raw_scan_result['Items']
+    assert not e_scan_result['Items']
