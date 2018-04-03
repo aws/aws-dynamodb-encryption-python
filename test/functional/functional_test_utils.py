@@ -24,10 +24,12 @@ from moto import mock_dynamodb2
 import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
+from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
 from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
+from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
@@ -528,5 +530,75 @@ def resource_cycle_batch_items_check(materials_provider, initial_actions, initia
 
     raw_scan_result = resource.Table(table_name).scan()
     e_scan_result = e_resource.Table(table_name).scan()
+    assert not raw_scan_result['Items']
+    assert not e_scan_result['Items']
+
+
+def client_cycle_single_item_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
+    check_attribute_actions = initial_actions.copy()
+    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+    item = initial_item.copy()
+    item.update(TEST_KEY)
+    ddb_item = dict_to_ddb(item)
+    ddb_key = dict_to_ddb(TEST_KEY)
+
+    kwargs = {}
+    if region_name is not None:
+        kwargs['region_name'] = region_name
+    client = boto3.client('dynamodb', **kwargs)
+    e_client = EncryptedClient(
+        client=client,
+        materials_provider=materials_provider,
+        attribute_actions=initial_actions
+    )
+
+    _put_result = e_client.put_item(  # noqa
+        TableName=table_name,
+        Item=ddb_item
+    )
+
+    encrypted_result = client.get_item(
+        TableName=table_name,
+        Key=ddb_key
+    )
+    check_encrypted_item(item, ddb_to_dict(encrypted_result['Item']), check_attribute_actions)
+
+    decrypted_result = e_client.get_item(
+        TableName=table_name,
+        Key=ddb_key
+    )
+    assert ddb_to_dict(decrypted_result['Item']) == item
+
+    e_client.delete_item(
+        TableName=table_name,
+        Key=ddb_key
+    )
+    del item
+    del check_attribute_actions
+
+
+def client_cycle_batch_items_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
+    kwargs = {}
+    if region_name is not None:
+        kwargs['region_name'] = region_name
+    client = boto3.client('dynamodb', **kwargs)
+    e_client = EncryptedClient(
+        client=client,
+        materials_provider=materials_provider,
+        attribute_actions=initial_actions
+    )
+
+    cycle_batch_item_check(
+        raw=client,
+        encrypted=e_client,
+        initial_actions=initial_actions,
+        initial_item=initial_item,
+        write_transformer=dict_to_ddb,
+        read_transformer=ddb_to_dict,
+        table_name=table_name
+    )
+
+    raw_scan_result = client.scan(TableName=table_name)
+    e_scan_result = e_client.scan(TableName=table_name)
     assert not raw_scan_result['Items']
     assert not e_scan_result['Items']

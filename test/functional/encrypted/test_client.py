@@ -11,15 +11,13 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Functional tests for ``dynamodb_encryption_sdk.encrypted.client``."""
-import boto3
 import hypothesis
 import pytest
 
-from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
-from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
 from ..functional_test_utils import (
-    check_encrypted_item, cycle_batch_item_check, set_parametrized_actions, set_parametrized_cmp,
-    set_parametrized_item, TEST_KEY, TEST_TABLE_NAME
+    client_cycle_batch_items_check, client_cycle_single_item_check,
+    set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
+    TEST_TABLE_NAME
 )
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
@@ -34,66 +32,23 @@ def pytest_generate_tests(metafunc):
 
 
 def _client_cycle_single_item_check(materials_provider, initial_actions, initial_item):
-    check_attribute_actions = initial_actions.copy()
-    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
-    item = initial_item.copy()
-    item.update(TEST_KEY)
-    ddb_item = dict_to_ddb(item)
-    ddb_key = dict_to_ddb(TEST_KEY)
-
-    client = boto3.client('dynamodb', region_name='us-west-2')
-    e_client = EncryptedClient(
-        client=client,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions
+    return client_cycle_single_item_check(
+        materials_provider,
+        initial_actions,
+        initial_item,
+        TEST_TABLE_NAME,
+        'us-west-2'
     )
-
-    _put_result = e_client.put_item(  # noqa
-        TableName=TEST_TABLE_NAME,
-        Item=ddb_item
-    )
-
-    encrypted_result = client.get_item(
-        TableName=TEST_TABLE_NAME,
-        Key=ddb_key
-    )
-    check_encrypted_item(item, ddb_to_dict(encrypted_result['Item']), check_attribute_actions)
-
-    decrypted_result = e_client.get_item(
-        TableName=TEST_TABLE_NAME,
-        Key=ddb_key
-    )
-    assert ddb_to_dict(decrypted_result['Item']) == item
-
-    e_client.delete_item(
-        TableName=TEST_TABLE_NAME,
-        Key=ddb_key
-    )
-    del item
-    del check_attribute_actions
 
 
 def _client_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
-    client = boto3.client('dynamodb', region_name='us-west-2')
-    e_client = EncryptedClient(
-        client=client,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions
+    return client_cycle_batch_items_check(
+        materials_provider,
+        initial_actions,
+        initial_item,
+        TEST_TABLE_NAME,
+        'us-west-2'
     )
-
-    cycle_batch_item_check(
-        raw=client,
-        encrypted=e_client,
-        initial_actions=initial_actions,
-        initial_item=initial_item,
-        write_transformer=dict_to_ddb,
-        read_transformer=ddb_to_dict
-    )
-
-    raw_scan_result = client.scan(TableName=TEST_TABLE_NAME)
-    e_scan_result = e_client.scan(TableName=TEST_TABLE_NAME)
-    assert not raw_scan_result['Items']
-    assert not e_scan_result['Items']
 
 
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
