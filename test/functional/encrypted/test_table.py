@@ -11,14 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Functional tests for ``dynamodb_encryption_sdk.encrypted.table``."""
-import boto3
 import hypothesis
 import pytest
 
-from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from ..functional_test_utils import (
-    check_encrypted_item, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
-    TEST_KEY, TEST_TABLE_NAME
+    set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
+    table_cycle_check, TEST_TABLE_NAME
 )
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
@@ -33,29 +31,7 @@ def pytest_generate_tests(metafunc):
 
 
 def _table_cycle_check(materials_provider, initial_actions, initial_item):
-    check_attribute_actions = initial_actions.copy()
-    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
-    item = initial_item.copy()
-    item.update(TEST_KEY)
-
-    table = boto3.resource('dynamodb', region_name='us-west-2').Table(TEST_TABLE_NAME)
-    e_table = EncryptedTable(
-        table=table,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions,
-    )
-
-    _put_result = e_table.put_item(Item=item)  # noqa
-
-    encrypted_result = table.get_item(Key=TEST_KEY)
-    check_encrypted_item(item, encrypted_result['Item'], check_attribute_actions)
-
-    decrypted_result = e_table.get_item(Key=TEST_KEY)
-    assert decrypted_result['Item'] == item
-
-    e_table.delete_item(Key=TEST_KEY)
-    del item
-    del check_attribute_actions
+    return table_cycle_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, 'us-west-2')
 
 
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
