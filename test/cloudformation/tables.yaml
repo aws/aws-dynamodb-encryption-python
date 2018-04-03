@@ -1,0 +1,28 @@
+Description: Create DynamoDB tables for use in the DynamoDB Encryption Client for Python integration tests.
+Resources:
+    TestTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            AttributeDefinitions:
+                -
+                    AttributeName: partition_attribute
+                    AttributeType: S
+                -
+                    AttributeName: sort_attribute
+                    AttributeType: N
+            KeySchema:
+                -
+                    AttributeName: partition_attribute
+                    KeyType: HASH
+                -
+                    AttributeName: sort_attribute
+                    KeyType: RANGE
+            ProvisionedThroughput:
+                ReadCapacityUnits: 100
+                WriteCapacityUnits: 100
+Outputs:
+    TestTableName:
+        Description: Name of test table.
+        Value: !Ref TestTable
+        Export:
+            Name: DynamoDB-Encryption-Client-Test-Table
