@@ -19,7 +19,7 @@ import os
 
 from boto3.dynamodb.types import Binary
 
-from dynamodb_encryption_sdk.identifiers import ItemAction
+from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.structures import AttributeActions
 
 _ATTRIBUTE_TEST_VECTOR_FILE_TEMPLATE = os.path.join(
@@ -133,9 +133,9 @@ def material_description_test_vectors():
 
 
 ACTION_MAP = {
-    'encrypt': ItemAction.ENCRYPT_AND_SIGN,
-    'sign': ItemAction.SIGN_ONLY,
-    'nothing': ItemAction.DO_NOTHING
+    'encrypt': CryptoAction.ENCRYPT_AND_SIGN,
+    'sign': CryptoAction.SIGN_ONLY,
+    'nothing': CryptoAction.DO_NOTHING
 }
 
 
@@ -149,7 +149,7 @@ def string_to_sign_test_vectors():
         }
         bare_actions = {key: ACTION_MAP[value['action']] for key, value in vector['item'].items()}
         attribute_actions = AttributeActions(
-            default_action=ItemAction.DO_NOTHING,
+            default_action=CryptoAction.DO_NOTHING,
             attribute_actions=bare_actions
         )
         yield (
