@@ -10,13 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Example showing use of AWS KMS CMP with EncryptedTable."""
+"""Example showing use of AWS KMS CMP with item encryption functions directly."""
 import boto3
 from boto3.dynamodb.types import Binary
-from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
+from dynamodb_encryption_sdk.encrypted import CryptoConfig
+from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.identifiers import CryptoAction
+from dynamodb_encryption_sdk.internal.formatting.transform import dict_to_ddb
 from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
-from dynamodb_encryption_sdk.structures import AttributeActions
+from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext, TableInfo
 
 
 def encrypt_item(table_name, aws_cmk_id):
@@ -42,30 +44,52 @@ def encrypt_item(table_name, aws_cmk_id):
 
     # Create a normal table resource.
     table = boto3.resource('dynamodb').Table(table_name)
+
+    # Use the TableInfo helper to collect information about the indexes.
+    table_info = TableInfo(name=table_name)
+    table_info.refresh_indexed_attributes(table.meta.client)
+
     # Create a crypto materials provider using the specified AWS KMS key.
     aws_kms_cmp = AwsKmsCryptographicMaterialsProvider(key_id=aws_cmk_id)
-    # Create attribute actions that tells the encrypted table to encrypt all attributes except one.
+
+    encryption_context = EncryptionContext(
+        table_name=table_name,
+        partition_key_name=table_info.primary_index.partition,
+        sort_key_name=table_info.primary_index.sort,
+        # The only attributes that are used by the AWS KMS cryptographic materials providers
+        # are the primary index attributes.
+        # These attributes need to be in the form of a DynamoDB JSON structure, so first
+        # convert the standard dictionary.
+        attributes=dict_to_ddb(index_key)
+    )
+
+    # Create attribute actions that tells the encrypted table to encrypt all attributes
+    # except the primary index attributes and the one identified attribute to ignore.
     actions = AttributeActions(
         default_action=CryptoAction.ENCRYPT_AND_SIGN,
         attribute_actions={
-            'leave me': CryptoAction.DO_NOTHING
+            name: CryptoAction.DO_NOTHING
+            for name in set(['leave me']).union(table_info.protected_index_keys())
         }
     )
-    # Use these objects to create an encrypted table resource.
-    encrypted_table = EncryptedTable(
-        table=table,
+
+    # Build the crypto config to use for this item.
+    # When using the higher-level helpers, this is handled for you.
+    crypto_config = CryptoConfig(
         materials_provider=aws_kms_cmp,
+        encryption_context=encryption_context,
         attribute_actions=actions
     )
 
-    # Put the item to the table, using the encrypted table resource to transparently encrypt it.
-    encrypted_table.put_item(Item=plaintext_item)
+    # Encrypt the plaintext item directly
+    encrypted_item = encrypt_python_item(plaintext_item, crypto_config)
 
-    # Get the encrypted item using the standard table resource.
-    encrypted_item = table.get_item(Key=index_key)['Item']
+    # You could now put the encrypted item to DynamoDB just as you would any other item.
+    # table.put_item(Item=encrypted_item)
+    # We will skip this for the purposes of this example.
 
-    # Get the item using the encrypted table resource, transparently decyrpting it.
-    decrypted_item = encrypted_table.get_item(Key=index_key)['Item']
+    # Decrypt the encrypted item directly
+    decrypted_item = decrypt_python_item(encrypted_item, crypto_config)
 
     # Verify that all of the attributes are different in the encrypted item
     for name in encrypted_attributes:
@@ -75,6 +99,3 @@ def encrypt_item(table_name, aws_cmk_id):
     # Verify that all of the attributes that should not be encrypted were not.
     for name in unencrypted_attributes:
         assert decrypted_item[name] == encrypted_item[name] == plaintext_item[name]
-
-    # Clean up the item
-    encrypted_table.delete_item(Key=index_key)
