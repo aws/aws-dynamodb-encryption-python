@@ -11,12 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Functional tests for ``dynamodb_encryption_sdk.encrypted.resource``."""
-import boto3
 import pytest
 
-from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from ..functional_test_utils import (
-    cycle_batch_item_check, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item, TEST_TABLE_NAME
+    resource_cycle_batch_items_check, set_parametrized_actions,
+    set_parametrized_cmp, set_parametrized_item, TEST_TABLE_NAME
 )
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 
@@ -30,24 +29,7 @@ def pytest_generate_tests(metafunc):
 
 
 def _resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
-    resource = boto3.resource('dynamodb', region_name='us-west-2')
-    e_resource = EncryptedResource(
-        resource=resource,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions
-    )
-
-    cycle_batch_item_check(
-        raw=resource,
-        encrypted=e_resource,
-        initial_actions=initial_actions,
-        initial_item=initial_item
-    )
-
-    raw_scan_result = resource.Table(TEST_TABLE_NAME).scan()
-    e_scan_result = e_resource.Table(TEST_TABLE_NAME).scan()
-    assert not raw_scan_result['Items']
-    assert not e_scan_result['Items']
+    resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, 'us-west-2')
 
 
 def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
