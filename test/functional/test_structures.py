@@ -14,7 +14,7 @@
 import pytest
 
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
-from dynamodb_encryption_sdk.identifiers import ItemAction
+from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.structures import AttributeActions, TableIndex
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
@@ -61,15 +61,15 @@ def test_tableindex_from_key_schema(key_schema, expected_kwargs):
 
 
 @pytest.mark.parametrize('default, overrides, expected_result', (
-    (ItemAction.ENCRYPT_AND_SIGN, {}, ItemAction.SIGN_ONLY),
-    (ItemAction.SIGN_ONLY, {}, ItemAction.SIGN_ONLY),
-    (ItemAction.DO_NOTHING, {}, ItemAction.DO_NOTHING),
-    (ItemAction.ENCRYPT_AND_SIGN, {'indexed_attribute': ItemAction.SIGN_ONLY}, ItemAction.SIGN_ONLY),
-    (ItemAction.ENCRYPT_AND_SIGN, {'indexed_attribute': ItemAction.DO_NOTHING}, ItemAction.DO_NOTHING),
-    (ItemAction.SIGN_ONLY, {'indexed_attribute': ItemAction.SIGN_ONLY}, ItemAction.SIGN_ONLY),
-    (ItemAction.SIGN_ONLY, {'indexed_attribute': ItemAction.DO_NOTHING}, ItemAction.DO_NOTHING),
-    (ItemAction.DO_NOTHING, {'indexed_attribute': ItemAction.SIGN_ONLY}, ItemAction.SIGN_ONLY),
-    (ItemAction.DO_NOTHING, {'indexed_attribute': ItemAction.DO_NOTHING}, ItemAction.DO_NOTHING)
+    (CryptoAction.ENCRYPT_AND_SIGN, {}, CryptoAction.SIGN_ONLY),
+    (CryptoAction.SIGN_ONLY, {}, CryptoAction.SIGN_ONLY),
+    (CryptoAction.DO_NOTHING, {}, CryptoAction.DO_NOTHING),
+    (CryptoAction.ENCRYPT_AND_SIGN, {'indexed_attribute': CryptoAction.SIGN_ONLY}, CryptoAction.SIGN_ONLY),
+    (CryptoAction.ENCRYPT_AND_SIGN, {'indexed_attribute': CryptoAction.DO_NOTHING}, CryptoAction.DO_NOTHING),
+    (CryptoAction.SIGN_ONLY, {'indexed_attribute': CryptoAction.SIGN_ONLY}, CryptoAction.SIGN_ONLY),
+    (CryptoAction.SIGN_ONLY, {'indexed_attribute': CryptoAction.DO_NOTHING}, CryptoAction.DO_NOTHING),
+    (CryptoAction.DO_NOTHING, {'indexed_attribute': CryptoAction.SIGN_ONLY}, CryptoAction.SIGN_ONLY),
+    (CryptoAction.DO_NOTHING, {'indexed_attribute': CryptoAction.DO_NOTHING}, CryptoAction.DO_NOTHING)
 ))
 def test_attribute_actions_index_override(default, overrides, expected_result):
     test = AttributeActions(default_action=default, attribute_actions=overrides)
@@ -78,11 +78,11 @@ def test_attribute_actions_index_override(default, overrides, expected_result):
     assert test.action('indexed_attribute') is expected_result
 
 
-@pytest.mark.parametrize('default', ItemAction)
+@pytest.mark.parametrize('default', CryptoAction)
 def test_attribute_actions_index_override_fail(default):
     test = AttributeActions(
         default_action=default,
-        attribute_actions={'indexed_attribute': ItemAction.ENCRYPT_AND_SIGN}
+        attribute_actions={'indexed_attribute': CryptoAction.ENCRYPT_AND_SIGN}
     )
 
     with pytest.raises(InvalidArgumentError) as excinfo:
