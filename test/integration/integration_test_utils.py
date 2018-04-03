@@ -29,6 +29,7 @@ import functional_test_utils  # noqa: E402,F401,I100 pylint: disable=import-erro
 import hypothesis_strategies  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
 
 AWS_KMS_KEY_ID = 'AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID'
+DDB_TABLE_NAME = 'DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME'
 
 
 @pytest.fixture
@@ -49,3 +50,19 @@ def cmk_arn():
 @pytest.fixture
 def aws_kms_cmp():
     return AwsKmsCryptographicMaterialsProvider(key_id=cmk_arn())
+
+
+@pytest.fixture
+def ddb_table_name():
+    """Retrieve the target DynamoDB table from environment variable."""
+    try:
+        return os.environ[DDB_TABLE_NAME]
+    except KeyError:
+        raise ValueError(
+            (
+                'Environment variable "{}" must be set to the correct DynamoDB table name'
+                ' for integration tests to run'
+            ).format(
+                AWS_KMS_KEY_ID
+            )
+        )
