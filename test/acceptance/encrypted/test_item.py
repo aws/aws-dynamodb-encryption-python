@@ -18,7 +18,7 @@ from dynamodb_encryption_sdk.encrypted.item import decrypt_dynamodb_item
 from dynamodb_encryption_sdk.structures import EncryptionContext
 from ..acceptance_test_utils import load_scenarios
 
-pytestmark = [pytest.mark.acceptance, pytest.mark.integ]
+pytestmark = [pytest.mark.accept, pytest.mark.integ]
 
 
 @pytest.mark.parametrize(
