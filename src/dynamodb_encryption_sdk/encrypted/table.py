@@ -32,6 +32,16 @@ class EncryptedTable(object):
     # pylint: disable=too-few-public-methods
     """High-level helper class to provide a familiar interface to encrypted tables.
 
+    >>> import boto3
+    >>> from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
+    >>> from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
+    >>> table = boto3.resource('dynamodb').Table('my_table')
+    >>> aws_kms_cmp = AwsKmsCryptographicMaterialsProvider('alias/MyKmsAlias')
+    >>> encrypted_table = EncryptedTable(
+    ...     table=table,
+    ...     materials_provider=aws_kms_cmp
+    ... )
+
     .. note::
 
         This class provides a superset of the boto3 DynamoDB Table API, so should work as

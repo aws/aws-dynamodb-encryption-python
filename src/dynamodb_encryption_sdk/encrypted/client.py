@@ -33,6 +33,16 @@ class EncryptedClient(object):
     # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """High-level helper class to provide a familiar interface to encrypted tables.
 
+    >>> import boto3
+    >>> from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
+    >>> from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
+    >>> client = boto3.client('dynamodb')
+    >>> aws_kms_cmp = AwsKmsCryptographicMaterialsProvider('alias/MyKmsAlias')
+    >>> encrypted_client = EncryptedClient(
+    ...     client=client,
+    ...     materials_provider=aws_kms_cmp
+    ... )
+
     .. note::
 
         This class provides a superset of the boto3 DynamoDB client API, so should work as
