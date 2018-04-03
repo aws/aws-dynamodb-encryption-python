@@ -25,6 +25,7 @@ import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
+from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
@@ -473,3 +474,32 @@ def cycle_item_check(plaintext_item, crypto_config):
     assert cycled_item == plaintext_item
     del ciphertext_item
     del cycled_item
+
+
+def table_cycle_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
+    check_attribute_actions = initial_actions.copy()
+    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+    item = initial_item.copy()
+    item.update(TEST_KEY)
+
+    table_kwargs = {}
+    if region_name is not None:
+        table_kwargs['region_name'] = region_name
+    table = boto3.resource('dynamodb', **table_kwargs).Table(table_name)
+    e_table = EncryptedTable(
+        table=table,
+        materials_provider=materials_provider,
+        attribute_actions=initial_actions,
+    )
+
+    _put_result = e_table.put_item(Item=item)  # noqa
+
+    encrypted_result = table.get_item(Key=TEST_KEY)
+    check_encrypted_item(item, encrypted_result['Item'], check_attribute_actions)
+
+    decrypted_result = e_table.get_item(Key=TEST_KEY)
+    assert decrypted_result['Item'] == item
+
+    e_table.delete_item(Key=TEST_KEY)
+    del item
+    del check_attribute_actions
