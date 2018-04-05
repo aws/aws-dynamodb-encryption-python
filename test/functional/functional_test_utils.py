@@ -399,6 +399,15 @@ def check_many_encrypted_items(actual, expected, attribute_actions, transformer=
         )
 
 
+def _generate_items(initial_item, write_transformer):
+    items = []
+    for key in TEST_BATCH_KEYS:
+        _item = initial_item.copy()
+        _item.update(key)
+        items.append(write_transformer(_item))
+    return items
+
+
 def cycle_batch_item_check(
         raw,
         encrypted,
@@ -411,11 +420,7 @@ def cycle_batch_item_check(
     """Check that cycling (plaintext->encrypted->decrypted) item batch has the expected results."""
     check_attribute_actions = initial_actions.copy()
     check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
-    items = []
-    for key in TEST_BATCH_KEYS:
-        _item = initial_item.copy()
-        _item.update(key)
-        items.append(write_transformer(_item))
+    items = _generate_items(initial_item, write_transformer)
 
     _put_result = encrypted.batch_write_item(  # noqa
         RequestItems={
@@ -467,6 +472,48 @@ def cycle_batch_item_check(
     del items
 
 
+def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initial_item):
+    """Check that cycling (plaintext->encrypted->decrypted) items with the Table batch writer
+    has the expected results.
+    """
+    check_attribute_actions = initial_actions.copy()
+    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+    items = _generate_items(initial_item, _nop_transformer)
+
+    with encrypted_table.batch_writer() as writer:
+        for item in items:
+            writer.put_item(item)
+
+    ddb_keys = [key for key in TEST_BATCH_KEYS]
+    encrypted_items = [
+        raw_table.get_item(Key=key)['Item']
+        for key in ddb_keys
+    ]
+    check_many_encrypted_items(
+        actual=encrypted_items,
+        expected=items,
+        attribute_actions=check_attribute_actions,
+        transformer=_nop_transformer
+    )
+
+    decrypted_result = [
+        encrypted_table.get_item(Key=key)['Item']
+        for key in ddb_keys
+    ]
+    assert_equal_lists_of_items(
+        actual=decrypted_result,
+        expected=items,
+        transformer=_nop_transformer
+    )
+
+    with encrypted_table.batch_writer() as writer:
+        for key in ddb_keys:
+            writer.delete_item(key)
+
+    del check_attribute_actions
+    del items
+
+
 def cycle_item_check(plaintext_item, crypto_config):
     """Check that cycling (plaintext->encrypted->decrypted) an item has the expected results."""
     ciphertext_item = encrypt_python_item(plaintext_item, crypto_config)
@@ -507,6 +554,20 @@ def table_cycle_check(materials_provider, initial_actions, initial_item, table_n
     e_table.delete_item(Key=TEST_KEY)
     del item
     del check_attribute_actions
+
+
+def table_cycle_batch_writer_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
+    kwargs = {}
+    if region_name is not None:
+        kwargs['region_name'] = region_name
+    table = boto3.resource('dynamodb', **kwargs).Table(table_name)
+    e_table = EncryptedTable(
+        table=table,
+        materials_provider=materials_provider,
+        attribute_actions=initial_actions,
+    )
+
+    cycle_batch_writer_check(table, e_table, initial_actions, initial_item)
 
 
 def resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):

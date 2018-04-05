@@ -16,7 +16,7 @@ import pytest
 
 from ..functional_test_utils import (
     set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
-    table_cycle_check, TEST_TABLE_NAME
+    table_cycle_batch_writer_check, table_cycle_check, TEST_TABLE_NAME
 )
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
@@ -39,10 +39,21 @@ def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, pa
     _table_cycle_check(some_cmps, parametrized_actions, parametrized_item)
 
 
+def test_ephemeral_item_cycle_batch_writer(example_table, some_cmps, parametrized_actions, parametrized_item):
+    """Test a small number of curated CMPs against a small number of curated items."""
+    table_cycle_batch_writer_check(some_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, 'us-west-2')
+
+
 @pytest.mark.slow
 def test_ephemeral_item_cycle_slow(example_table, all_the_cmps, parametrized_actions, parametrized_item):
     """Test ALL THE CMPS against a small number of curated items."""
     _table_cycle_check(all_the_cmps, parametrized_actions, parametrized_item)
+
+
+@pytest.mark.slow
+def test_ephemeral_item_cycle_batch_writer_slow(example_table, all_the_cmps, parametrized_actions, parametrized_item):
+    """Test a small number of curated CMPs against a small number of curated items."""
+    table_cycle_batch_writer_check(all_the_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, 'us-west-2')
 
 
 @pytest.mark.slow
