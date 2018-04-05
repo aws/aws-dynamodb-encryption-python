@@ -23,7 +23,7 @@ from dynamodb_encryption_sdk.internal.utils import (
 )
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions
-from .item import decrypt_dynamodb_item, encrypt_dynamodb_item
+from .item import decrypt_dynamodb_item, decrypt_python_item, encrypt_dynamodb_item, encrypt_python_item
 
 __all__ = ('EncryptedClient',)
 
@@ -49,6 +49,17 @@ class EncryptedClient(object):
 
         We do not currently support the ``update_item`` method.
 
+    :param table: Pre-configured boto3 DynamoDB client object
+    :type table: boto3.resources.base.BaseClient
+    :param materials_provider: Cryptographic materials provider to use
+    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+    :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
+    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
+        Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
+    :param bool expect_standard_dictionaries: Should we expect items to be standard Python
+        dictionaries? This should only be set to True if you are using a client obtained
+        from a service resource or table resource (ex: ``table.meta.client``). (default: False)
     """
 
     _client = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
@@ -61,9 +72,19 @@ class EncryptedClient(object):
         validator=attr.validators.instance_of(bool),
         default=True
     )
+    _expect_standard_dictionaries = attr.ib(
+        validator=attr.validators.instance_of(bool),
+        default=False
+    )
 
     def __attrs_post_init__(self):
         """Set up the table info cache and translation methods."""
+        if self._expect_standard_dictionaries:
+            self._encrypt_item = encrypt_python_item
+            self._decrypt_item = decrypt_python_item
+        else:
+            self._encrypt_item = encrypt_dynamodb_item
+            self._decrypt_item = decrypt_dynamodb_item
         self._table_info_cache = TableInfoCache(  # attrs confuses pylint: disable=attribute-defined-outside-init
             client=self._client,
             auto_refresh_table_indexes=self._auto_refresh_table_indexes
@@ -80,37 +101,37 @@ class EncryptedClient(object):
         )
         self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_get_item,
-            decrypt_dynamodb_item,
+            self._decrypt_item,
             self._item_crypto_config,
             self._client.get_item
         )
         self.put_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             encrypt_put_item,
-            encrypt_dynamodb_item,
+            self._encrypt_item,
             self._item_crypto_config,
             self._client.put_item
         )
         self.query = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_multi_get,
-            decrypt_dynamodb_item,
+            self._decrypt_item,
             self._item_crypto_config,
             self._client.query
         )
         self.scan = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_multi_get,
-            decrypt_dynamodb_item,
+            self._decrypt_item,
             self._item_crypto_config,
             self._client.scan
         )
         self.batch_get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_batch_get_item,
-            decrypt_dynamodb_item,
+            self._decrypt_item,
             self._table_crypto_config,
             self._client.batch_get_item
         )
         self.batch_write_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             encrypt_batch_write_item,
-            encrypt_dynamodb_item,
+            self._encrypt_item,
             self._table_crypto_config,
             self._client.batch_write_item
         )
