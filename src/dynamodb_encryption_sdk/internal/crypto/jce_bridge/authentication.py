@@ -282,6 +282,7 @@ class JavaSignature(JavaAuthenticator):
 # Additional possible JCE names that we might support in the future if needed
 # HmacSHA1
 # SHA(1|224|256|384|512)with(|EC)DSA
+# If this changes, remember to update the JceNameLocalDelegatedKey docs.
 JAVA_AUTHENTICATOR = {
     'HmacSHA224': JavaMac('HmacSHA224', hmac.HMAC, hashes.SHA224),
     'HmacSHA256': JavaMac('HmacSHA256', hmac.HMAC, hashes.SHA256),

@@ -70,6 +70,35 @@ class JceNameLocalDelegatedKey(DelegatedKey):
     # pylint: disable=too-many-instance-attributes
     """Delegated key that uses JCE StandardName algorithm values to determine behavior.
 
+    Accepted algorithm names for this include:
+
+    * `JCE Mac names`_ (for a signing key)
+
+        * **HmacSHA512**
+        * **HmacSHA256**
+        * **HmacSHA384**
+        * **HmacSHA224**
+
+    * `JCE Signature names`_ (for a signing key)
+
+        * **SHA512withRSA**
+        * **SHA256withRSA**
+        * **SHA384withRSA**
+        * **SHA224withRSA**
+
+    * `JCE Cipher names`_ (for an encryption key)
+
+        * **RSA**
+        * **AES**
+        * **AESWrap**
+
+    .. _JCE Mac names:
+        https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Mac
+    .. _JCE Signature names:
+        https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Signature
+    .. _JCE Cipher names:
+        https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
+
     :param bytes key: Raw key bytes
     :param str algorithm: JCE Standard Algorithm Name
     :param key_type: Identifies what type of key is being provided
