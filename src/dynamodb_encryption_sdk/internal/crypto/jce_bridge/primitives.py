@@ -480,6 +480,7 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             raise DecryptionError(error_message)
 
 
+# If this changes, remember to update the JceNameLocalDelegatedKey docs.
 JAVA_ENCRYPTION_ALGORITHM = {
     'RSA': JavaAsymmetricEncryptionAlgorithm('RSA', rsa),
     'AES': JavaSymmetricEncryptionAlgorithm('AES', algorithms.AES),
