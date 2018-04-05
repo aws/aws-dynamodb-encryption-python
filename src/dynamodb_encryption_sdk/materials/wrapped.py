@@ -11,8 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Cryptographic materials to use ephemeral content encryption keys wrapped by delegated keys."""
-from __future__ import division
-
 import base64
 import copy
 
@@ -140,7 +138,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         args = self._content_key_algorithm.split('/', 1)
         content_algorithm = args[0]
         try:
-            content_key_length = int(args[1]) // 8
+            content_key_length = int(args[1])
         except IndexError:
             content_key_length = None
         content_key = JceNameLocalDelegatedKey.generate(
