@@ -18,7 +18,7 @@ import pytest
 from dynamodb_encryption_sdk.exceptions import DeserializationError, SerializationError
 from dynamodb_encryption_sdk.internal.formatting.deserialize.attribute import deserialize_attribute
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
-from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
+from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
 from ...functional_test_vector_generators import attribute_test_vectors
 from ...hypothesis_strategies import ddb_attribute_values, ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 

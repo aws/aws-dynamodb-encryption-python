@@ -24,10 +24,10 @@ from dynamodb_encryption_sdk.internal.crypto.encryption import decrypt_attribute
 from dynamodb_encryption_sdk.internal.formatting.material_description import (
     deserialize as deserialize_material_description, serialize as serialize_material_description
 )
-from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
 from dynamodb_encryption_sdk.internal.identifiers import (
     MaterialDescriptionKeys, MaterialDescriptionValues, ReservedAttributes
 )
+from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
 from . import CryptoConfig  # noqa pylint: disable=unused-import
 
 __all__ = ('encrypt_dynamodb_item', 'encrypt_python_item', 'decrypt_dynamodb_item', 'decrypt_python_item')

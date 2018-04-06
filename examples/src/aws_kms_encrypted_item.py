@@ -16,9 +16,9 @@ from boto3.dynamodb.types import Binary
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.identifiers import CryptoAction
-from dynamodb_encryption_sdk.internal.formatting.transform import dict_to_ddb
 from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext, TableInfo
+from dynamodb_encryption_sdk.transform import dict_to_ddb
 
 
 def encrypt_item(table_name, aws_cmk_id):
