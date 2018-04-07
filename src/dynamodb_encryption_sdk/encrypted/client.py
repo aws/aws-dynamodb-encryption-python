@@ -14,18 +14,74 @@
 from functools import partial
 
 import attr
-import botocore.client
+import botocore
 
 from dynamodb_encryption_sdk.internal.utils import (
     crypto_config_from_cache, crypto_config_from_kwargs,
     decrypt_batch_get_item, decrypt_get_item, decrypt_multi_get,
-    encrypt_batch_write_item, encrypt_put_item, TableInfoCache
+    encrypt_batch_write_item, encrypt_put_item, TableInfoCache,
+    validate_get_arguments
 )
+from dynamodb_encryption_sdk.internal.validators import callable_validator
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions
 from .item import decrypt_dynamodb_item, decrypt_python_item, encrypt_dynamodb_item, encrypt_python_item
 
 __all__ = ('EncryptedClient',)
+
+
+@attr.s
+class EncryptedPaginator(object):
+    """Paginator that decrypts returned items before returning them.
+
+    :param paginator: Pre-configured boto3 DynamoDB paginator object
+    :type paginator: botocore.paginate.Paginator
+    :param decrypt_method: Item decryptor method from ``dynamodb_encryption_sdk.encrypted.item``
+    :param callable crypto_config_method: Callable that returns a crypto config
+    """
+
+    _paginator = attr.ib(validator=attr.validators.instance_of(botocore.paginate.Paginator))
+    _decrypt_method = attr.ib()
+    _crypto_config_method = attr.ib(validator=callable_validator)
+
+    @_decrypt_method.validator
+    def validate_decrypt_method(self, attribute, value):
+        # pylint: disable=unused-argument
+        """Validate that _decrypt_method is one of the item encryptors."""
+        if self._decrypt_method not in (decrypt_python_item, decrypt_dynamodb_item):
+            raise ValueError(
+                '"{name}" must be an item decryptor from dynamodb_encryption_sdk.encrypted.item'.format(
+                    name=attribute.name
+                )
+            )
+
+    def __getattr__(self, name):
+        """Catch any method/attribute lookups that are not defined in this class and try
+        to find them on the provided client object.
+
+        :param str name: Attribute name
+        :returns: Result of asking the provided client object for that attribute name
+        :raises AttributeError: if attribute is not found on provided client object
+        """
+        return getattr(self._paginator, name)
+
+    def paginate(self, **kwargs):
+        # type: (**Any) -> Dict
+        # TODO: narrow this down
+        """Create an iterator that will paginate through responses from the underlying paginator,
+        transparently decrypting any returned items.
+        """
+        validate_get_arguments(kwargs)
+
+        crypto_config, ddb_kwargs = self._crypto_config_method(**kwargs)
+
+        for page in self._paginator.paginate(**ddb_kwargs):
+            for pos, value in enumerate(page['Items']):
+                page['Items'][pos] = self._decrypt_method(
+                    item=value,
+                    crypto_config=crypto_config
+                )
+            yield page
 
 
 @attr.s
@@ -149,3 +205,16 @@ class EncryptedClient(object):
     def update_item(self, **kwargs):
         """Update item is not yet supported."""
         raise NotImplementedError('"update_item" is not yet implemented')
+
+    def get_paginator(self, operation_name):
+        """"""
+        paginator = self._client.get_paginator(operation_name)
+
+        if operation_name in ('scan', 'query'):
+            return EncryptedPaginator(
+                paginator=paginator,
+                decrypt_method=self._decrypt_item,
+                crypto_config_method=self._item_crypto_config
+            )
+
+        return paginator

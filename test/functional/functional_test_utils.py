@@ -408,6 +408,18 @@ def _generate_items(initial_item, write_transformer):
     return items
 
 
+def _cleanup_items(encrypted, write_transformer, table_name=TEST_TABLE_NAME):
+    ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
+    _delete_result = encrypted.batch_write_item(  # noqa
+        RequestItems={
+            table_name: [
+                {'DeleteRequest': {'Key': _key}}
+                for _key in ddb_keys
+            ]
+        }
+    )
+
+
 def cycle_batch_item_check(
         raw,
         encrypted,
@@ -415,7 +427,8 @@ def cycle_batch_item_check(
         initial_item,
         write_transformer=_nop_transformer,
         read_transformer=_nop_transformer,
-        table_name=TEST_TABLE_NAME
+        table_name=TEST_TABLE_NAME,
+        delete_items=True
 ):
     """Check that cycling (plaintext->encrypted->decrypted) item batch has the expected results."""
     check_attribute_actions = initial_actions.copy()
@@ -459,14 +472,8 @@ def cycle_batch_item_check(
         transformer=read_transformer
     )
 
-    _delete_result = encrypted.batch_write_item(  # noqa
-        RequestItems={
-            table_name: [
-                {'DeleteRequest': {'Key': _key}}
-                for _key in ddb_keys
-            ]
-        }
-    )
+    if delete_items:
+        _cleanup_items(encrypted, write_transformer, table_name)
 
     del check_attribute_actions
     del items
@@ -656,6 +663,68 @@ def client_cycle_batch_items_check(materials_provider, initial_actions, initial_
         initial_item=initial_item,
         write_transformer=dict_to_ddb,
         read_transformer=ddb_to_dict,
+        table_name=table_name
+    )
+
+    raw_scan_result = client.scan(TableName=table_name)
+    e_scan_result = e_client.scan(TableName=table_name)
+    assert not raw_scan_result['Items']
+    assert not e_scan_result['Items']
+
+
+def client_cycle_batch_items_check_paginators(
+        materials_provider,
+        initial_actions,
+        initial_item,
+        table_name,
+        region_name=None
+):
+    kwargs = {}
+    if region_name is not None:
+        kwargs['region_name'] = region_name
+    client = boto3.client('dynamodb', **kwargs)
+    e_client = EncryptedClient(
+        client=client,
+        materials_provider=materials_provider,
+        attribute_actions=initial_actions
+    )
+
+    cycle_batch_item_check(
+        raw=client,
+        encrypted=e_client,
+        initial_actions=initial_actions,
+        initial_item=initial_item,
+        write_transformer=dict_to_ddb,
+        read_transformer=ddb_to_dict,
+        table_name=table_name,
+        delete_items=False
+    )
+
+    encrypted_items = []
+    raw_paginator = client.get_paginator('scan')
+    for page in raw_paginator.paginate(TableName=table_name):
+        encrypted_items.extend(page['Items'])
+
+    decrypted_items = []
+    encrypted_paginator = e_client.get_paginator('scan')
+    for page in encrypted_paginator.paginate(TableName=table_name):
+        decrypted_items.extend(page['Items'])
+
+    print(encrypted_items)
+    print(decrypted_items)
+
+    check_attribute_actions = initial_actions.copy()
+    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+    check_many_encrypted_items(
+        actual=encrypted_items,
+        expected=decrypted_items,
+        attribute_actions=check_attribute_actions,
+        transformer=ddb_to_dict
+    )
+
+    _cleanup_items(
+        encrypted=e_client,
+        write_transformer=dict_to_ddb,
         table_name=table_name
     )
 
