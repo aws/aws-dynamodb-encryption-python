@@ -11,13 +11,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Helper resources for functional tests."""
+"""Hypothesis strategies for use in tests."""
 from collections import namedtuple
 from decimal import Decimal
 
 from boto3.dynamodb.types import Binary, DYNAMODB_CONTEXT
 import hypothesis
-from hypothesis.strategies import binary, booleans, dictionaries, deferred, fractions, just, lists, none, sets, text
+from hypothesis.strategies import (
+    binary, booleans, characters, deferred, dictionaries, fractions, just, lists, none, sets, text
+)
 
 SLOW_SETTINGS = hypothesis.settings(
     suppress_health_check=(
@@ -49,23 +51,39 @@ NEGATIVE_NUMBER_RANGE = NumberRange(
 )
 
 
-ddb_string = text(min_size=1, max_size=MAX_ITEM_BYTES)
+def _valid_ddb_number(value):
+    try:
+        DYNAMODB_CONTEXT.create_decimal(float(value))
+    except Exception:
+        return False
+    else:
+        return True
+
+
+ddb_string = text(
+    min_size=1,
+    max_size=MAX_ITEM_BYTES,
+    alphabet=characters(
+        blacklist_categories=('Cs',),
+        blacklist_characters=('"', "'")  # Quotes break moto :(
+    )
+)
 ddb_string_set = sets(ddb_string, min_size=1)
 
 
 def _ddb_fraction_to_decimal(val):
-    """hypothesis does not support providing a custom Context, so working around that"""
-    return DYNAMODB_CONTEXT.create_decimal(Decimal(val.numerator) / Decimal(val.denominator))
+    """Hypothesis does not support providing a custom Context, so working around that."""
+    return Decimal(val.numerator) / Decimal(val.denominator)
 
 
 _ddb_positive_numbers = fractions(
     min_value=POSITIVE_NUMBER_RANGE.min,
     max_value=POSITIVE_NUMBER_RANGE.max
-).map(_ddb_fraction_to_decimal)
+).map(_ddb_fraction_to_decimal).filter(_valid_ddb_number)
 _ddb_negative_numbers = fractions(
     min_value=NEGATIVE_NUMBER_RANGE.min,
     max_value=NEGATIVE_NUMBER_RANGE.max
-).map(_ddb_fraction_to_decimal)
+).map(_ddb_fraction_to_decimal).filter(_valid_ddb_number)
 
 ddb_number = _ddb_negative_numbers | just(Decimal('0')) | _ddb_positive_numbers
 ddb_number_set = sets(ddb_number, min_size=1)
@@ -77,34 +95,42 @@ ddb_boolean = booleans()
 ddb_null = none()
 
 ddb_scalar_types = (
-    ddb_string
-    | ddb_number
-    | ddb_binary
-    | ddb_boolean
-    | ddb_null
+    ddb_string |
+    ddb_number |
+    ddb_binary |
+    ddb_boolean |
+    ddb_null
 )
 
 ddb_set_types = (
-    ddb_string_set
-    | ddb_number_set
-    | ddb_binary_set
+    ddb_string_set |
+    ddb_number_set |
+    ddb_binary_set
+)
+ddb_attribute_names = text(
+    min_size=1,
+    max_size=255,
+    alphabet=characters(
+        blacklist_categories=('Cs',),
+        blacklist_characters=('"', "'")  # Quotes break moto :(
+    )
 )
 # TODO: List and Map types have a max depth of 32
 ddb_map_type = deferred(lambda: dictionaries(
-    keys=text(),
+    keys=ddb_attribute_names,
     values=(
-        ddb_scalar_types
-        | ddb_set_types
-        | ddb_list_type
-        | ddb_map_type
+        ddb_scalar_types |
+        ddb_set_types |
+        ddb_list_type |
+        ddb_map_type
     ),
     min_size=1
 ))
 ddb_list_type = deferred(lambda: lists(
-    ddb_scalar_types
-    | ddb_set_types
-    | ddb_list_type
-    | ddb_map_type,
+    ddb_scalar_types |
+    ddb_set_types |
+    ddb_list_type |
+    ddb_map_type,
     min_size=1
 ))
 ddb_document_types = ddb_map_type | ddb_list_type
@@ -112,7 +138,7 @@ ddb_document_types = ddb_map_type | ddb_list_type
 ddb_attribute_values = ddb_scalar_types | ddb_set_types | ddb_list_type
 
 ddb_items = dictionaries(
-    keys=text(min_size=1, max_size=255),
+    keys=ddb_attribute_names,
     values=ddb_scalar_types | ddb_set_types | ddb_list_type
 )
 

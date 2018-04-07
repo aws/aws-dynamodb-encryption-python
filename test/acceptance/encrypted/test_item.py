@@ -10,15 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+"""Acceptance tests for ``dynamodb_encryption_sdk.encrypted.item``."""
 import pytest
 
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.encrypted.item import decrypt_dynamodb_item
 from dynamodb_encryption_sdk.structures import EncryptionContext
+from ..acceptance_test_utils import load_scenarios
 
-from .acceptance_test_utils import load_scenarios
-
-pytestmark = [pytest.mark.acceptance, pytest.mark.local]
+pytestmark = [pytest.mark.accept, pytest.mark.integ]
 
 
 @pytest.mark.parametrize(
@@ -36,7 +36,8 @@ def test_item_encryptor(
     encryption_context = EncryptionContext(
         table_name=table_name,
         partition_key_name=table_index['partition'],
-        sort_key_name=table_index.get('sort', None)
+        sort_key_name=table_index.get('sort', None),
+        attributes=ciphertext_item
     )
     crypto_config = CryptoConfig(
         materials_provider=materials_provider,

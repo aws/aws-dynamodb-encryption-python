@@ -15,6 +15,8 @@ import codecs
 
 import six
 
+__all__ = ('to_str', 'to_bytes')
+
 
 def to_str(data):
     """Takes an input str or bytes object and returns an equivalent str object.

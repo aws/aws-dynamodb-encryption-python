@@ -12,28 +12,38 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider for use with the AWS Key Management Service (KMS)."""
 from __future__ import division
+
 import base64
 from enum import Enum
+import logging
 
 import attr
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 import boto3
 import botocore.client
 import botocore.session
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 import six
 
-from . import CryptographicMaterialsProvider
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnknownRegionError, UnwrappingError, WrappingError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
-from dynamodb_encryption_sdk.internal import dynamodb_types
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
+from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
-from dynamodb_encryption_sdk.structures import EncryptionContext
+from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
+from . import CryptographicMaterialsProvider
 
 __all__ = ('AwsKmsCryptographicMaterialsProvider',)
+_LOGGER = logging.getLogger(LOGGER_NAME)
 
 _COVERED_ATTR_CTX_KEY = 'aws-kms-ec-attr'
 _TABLE_NAME_EC_KEY = '*aws-kms-table*'
@@ -47,28 +57,55 @@ _KDF_ALG = 'HmacSHA256'
 
 class HkdfInfo(Enum):
     """Info strings used for HKDF calculations."""
+
     ENCRYPTION = b'Encryption'
     SIGNING = b'Signing'
 
 
 class EncryptionContextKeys(Enum):
     """Special keys for use in the AWS KMS encryption context."""
+
     CONTENT_ENCRYPTION_ALGORITHM = '*' + MaterialDescriptionKeys.CONTENT_ENCRYPTION_ALGORITHM.value + '*'
     SIGNATURE_ALGORITHM = '*' + MaterialDescriptionKeys.ITEM_SIGNATURE_ALGORITHM.value + '*'
     TABLE_NAME = '*aws-kms-table*'
 
 
-@attr.s(hash=False)
+@attr.s
 class KeyInfo(object):
+    # pylint: disable=too-few-public-methods
     """Identifying information for a specific key and how it should be used.
 
     :param str description: algorithm identifier joined with key length in bits
     :param str algorithm: algorithm identifier
     :param int length: Key length in bits
     """
+
     description = attr.ib(validator=attr.validators.instance_of(six.string_types))
     algorithm = attr.ib(validator=attr.validators.instance_of(six.string_types))
     length = attr.ib(validator=attr.validators.instance_of(six.integer_types))
+
+    @classmethod
+    def from_description(cls, description, default_key_length=None):
+        # type: (Text) -> KeyInfo
+        """Load key info from key info description.
+
+        :param str description: Key info description
+        :param int default_key_length: Key length to use if not found in description
+        """
+        description_parts = description.split('/', 1)
+        algorithm = description_parts[0]
+        try:
+            key_length = int(description_parts[1])
+        except IndexError:
+            if default_key_length is None:
+                raise ValueError(
+                    'Description "{}" does not contain key length and no default key length is provided'.format(
+                        description
+                    )
+                )
+
+            key_length = default_key_length
+        return cls(description, algorithm, key_length)
 
     @classmethod
     def from_material_description(cls, material_description, description_key, default_algorithm, default_key_length):
@@ -78,21 +115,15 @@ class KeyInfo(object):
         :param dict material_description: Material description to read
         :param str description_key: Material description key containing desired key info description
         :param str default_algorithm: Algorithm name to use if not found in material description
-        :param int default_key_length: Key length to use if not found in material description
+        :param int default_key_length: Key length to use if not found in key info description
         :returns: Key info loaded from material description, with defaults applied if necessary
         :rtype: dynamodb_encryption_sdk.material_providers.aws_kms.KeyInfo
         """
         description = material_description.get(description_key, default_algorithm)
-        description_parts = description.split('/', 1)
-        algorithm = description_parts[0]
-        try:
-            key_length = int(description_parts[1])
-        except IndexError:
-            key_length = default_key_length
-        return cls(description, algorithm, key_length)
+        return cls.from_description(description, default_key_length)
 
 
-@attr.s(hash=False)
+@attr.s
 class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Cryptographic materials provider for use with the AWS Key Management Service (KMS).
 
@@ -110,66 +141,41 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     :param dict regional_clients: Dictionary mapping AWS region names to pre-configured boto3
         KMS clients (optional)
     """
+
     _key_id = attr.ib(validator=attr.validators.instance_of(six.string_types))
     _botocore_session = attr.ib(
         validator=attr.validators.instance_of(botocore.session.Session),
         default=attr.Factory(botocore.session.Session)
     )
-    _grant_tokens = attr.ib(default=attr.Factory(tuple))
-
-    @_grant_tokens.validator
-    def _grant_tokens_validator(self, attribute, value):
-        """Validate grant token values."""
-        if not isinstance(value, tuple):
-            raise TypeError('"grant_tokens" must be a tuple')
-
-        for token in value:
-            if not isinstance(token, six.string_types):
-                raise TypeError('"grant_tokens" must contain strings')
-
-    _material_description = attr.ib(default=attr.Factory(dict))
-
-    @_material_description.validator
-    def _material_description_validator(self, attribute, value):
-        """Validate material description values."""
-        if not isinstance(value, dict):
-            raise TypeError('"material_description" must be a dictionary')
-
-        for key, data in value.items():
-            if not (isinstance(key, six.string_types) and isinstance(data, six.string_types)):
-                raise TypeError('"material_description" must be a string-string dictionary')
-
-    _regional_clients = attr.ib(default=attr.Factory(dict))
-
-    @_regional_clients.validator
-    def regional_clients_validator(self, attribute, value):
-        """Validate regional clients values."""
-        if not isinstance(value, dict):
-            raise TypeError('"regional_clients" must be a dictionary')
-
-        for key, client in value.items():
-            if not isinstance(key, six.string_types):
-                raise TypeError('"regional_clients" region name must be a string')
-
-            if not isinstance(client, botocore.client.BaseClient):
-                raise TypeError('"regional_clients" client must be a botocore client')
+    _grant_tokens = attr.ib(
+        validator=iterable_validator(tuple, six.string_types),
+        default=attr.Factory(tuple)
+    )
+    _material_description = attr.ib(
+        validator=dictionary_validator(six.string_types, six.string_types),
+        default=attr.Factory(dict)
+    )
+    _regional_clients = attr.ib(
+        validator=dictionary_validator(six.string_types, botocore.client.BaseClient),
+        default=attr.Factory(dict)
+    )
 
     def __attrs_post_init__(self):
         # type: () -> None
         """Load the content and signing key info."""
-        self._content_key_info = KeyInfo.from_material_description(
+        self._content_key_info = KeyInfo.from_material_description(  # pylint: disable=attribute-defined-outside-init
             material_description=self._material_description,
             description_key=MaterialDescriptionKeys.CONTENT_ENCRYPTION_ALGORITHM.value,
             default_algorithm=_DEFAULT_CONTENT_ENCRYPTION_ALGORITHM,
             default_key_length=_DEFAULT_CONTENT_KEY_LENGTH
         )
-        self._signing_key_info = KeyInfo.from_material_description(
+        self._signing_key_info = KeyInfo.from_material_description(  # pylint: disable=attribute-defined-outside-init
             material_description=self._material_description,
             description_key=MaterialDescriptionKeys.ITEM_SIGNATURE_ALGORITHM.value,
             default_algorithm=_DEFAULT_SIGNING_ALGORITHM,
             default_key_length=_DEFAULT_SIGNING_KEY_LENGTH
         )
-        self._regional_clients = {}
+        self._regional_clients = {}  # type: Dict[Text, botocore.client.BaseClient]  # noqa pylint: disable=attribute-defined-outside-init
 
     def _add_regional_client(self, region_name):
         # type: (Text) -> None
@@ -182,6 +188,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
                 region_name=region_name,
                 botocore_session=self._botocore_session
             ).client('kms')
+        return self._regional_clients[region_name]
 
     def _client(self, key_id):
         """Returns a boto3 KMS client for the appropriate region.
@@ -205,6 +212,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
 
     def _select_key_id(self, encryption_context):
         # type: (EncryptionContext) -> Text
+        # pylint: disable=unused-argument
         """Select the desired key id.
 
         .. note::
@@ -221,6 +229,8 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         return self._key_id
 
     def _validate_key_id(self, key_id, encryption_context):
+        # type: (EncryptionContext) -> None
+        # pylint: disable=unused-argument,no-self-use
         """Validate the selected key id.
 
         .. note::
@@ -244,7 +254,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         attribute_type, attribute_value = list(attribute.items())[0]
         if attribute_type == 'B':
             return base64.b64encode(attribute_value.value).decode('utf-8')
-        if attribute_type == 'S':
+        if attribute_type in ('S', 'N'):
             return attribute_value
         raise ValueError('Attribute of type "{}" cannot be used in KMS encryption context.'.format(attribute_type))
 
@@ -265,14 +275,22 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         }
 
         if encryption_context.partition_key_name is not None:
-            partition_key_attribute = encryption_context.attributes.get(encryption_context.partition_key_name)
-            kms_encryption_context[encryption_context.partition_key_name] = self._attribute_to_value(
-                partition_key_attribute
-            )
+            try:
+                partition_key_attribute = encryption_context.attributes[encryption_context.partition_key_name]
+            except KeyError:
+                pass
+            else:
+                kms_encryption_context[encryption_context.partition_key_name] = self._attribute_to_value(
+                    partition_key_attribute
+                )
 
         if encryption_context.sort_key_name is not None:
-            sort_key_attribute = encryption_context.attributes.get(encryption_context.sort_key_name)
-            kms_encryption_context[encryption_context.sort_key_name] = self._attribute_to_value(sort_key_attribute)
+            try:
+                sort_key_attribute = encryption_context.attributes[encryption_context.sort_key_name]
+            except KeyError:
+                pass
+            else:
+                kms_encryption_context[encryption_context.sort_key_name] = self._attribute_to_value(sort_key_attribute)
 
         if encryption_context.table_name is not None:
             kms_encryption_context[_TABLE_NAME_EC_KEY] = encryption_context.table_name
@@ -308,7 +326,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             response = self._client(key_id).generate_data_key(**kms_params)
             return response['Plaintext'], response['CiphertextBlob']
         except (botocore.exceptions.ClientError, KeyError):
-            raise WrappingError('TODO:SOMETHING')
+            message = 'Failed to generate materials using AWS KMS'
+            _LOGGER.exception(message)
+            raise WrappingError(message)
 
     def _decrypt_initial_material(self, encryption_context):
         # type: () -> bytes
@@ -330,9 +350,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
                 MaterialDescriptionKeys.ITEM_SIGNATURE_ALGORITHM.value
             )
         )
-        encrypted_initial_material = base64.b64decode(encryption_context.material_description.get(
+        encrypted_initial_material = base64.b64decode(to_bytes(encryption_context.material_description.get(
             MaterialDescriptionKeys.WRAPPED_DATA_KEY.value
-        ))
+        )))
         kms_params = dict(
             CiphertextBlob=encrypted_initial_material,
             EncryptionContext=kms_encryption_context
@@ -344,7 +364,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             response = self._client(key_id).decrypt(**kms_params)
             return response['Plaintext']
         except (botocore.exceptions.ClientError, KeyError):
-            raise UnwrappingError('TODO:SOMETHING')
+            message = 'Failed to unwrap AWS KMS protected materials'
+            _LOGGER.exception(message)
+            raise UnwrappingError(message)
 
     def _hkdf(self, initial_material, key_length, info):
         # type: (bytes, int, Text) -> bytes
@@ -381,7 +403,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         return JceNameLocalDelegatedKey(
             key=raw_key,
             algorithm=key_info.algorithm,
-            key_type=EncryptionKeyTypes.SYMMETRIC,
+            key_type=EncryptionKeyType.SYMMETRIC,
             key_encoding=KeyEncodingType.RAW
         )
 
@@ -454,7 +476,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             MaterialDescriptionKeys.CONTENT_KEY_WRAPPING_ALGORITHM.value: 'kms',
             MaterialDescriptionKeys.CONTENT_ENCRYPTION_ALGORITHM.value: self._content_key_info.description,
             MaterialDescriptionKeys.ITEM_SIGNATURE_ALGORITHM.value: self._signing_key_info.description,
-            MaterialDescriptionKeys.WRAPPED_DATA_KEY.value: base64.b64encode(encrypted_initial_material)
+            MaterialDescriptionKeys.WRAPPED_DATA_KEY.value: to_str(base64.b64encode(encrypted_initial_material))
         })
         return RawEncryptionMaterials(
             signing_key=self._mac_key(initial_material, self._signing_key_info),

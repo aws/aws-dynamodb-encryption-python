@@ -25,13 +25,18 @@ Cryptographic materials classes for use directly with delegated keys.
 import copy
 
 import attr
+import six
 
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 
+__all__ = ('RawEncryptionMaterials', 'RawDecryptionMaterials')
 
-@attr.s(hash=False)
+
+@attr.s
 class RawEncryptionMaterials(EncryptionMaterials):
+    # inheritance confuses pylint: disable=abstract-method
     """Encryption materials for use directly with delegated keys.
 
     .. note::
@@ -44,10 +49,11 @@ class RawEncryptionMaterials(EncryptionMaterials):
     :type encryption_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
     :param dict material_description: Material description to use with these cryptographic materials
     """
+
     _signing_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
     _encryption_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
     _material_description = attr.ib(
-        validator=attr.validators.instance_of(dict),
+        validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
         default=attr.Factory(dict)
     )
@@ -90,8 +96,9 @@ class RawEncryptionMaterials(EncryptionMaterials):
         return self._encryption_key
 
 
-@attr.s(hash=False)
+@attr.s
 class RawDecryptionMaterials(DecryptionMaterials):
+    # inheritance confuses pylint: disable=abstract-method
     """Encryption materials for use directly with delegated keys.
 
     .. note::
@@ -104,10 +111,11 @@ class RawDecryptionMaterials(DecryptionMaterials):
     :type decryption_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
     :param dict material_description: Material description to use with these cryptographic materials
     """
+
     _verification_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
     _decryption_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
     _material_description = attr.ib(
-        validator=attr.validators.instance_of(dict),
+        validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
         default=attr.Factory(dict)
     )

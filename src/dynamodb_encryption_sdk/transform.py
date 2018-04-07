@@ -12,12 +12,14 @@
 # language governing permissions and limitations under the License.
 """Helper tools for translating between native and DynamoDB items."""
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Dict  # pylint: disable=unused-import
+    from typing import Any, Dict  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from boto3.dynamodb.types import TypeSerializer, TypeDeserializer
+from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
+
+__all__ = ('dict_to_ddb', 'ddb_to_dict')
 
 
 def dict_to_ddb(item):

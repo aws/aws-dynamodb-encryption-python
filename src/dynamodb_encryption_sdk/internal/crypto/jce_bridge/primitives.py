@@ -12,21 +12,28 @@
 # language governing permissions and limitations under the License.
 """Cryptographic primitive resources for JCE bridge."""
 import abc
-import attr
 import logging
 import os
 
+import attr
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding as symmetric_padding, hashes, serialization, keywrap
+from cryptography.hazmat.primitives import hashes, keywrap, padding as symmetric_padding, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
-from cryptography.hazmat.primitives.ciphers import algorithms, modes, Cipher
+from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 import six
 
 from dynamodb_encryption_sdk.exceptions import (
     DecryptionError, EncryptionError, InvalidAlgorithmError, UnwrappingError, WrappingError
 )
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
+from dynamodb_encryption_sdk.internal.validators import callable_validator
 
+__all__ = (
+    'JavaPadding', 'SimplePadding', 'BlockSizePadding', 'OaepPadding',
+    'JavaMode',
+    'JavaEncryptionAlgorithm', 'JavaSymmetricEncryptionAlgorithm', 'JavaAsymmetricEncryptionAlgorithm',
+    'JAVA_ENCRYPTION_ALGORITHM', 'JAVA_MODE', 'JAVA_PADDING'
+)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 
@@ -72,8 +79,9 @@ class _NoPadding(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class JavaPadding(object):
+    # pylint: disable=too-few-public-methods
     """Bridge the gap from the Java padding names and Python resources.
-        https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
+    https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
 
     @abc.abstractmethod
@@ -81,11 +89,13 @@ class JavaPadding(object):
         """Build an instance of this padding type."""
 
 
-@attr.s(hash=False)
+@attr.s
 class SimplePadding(JavaPadding):
+    # pylint: disable=too-few-public-methods
     """Padding types that do not require any preparation."""
+
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    padding = attr.ib()
+    padding = attr.ib(validator=callable_validator)
 
     def build(self, block_size=None):
         # type: (int) -> ANY
@@ -97,11 +107,13 @@ class SimplePadding(JavaPadding):
         return self.padding()
 
 
-@attr.s(hash=False)
+@attr.s
 class BlockSizePadding(JavaPadding):
+    # pylint: disable=too-few-public-methods
     """Padding types that require a block size input."""
+
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    padding = attr.ib()
+    padding = attr.ib(validator=callable_validator)
 
     def build(self, block_size):
         # type: (int) -> ANY
@@ -113,8 +125,9 @@ class BlockSizePadding(JavaPadding):
         return self.padding(block_size)
 
 
-@attr.s(hash=False)
+@attr.s
 class OaepPadding(JavaPadding):
+    # pylint: disable=too-few-public-methods
     """OAEP padding types. These require more complex setup.
 
     .. warning::
@@ -123,11 +136,12 @@ class OaepPadding(JavaPadding):
         The same hashing algorithm should be used by both OAEP and the MGF, but by default
         Java always uses SHA1 for the MGF.
     """
+
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    padding = attr.ib()
-    digest = attr.ib()
-    mgf = attr.ib()
-    mgf_digest = attr.ib()
+    padding = attr.ib(validator=callable_validator)
+    digest = attr.ib(validator=callable_validator)
+    mgf = attr.ib(validator=callable_validator)
+    mgf_digest = attr.ib(validator=callable_validator)
 
     def build(self, block_size=None):
         # type: (int) -> ANY
@@ -143,13 +157,15 @@ class OaepPadding(JavaPadding):
         )
 
 
-@attr.s(hash=False)
+@attr.s
 class JavaMode(object):
+    # pylint: disable=too-few-public-methods
     """Bridge the gap from the Java encryption mode names and Python resources.
-        https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
+    https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
+
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    mode = attr.ib()
+    mode = attr.ib(validator=callable_validator)
 
     def build(self, iv):
         # type: (int) -> ANY
@@ -161,11 +177,13 @@ class JavaMode(object):
         return self.mode(iv)
 
 
-@attr.s(hash=False)
+@attr.s
 class JavaEncryptionAlgorithm(object):
+    # pylint: disable=too-few-public-methods
     """Bridge the gap from the Java encryption algorithm names and Python resources.
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
     """
+
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     cipher = attr.ib()
 
@@ -211,12 +229,12 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
         :param bytes key: Key bytes
         :param key_type: Type of key
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param key_encoding: Encoding used to serialize key
         :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
         :returns: Loaded key
         """
-        if key_type is not EncryptionKeyTypes.SYMMETRIC:
+        if key_type is not EncryptionKeyType.SYMMETRIC:
             raise ValueError('Invalid key type "{key_type}" for cipher "{cipher}"'.format(
                 key_type=key_type,
                 cipher=self.java_name
@@ -277,6 +295,7 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             raise UnwrappingError(error_message)
 
     def encrypt(self, key, data, mode, padding):
+        # this can be disabled by _disable_encryption, so pylint: disable=method-hidden
         """Encrypt data using the supplied values.
 
         :param bytes key: Loaded encryption key
@@ -308,6 +327,7 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             raise EncryptionError(error_message)
 
     def decrypt(self, key, data, mode, padding):
+        # this can be disabled by _disable_encryption, so pylint: disable=method-hidden
         """Decrypt data using the supplied values.
 
         :param bytes key: Loaded decryption key
@@ -341,11 +361,11 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
 
 _RSA_KEY_LOADING = {
-    EncryptionKeyTypes.PRIVATE: {
+    EncryptionKeyType.PRIVATE: {
         KeyEncodingType.DER: serialization.load_der_private_key,
         KeyEncodingType.PEM: serialization.load_pem_private_key
     },
-    EncryptionKeyTypes.PUBLIC: {
+    EncryptionKeyType.PUBLIC: {
         KeyEncodingType.DER: serialization.load_der_public_key,
         KeyEncodingType.PEM: serialization.load_pem_public_key
     }
@@ -353,21 +373,33 @@ _RSA_KEY_LOADING = {
 
 
 def load_rsa_key(key, key_type, key_encoding):
-    """"""
+    # (bytes, EncryptionKeyType, KeyEncodingType) -> Any
+    # TODO: narrow down the output type
+    """Load an RSA key object from the provided raw key bytes.
+
+    :param bytes key: Raw key bytes to load
+    :param key_type: Type of key to load
+    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
+    :param key_encoding: Encoding used to serialize ``key``
+    :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+    :returns: Loaded key
+    :rtype: TODO:
+    :raises ValueError: if ``key_type`` and ``key_encoding`` are not a valid pairing
+    """
     try:
         loader = _RSA_KEY_LOADING[key_type][key_encoding]
     except KeyError:
-        raise Exception('Invalid key type: {}'.format(key_type))
+        raise ValueError('Invalid key type and encoding: {} and {}'.format(key_type, key_encoding))
 
     kwargs = dict(data=key, backend=default_backend())
-    if key_type is EncryptionKeyTypes.PRIVATE:
+    if key_type is EncryptionKeyType.PRIVATE:
         kwargs['password'] = None
 
     return loader(**kwargs)
 
 
 _KEY_LOADERS = {
-   rsa: load_rsa_key
+    rsa: load_rsa_key
 }
 
 
@@ -382,12 +414,12 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
         :param bytes key: Key bytes
         :param key_type: Type of key
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param key_encoding: Encoding used to serialize key
         :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
         :returns: Loaded key
         """
-        if key_type not in (EncryptionKeyTypes.PRIVATE, EncryptionKeyTypes.PUBLIC):
+        if key_type not in (EncryptionKeyType.PRIVATE, EncryptionKeyType.PUBLIC):
             raise ValueError('Invalid key type "{key_type}" for cipher "{cipher}"'.format(
                 key_type=key_type,
                 cipher=self.java_name
@@ -402,6 +434,7 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
         return _KEY_LOADERS[self.cipher](key, key_type, key_encoding)
 
     def encrypt(self, key, data, mode, padding):
+        # pylint: disable=unused-argument,no-self-use
         """Encrypt data using the supplied values.
 
         :param bytes key: Loaded encryption key
@@ -425,6 +458,7 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             raise EncryptionError(error_message)
 
     def decrypt(self, key, data, mode, padding):
+        # pylint: disable=unused-argument,no-self-use
         """Decrypt data using the supplied values.
 
         :param bytes key: Loaded decryption key
@@ -437,7 +471,7 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
         :rtype: bytes
         """
         if hasattr(key, 'public_bytes'):
-            raise NotImplementedError('TODO:"decrypt" is not supported by public keys')
+            raise NotImplementedError('"decrypt" is not supported by public keys')
         try:
             return key.decrypt(data, padding.build())
         except Exception:
@@ -446,24 +480,17 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
             raise DecryptionError(error_message)
 
 
+# If this changes, remember to update the JceNameLocalDelegatedKey docs.
 JAVA_ENCRYPTION_ALGORITHM = {
     'RSA': JavaAsymmetricEncryptionAlgorithm('RSA', rsa),
     'AES': JavaSymmetricEncryptionAlgorithm('AES', algorithms.AES),
     'AESWrap': JavaSymmetricEncryptionAlgorithm('AESWrap', algorithms.AES)
-    # TODO: Should we support these?
-    # DES : pretty sure we don't want to support this
-    # DESede : pretty sure we don't want to support this
-    # 'BLOWFISH': JavaSymmetricEncryptionAlgorithm('Blowfish', algorithms.Blowfish)
 }
 JAVA_MODE = {
     'ECB': JavaMode('ECB', modes.ECB),
     'CBC': JavaMode('CBC', modes.CBC),
     'CTR': JavaMode('CTR', modes.CTR),
     'GCM': JavaMode('GCM', modes.GCM)
-    # TODO: Should we support these?
-    # 'OFB': JavaMode('OFB', modes.OFB)
-    # 'CFB': JavaMode('CFB', modes.CFB)
-    # 'CFB8': JavaMode('CFB8', modes.CFB8)
 }
 JAVA_PADDING = {
     'NoPadding': SimplePadding('NoPadding', _NoPadding),

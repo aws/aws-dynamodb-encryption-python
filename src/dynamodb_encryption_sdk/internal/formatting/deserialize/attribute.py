@@ -19,7 +19,7 @@ import struct
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Callable, Dict, List, Union  # noqa pylint: disable=unused-import
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import,ungrouped-imports
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -27,13 +27,13 @@ except ImportError:  # pragma: no cover
 from boto3.dynamodb.types import Binary
 
 from dynamodb_encryption_sdk.exceptions import DeserializationError
-from dynamodb_encryption_sdk.internal.defaults import ENCODING, LOGGING_NAME
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
 from dynamodb_encryption_sdk.internal.formatting.deserialize import decode_byte, decode_length, decode_tag, decode_value
 from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues
 from dynamodb_encryption_sdk.internal.str_ops import to_str
 
 __all__ = ('deserialize_attribute',)
-_LOGGER = logging.getLogger(LOGGING_NAME)
+_LOGGER = logging.getLogger(LOGGER_NAME)
 
 
 def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=too-many-locals
@@ -69,7 +69,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :param bytes value: Raw deserialized value
         :rtype: dynamodb_encryption_sdk.internal.dynamodb_types.STRING
         """
-        return codecs.decode(value, ENCODING)
+        return codecs.decode(value, 'utf-8')
 
     def _deserialize_string(stream):
         # type: (io.BytesIO) -> Dict[str, dynamodb_types.STRING]
@@ -89,9 +89,9 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :param bytes value: Raw deserialized value
         :rtype: dynamodb_encryption_sdk.internal.dynamodb_types.STRING
         """
-        raw_value = codecs.decode(value, ENCODING)
-        decimal_value = Decimal(to_str(raw_value))
-        return str(decimal_value.normalize())
+        raw_value = codecs.decode(value, 'utf-8')
+        decimal_value = Decimal(to_str(raw_value)).normalize()
+        return '{0:f}'.format(decimal_value)
 
     def _deserialize_number(stream):
         # type: (io.BytesIO) -> Dict[str, dynamodb_types.STRING]

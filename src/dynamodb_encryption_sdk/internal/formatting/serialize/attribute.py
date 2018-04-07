@@ -16,7 +16,7 @@ import logging
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Callable  # noqa pylint: disable=unused-import
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import,ungrouped-imports
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -24,14 +24,14 @@ except ImportError:  # pragma: no cover
 from boto3.dynamodb.types import Binary, DYNAMODB_CONTEXT
 
 from dynamodb_encryption_sdk.exceptions import SerializationError
-from dynamodb_encryption_sdk.internal.defaults import LOGGING_NAME
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
 from dynamodb_encryption_sdk.internal.formatting.serialize import encode_length, encode_value
 from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 from dynamodb_encryption_sdk.internal.utils import sorted_key_map
 
 __all__ = ('serialize_attribute',)
-_LOGGER = logging.getLogger(LOGGING_NAME)
+_LOGGER = logging.getLogger(LOGGER_NAME)
 _RESERVED = b'\x00'
 
 
@@ -78,9 +78,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
         # by dynamodb.TypeSerializer, so all numbers are str. However, TypeSerializer
         # leaves trailing zeros if they are defined in the Decimal call, but we need to
         # strip all trailing zeros.
-        decimal_value = DYNAMODB_CONTEXT.create_decimal(value)
-        raw_value = '{:f}'.format(decimal_value.normalize())
-        return to_bytes(raw_value)
+        decimal_value = DYNAMODB_CONTEXT.create_decimal(value).normalize()
+        return '{0:f}'.format(decimal_value).encode('utf-8')
 
     def _serialize_number(_attribute):
         # type: (str) -> bytes

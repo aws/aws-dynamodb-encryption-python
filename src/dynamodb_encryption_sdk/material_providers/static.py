@@ -13,12 +13,14 @@
 """Cryptographic materials provider for use with pre-configured encryption and decryption materials."""
 import attr
 
-from . import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
-from dynamodb_encryption_sdk.structures import EncryptionContext
+from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
+from . import CryptographicMaterialsProvider
+
+__all__ = ('StaticCryptographicMaterialsProvider',)
 
 
-@attr.s(hash=False)
+@attr.s
 class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Manually combine encryption and decryption materials for use as a cryptographic materials provider.
 
@@ -27,6 +29,7 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     :param encryption_materials: Encryption materials to provide (optional)
     :type encryption_materials: dynamodb_encryption_sdk.materials.EncryptionMaterials
     """
+
     _decryption_materials = attr.ib(
         validator=attr.validators.optional(attr.validators.instance_of(DecryptionMaterials)),
         default=None
@@ -45,7 +48,7 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         :raises AttributeError: if no decryption materials are available
         """
         if self._decryption_materials is None:
-            super(StaticCryptographicMaterialsProvider, self).decryption_materials(encryption_context)
+            return super(StaticCryptographicMaterialsProvider, self).decryption_materials(encryption_context)
 
         return self._decryption_materials
 
@@ -58,6 +61,6 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         :raises AttributeError: if no encryption materials are available
         """
         if self._encryption_materials is None:
-            super(StaticCryptographicMaterialsProvider, self).encryption_materials(encryption_context)
+            return super(StaticCryptographicMaterialsProvider, self).encryption_materials(encryption_context)
 
         return self._encryption_materials

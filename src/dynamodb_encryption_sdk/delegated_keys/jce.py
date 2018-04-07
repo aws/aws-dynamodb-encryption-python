@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Delegated key that JCE StandardName algorithm values to determine behavior."""
+from __future__ import division
+
 import logging
 import os
 
@@ -20,30 +22,31 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 import six
 
-from . import DelegatedKey
 from dynamodb_encryption_sdk.exceptions import JceTransformationError, UnwrappingError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
+from . import DelegatedKey
 
+__all__ = ('JceNameLocalDelegatedKey',)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 
 def _generate_symmetric_key(key_length):
     """Generate a new AES key.
 
-    :param int key_length: Required key length in bytes
+    :param int key_length: Required key length in bits
     :returns: raw key, symmetric key identifier, and RAW encoding identifier
-    :rtype: tuple of bytes, EncryptionKeyTypes, and KeyEncodingType
+    :rtype: tuple of bytes, EncryptionKeyType, and KeyEncodingType
     """
-    return os.urandom(key_length), EncryptionKeyTypes.SYMMETRIC, KeyEncodingType.RAW
+    return os.urandom(key_length // 8), EncryptionKeyType.SYMMETRIC, KeyEncodingType.RAW
 
 
 def _generate_rsa_key(key_length):
     """Generate a new RSA private key.
 
-    :param int key_length: Required key length in bytes
+    :param int key_length: Required key length in bits
     :returns: DER-encoded private key, private key identifier, and DER encoding identifier
-    :rtype: tuple of bytes, EncryptionKeyTypes, and KeyEncodingType
+    :rtype: tuple of bytes, EncryptionKeyType, and KeyEncodingType
     """
     private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -55,7 +58,7 @@ def _generate_rsa_key(key_length):
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
     )
-    return key_bytes, EncryptionKeyTypes.PRIVATE, KeyEncodingType.DER
+    return key_bytes, EncryptionKeyType.PRIVATE, KeyEncodingType.DER
 
 
 _ALGORITHM_GENERATE_MAP = {
@@ -64,20 +67,51 @@ _ALGORITHM_GENERATE_MAP = {
 }
 
 
-@attr.s(hash=False)
+@attr.s
 class JceNameLocalDelegatedKey(DelegatedKey):
+    # pylint: disable=too-many-instance-attributes
     """Delegated key that uses JCE StandardName algorithm values to determine behavior.
+
+    Accepted algorithm names for this include:
+
+    * `JCE Mac names`_ (for a signing key)
+
+        * **HmacSHA512**
+        * **HmacSHA256**
+        * **HmacSHA384**
+        * **HmacSHA224**
+
+    * `JCE Signature names`_ (for a signing key)
+
+        * **SHA512withRSA**
+        * **SHA256withRSA**
+        * **SHA384withRSA**
+        * **SHA224withRSA**
+
+    * `JCE Cipher names`_ (for an encryption key)
+
+        * **RSA**
+        * **AES**
+        * **AESWrap**
+
+    .. _JCE Mac names:
+        https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Mac
+    .. _JCE Signature names:
+        https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Signature
+    .. _JCE Cipher names:
+        https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Cipher
 
     :param bytes key: Raw key bytes
     :param str algorithm: JCE Standard Algorithm Name
     :param key_type: Identifies what type of key is being provided
-    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
     :param key_encoding: Identifies how the provided key is encoded
     :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingTypes
     """
+
     key = attr.ib(validator=attr.validators.instance_of(bytes), repr=False)
     _algorithm = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    _key_type = attr.ib(validator=attr.validators.instance_of(EncryptionKeyTypes))
+    _key_type = attr.ib(validator=attr.validators.instance_of(EncryptionKeyType))
     _key_encoding = attr.ib(validator=attr.validators.instance_of(KeyEncodingType))
 
     @property
@@ -115,7 +149,11 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         except KeyError:
             pass
         else:
-            self.__key = key_transformer.load_key(self.key, self._key_type, self._key_encoding)
+            self.__key = key_transformer.load_key(  # attrs confuses pylint: disable=attribute-defined-outside-init
+                self.key,
+                self._key_type,
+                self._key_encoding
+            )
             self._enable_encryption()
             self._enable_wrap()
             return
@@ -128,7 +166,11 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         except KeyError:
             pass
         else:
-            self.__key = key_transformer.load_key(self.key, self._key_type, self._key_encoding)
+            self.__key = key_transformer.load_key(  # attrs confuses pylint: disable=attribute-defined-outside-init
+                self.key,
+                self._key_type,
+                self._key_encoding
+            )
             self._enable_authentication()
             return
 
@@ -140,7 +182,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         """Generate an instance of this DelegatedKey using the specified algorithm and key length.
 
         :param str algorithm: Text description of algorithm to be used
-        :param int key_length: Size of key to generate
+        :param int key_length: Size in bits of key to generate
         :returns: Generated delegated key
         :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
         """
@@ -171,6 +213,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     def _encrypt(self, algorithm, name, plaintext, additional_associated_data=None):
         # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument
         """
         Encrypt data.
 
@@ -188,6 +231,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     def _decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):
         # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument
         """Encrypt data.
 
         :param str algorithm: Java StandardName transformation string of algorithm to use to decrypt data
@@ -203,6 +247,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     def _wrap(self, algorithm, content_key, additional_associated_data=None):
         # type: (Text, bytes, Dict[Text, Text]) -> bytes
+        # pylint: disable=unused-argument
         """Wrap content key.
 
         :param str algorithm: Text description of algorithm to use to wrap key
@@ -218,19 +263,20 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         )
 
     def _unwrap(self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None):
-        # type: (Text, bytes, Text, EncryptionKeyTypes, Dict[Text, Text]) -> DelegatedKey
+        # type: (Text, bytes, Text, EncryptionKeyType, Dict[Text, Text]) -> DelegatedKey
+        # pylint: disable=unused-argument
         """Wrap content key.
 
         :param str algorithm: Text description of algorithm to use to unwrap key
         :param bytes content_key: Raw content key to wrap
         :param str wrapped_key_algorithm: Text description of algorithm for unwrapped key to use
         :param wrapped_key_type: Type of key to treat key as once unwrapped
-        :type wrapped_key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type wrapped_key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param dict additional_associated_data: Not used by ``JceNameLocalDelegatedKey``
         :returns: Delegated key using unwrapped key
         :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
         """
-        if wrapped_key_type is not EncryptionKeyTypes.SYMMETRIC:
+        if wrapped_key_type is not EncryptionKeyType.SYMMETRIC:
             raise UnwrappingError('Unsupported wrapped key type: "{}"'.format(wrapped_key_type))
 
         unwrapper = encryption.JavaCipher.from_transformation(algorithm)

@@ -18,9 +18,9 @@ import pytest
 from dynamodb_encryption_sdk.exceptions import DeserializationError, SerializationError
 from dynamodb_encryption_sdk.internal.formatting.deserialize.attribute import deserialize_attribute
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
-from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
-from .functional_test_vector_generators import attribute_test_vectors
-from .hypothesis_strategies import ddb_attribute_values, ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
+from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
+from ...functional_test_vector_generators import attribute_test_vectors
+from ...hypothesis_strategies import ddb_attribute_values, ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
@@ -73,6 +73,7 @@ def _serialize_deserialize_cycle(attribute):
 
 
 @pytest.mark.slow
+@pytest.mark.hypothesis
 @SLOW_SETTINGS
 @hypothesis.given(ddb_attribute_values)
 def test_serialize_deserialize_attribute_slow(attribute):
@@ -80,6 +81,7 @@ def test_serialize_deserialize_attribute_slow(attribute):
 
 
 @pytest.mark.veryslow
+@pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(ddb_attribute_values)
 def test_serialize_deserialize_attribute_vslow(attribute):
@@ -93,6 +95,7 @@ def _ddb_dict_ddb_transform_cycle(item):
 
 
 @pytest.mark.slow
+@pytest.mark.hypothesis
 @SLOW_SETTINGS
 @hypothesis.given(ddb_items)
 def test_dict_to_ddb_and_back_slow(item):
@@ -100,6 +103,7 @@ def test_dict_to_ddb_and_back_slow(item):
 
 
 @pytest.mark.veryslow
+@pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(ddb_items)
 def test_dict_to_ddb_and_back_vslow(item):

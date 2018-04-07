@@ -12,23 +12,23 @@
 # language governing permissions and limitations under the License.
 """Top-level functions for encrypting and decrypting DynamoDB items."""
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Callable, Dict  # pylint: disable=unused-import
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # pylint: disable=unused-import
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from . import CryptoConfig
-from dynamodb_encryption_sdk.exceptions import DecryptionError
-from dynamodb_encryption_sdk.identifiers import ItemAction
+from dynamodb_encryption_sdk.exceptions import DecryptionError, EncryptionError
+from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.crypto.authentication import sign_item, verify_item_signature
 from dynamodb_encryption_sdk.internal.crypto.encryption import decrypt_attribute, encrypt_attribute
 from dynamodb_encryption_sdk.internal.formatting.material_description import (
     deserialize as deserialize_material_description, serialize as serialize_material_description
 )
-from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys, MaterialDescriptionValues
-from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
-from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
+from dynamodb_encryption_sdk.internal.identifiers import (
+    MaterialDescriptionKeys, MaterialDescriptionValues, ReservedAttributes
+)
+from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
+from . import CryptoConfig  # noqa pylint: disable=unused-import
 
 __all__ = ('encrypt_dynamodb_item', 'encrypt_python_item', 'decrypt_dynamodb_item', 'decrypt_python_item')
 
@@ -51,7 +51,12 @@ def encrypt_dynamodb_item(item, crypto_config):
         # If we explicitly have been told not to do anything to this item, just copy it.
         return item.copy()
 
-    # TODO: Check for attributes that we write
+    for reserved_name in ReservedAttributes:
+        if reserved_name.value in item:
+            raise EncryptionError('Reserved attribute name "{}" is not allowed in plaintext item.'.format(
+                reserved_name.value
+            ))
+
     crypto_config.materials_provider.refresh()
     encryption_materials = crypto_config.encryption_materials()
 
@@ -67,7 +72,7 @@ def encrypt_dynamodb_item(item, crypto_config):
 
     encrypted_item = {}
     for name, attribute in item.items():
-        if crypto_config.attribute_actions.action(name) is not ItemAction.ENCRYPT_AND_SIGN:
+        if crypto_config.attribute_actions.action(name) is not CryptoAction.ENCRYPT_AND_SIGN:
             encrypted_item[name] = attribute.copy()
             continue
 
@@ -167,7 +172,7 @@ def decrypt_dynamodb_item(item, crypto_config):
     # Once the signature has been verified, actually decrypt the item attributes.
     decrypted_item = {}
     for name, attribute in item.items():
-        if inner_crypto_config.attribute_actions.action(name) is not ItemAction.ENCRYPT_AND_SIGN:
+        if inner_crypto_config.attribute_actions.action(name) is not CryptoAction.ENCRYPT_AND_SIGN:
             decrypted_item[name] = attribute.copy()
             continue
 

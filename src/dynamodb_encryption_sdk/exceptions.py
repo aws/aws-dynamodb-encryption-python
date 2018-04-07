@@ -10,10 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+"""Exception classed for use in the DynamoDB Encryption Client."""
 
 
 class DynamodbEncryptionSdkError(Exception):
     """Base class for all custom exceptions."""
+
+
+class InvalidArgumentError(DynamodbEncryptionSdkError):
+    """Raised when a general invalid argument is provided."""
 
 
 class SerializationError(DynamodbEncryptionSdkError):
@@ -24,63 +29,61 @@ class DeserializationError(DynamodbEncryptionSdkError):
     """Otherwise undifferentiated errors encountered while deserializing data."""
 
 
-class InvalidMaterialsetError(DeserializationError):
+class InvalidMaterialDescriptionError(DeserializationError):
     """Raised when errors are encountered processing a material description."""
-    # TODO: MaterialDescription, not Materialset...
 
 
-class InvalidMaterialsetVersionError(DeserializationError):
+class InvalidMaterialDescriptionVersionError(DeserializationError):
     """Raised when a material description is encountered with an invalid version."""
-    # TODO: MaterialDescription, not Materialset...
 
 
-class InvalidAlgorithmError(DynamodbEncryptionSdkError):
+class InvalidAlgorithmError(InvalidArgumentError):
     """Raised when an invalid algorithm identifier is encountered."""
 
 
 class JceTransformationError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated errors encountered when attempting to read a JCE transformation."""
 
 
 class DelegatedKeyError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated errors encountered by a DelegatedKey."""
 
 
 class DelegatedKeyEncryptionError(DelegatedKeyError):
-    """"""
+    """Raised when a DelegatedKey encounters an error during encryption."""
 
 
 class DelegatedKeyDecryptionError(DelegatedKeyError):
-    """"""
+    """Raised when a DelegatedKey encounters an error during decryption."""
 
 
 class AwsKmsMaterialsProviderError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated errors encountered by the AwsKmsCryptographicMaterialsProvider."""
 
 
 class UnknownRegionError(AwsKmsMaterialsProviderError):
-    """"""
+    """Raised when the AwsKmsCryptographicMaterialsProvider is asked for an unknown region."""
 
 
 class DecryptionError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated error encountered while decrypting data."""
 
 
 class UnwrappingError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated error encountered while unwrapping a key."""
 
 
 class EncryptionError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated error encountered while encrypting data."""
 
 
 class WrappingError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated error encountered while wrapping a key."""
 
 
 class SigningError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated error encountered while signing data."""
 
 
 class SignatureVerificationError(DynamodbEncryptionSdkError):
-    """"""
+    """Otherwise undifferentiated error encountered while verifying a signature."""

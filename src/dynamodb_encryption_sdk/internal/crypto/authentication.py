@@ -14,12 +14,12 @@
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 
-from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
-from dynamodb_encryption_sdk.encrypted import CryptoConfig
-from dynamodb_encryption_sdk.identifiers import ItemAction
+from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.encrypted import CryptoConfig  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.internal.identifiers import SignatureValues, Tag
-from dynamodb_encryption_sdk.structures import AttributeActions
+from dynamodb_encryption_sdk.structures import AttributeActions  # noqa pylint: disable=unused-import
 
 __all__ = ('sign_item', 'verify_item_signature')
 
@@ -89,7 +89,7 @@ def _string_to_sign(item, table_name, attribute_actions):
     ))
     for key in sorted(item.keys()):
         action = attribute_actions.action(key)
-        if action is ItemAction.DO_NOTHING:
+        if action is CryptoAction.DO_NOTHING:
             continue
 
         data_to_sign.extend(_hash_data(
@@ -97,7 +97,7 @@ def _string_to_sign(item, table_name, attribute_actions):
             data=key.encode('utf-8')
         ))
 
-        if action is ItemAction.SIGN_ONLY:
+        if action is CryptoAction.SIGN_ONLY:
             data_to_sign.extend(SignatureValues.PLAINTEXT.sha256)
         else:
             data_to_sign.extend(SignatureValues.ENCRYPTED.sha256)

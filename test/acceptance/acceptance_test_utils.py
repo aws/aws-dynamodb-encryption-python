@@ -10,29 +10,32 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+"""Helper tools for use with acceptance tests."""
 import base64
 from collections import defaultdict
 import json
 import os
 import sys
+
+import pytest
+from six.moves.urllib.parse import urlparse  # moves confuse pylint: disable=wrong-import-order
+
+from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType
+from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials
+from dynamodb_encryption_sdk.structures import AttributeActions
+
 sys.path.append(os.path.join(
     os.path.abspath(os.path.dirname(__file__)),
     '..',
     'functional'
 ))
 
-import pytest
-from six.moves.urllib.parse import urlparse
-
-
-from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
-from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
-from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
-from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, ItemAction, KeyEncodingType
-from dynamodb_encryption_sdk.structures import AttributeActions
-
-import functional_test_vector_generators
+# Convenience imports
+import functional_test_vector_generators  # noqa: E402,I100 pylint: disable=import-error,wrong-import-position
 
 _ENCRYPTED_ITEM_VECTORS_DIR = os.path.join(
     os.path.abspath(os.path.dirname(__file__)),
@@ -64,7 +67,7 @@ def _decode_item(item):
 
 
 def _build_plaintext_items(plaintext_file, version):
-    """"""
+    # pylint: disable=too-many-locals
     with open(plaintext_file) as f:
         plaintext_data = json.load(f)
 
@@ -122,9 +125,9 @@ def _load_keys(keys_file):
 
 
 _KEY_TYPE = {
-    'SYMMETRIC': EncryptionKeyTypes.SYMMETRIC,
-    'PUBLIC': EncryptionKeyTypes.PUBLIC,
-    'PRIVATE': EncryptionKeyTypes.PRIVATE
+    'SYMMETRIC': EncryptionKeyType.SYMMETRIC,
+    'PUBLIC': EncryptionKeyType.PUBLIC,
+    'PRIVATE': EncryptionKeyType.PRIVATE
 }
 _KEY_ENCODING = {
     'RAW': KeyEncodingType.RAW,
@@ -169,9 +172,15 @@ def _build_wrapped_cmp(decrypt_key, verify_key):
     )
 
 
+def _build_aws_kms_cmp(decrypt_key, verify_key):
+    key_id = decrypt_key['keyId']
+    return AwsKmsCryptographicMaterialsProvider(key_id=key_id)
+
+
 _CMP_TYPE_MAP = {
     'STATIC': _build_static_cmp,
-    'WRAPPED': _build_wrapped_cmp
+    'WRAPPED': _build_wrapped_cmp,
+    'AWSKMS': _build_aws_kms_cmp
 }
 
 
@@ -208,6 +217,7 @@ def _expand_items(ciphertext_items, plaintext_items):
 
 
 def load_scenarios():
+    # pylint: disable=too-many-locals
     with open(_SCENARIO_FILE) as f:
         scenarios = json.load(f)
     keys_file = _filename_from_uri(scenarios['keys'])

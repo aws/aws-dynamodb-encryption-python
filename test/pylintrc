@@ -8,7 +8,7 @@
 # R0801 : duplicate-code (unit tests for similar things tend to be similar)
 # W0212 : protected-access (raised when calling _ methods)
 # W0621 : redefined-outer-name (raised when using pytest-mock)
-# W0613 : unused-argument (raised when patches are needed but not called)
+# W0613 : unused-argument (raised when patches and fixtures are needed but not called)
 disable = C0103, C0111, E1101, R0801, W0212, W0621, W0613
 
 [DESIGN]
