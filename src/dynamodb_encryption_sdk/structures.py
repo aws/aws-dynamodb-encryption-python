@@ -109,19 +109,19 @@ class AttributeActions(object):
 
     def action(self, attribute_name):
         # (text) -> CryptoAction
-        """Determines the correct CryptoAction to apply to a supplied attribute based on this config."""
+        """Determine the correct CryptoAction to apply to a supplied attribute based on this config."""
         return self.attribute_actions.get(attribute_name, self.default_action)
 
     def copy(self):
         # () -> AttributeActions
-        """Returns a new copy of this object."""
+        """Return a new copy of this object."""
         return AttributeActions(
             default_action=self.default_action,
             attribute_actions=self.attribute_actions.copy()
         )
 
     def set_index_keys(self, *keys):
-        """Sets the appropriate action for the specified indexed attribute names.
+        """Set the appropriate action for the specified indexed attribute names.
 
         .. warning::
 
@@ -145,9 +145,18 @@ class AttributeActions(object):
             except KeyError:
                 self.attribute_actions[key] = index_action
 
+    def contains_action(self, action):
+        # (CryptoAction) -> bool
+        """Determine if the specified action is a possible action from this configuration.
+
+        :param action: Action to look for
+        :type action: dynamodb_encryption_sdk.identifiers.CryptoAction
+        """
+        return action is self.default_action or action in self.attribute_actions.values()
+
     def __add__(self, other):
         # (AttributeActions) -> AttributeActions
-        """Merges two AttributeActions objects into a new instance, applying the dominant
+        """Merge two AttributeActions objects into a new instance, applying the dominant
         action in each discovered case.
         """
         default_action = self.default_action + other.default_action
