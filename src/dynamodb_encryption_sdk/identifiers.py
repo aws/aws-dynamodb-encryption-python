@@ -17,6 +17,7 @@ __all__ = ('LOGGER_NAME', 'CryptoAction', 'EncryptionKeyType', 'KeyEncodingType'
 __version__ = '0.0.0'
 
 LOGGER_NAME = 'dynamodb_encryption_sdk'
+USER_AGENT_SUFFIX = 'DynamodbEncryptionSdkPython/{}'.format(__version__)
 
 
 class CryptoAction(Enum):
