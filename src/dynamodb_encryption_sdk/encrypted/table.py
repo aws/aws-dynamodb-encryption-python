@@ -88,36 +88,36 @@ class EncryptedTable(object):
 
         self._crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             crypto_config_from_kwargs,
-            fallback=partial(
+            partial(
                 crypto_config_from_table_info,
-                materials_provider=self._materials_provider,
-                attribute_actions=self._attribute_actions,
-                table_info=self._table_info
+                self._materials_provider,
+                self._attribute_actions,
+                self._table_info
             )
         )
         self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_get_item,
-            decrypt_method=decrypt_python_item,
-            crypto_config_method=self._crypto_config,
-            read_method=self._table.get_item
+            decrypt_python_item,
+            self._crypto_config,
+            self._table.get_item
         )
         self.put_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             encrypt_put_item,
-            encrypt_method=encrypt_python_item,
-            crypto_config_method=self._crypto_config,
-            write_method=self._table.put_item
+            encrypt_python_item,
+            self._crypto_config,
+            self._table.put_item
         )
         self.query = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_multi_get,
-            decrypt_method=decrypt_python_item,
-            crypto_config_method=self._crypto_config,
-            read_method=self._table.query
+            decrypt_python_item,
+            self._crypto_config,
+            self._table.query
         )
         self.scan = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_multi_get,
-            decrypt_method=decrypt_python_item,
-            crypto_config_method=self._crypto_config,
-            read_method=self._table.scan
+            decrypt_python_item,
+            self._crypto_config,
+            self._table.scan
         )
 
     def __getattr__(self, name):

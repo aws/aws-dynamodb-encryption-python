@@ -70,49 +70,49 @@ class EncryptedClient(object):
         )
         self._table_crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             crypto_config_from_cache,
-            materials_provider=self._materials_provider,
-            attribute_actions=self._attribute_actions,
-            table_info_cache=self._table_info_cache
+            self._materials_provider,
+            self._attribute_actions,
+            self._table_info_cache
         )
         self._item_crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             crypto_config_from_kwargs,
-            fallback=self._table_crypto_config
+            self._table_crypto_config
         )
         self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_get_item,
-            decrypt_method=decrypt_dynamodb_item,
-            crypto_config_method=self._item_crypto_config,
-            read_method=self._client.get_item
+            decrypt_dynamodb_item,
+            self._item_crypto_config,
+            self._client.get_item
         )
         self.put_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             encrypt_put_item,
-            encrypt_method=encrypt_dynamodb_item,
-            crypto_config_method=self._item_crypto_config,
-            write_method=self._client.put_item
+            encrypt_dynamodb_item,
+            self._item_crypto_config,
+            self._client.put_item
         )
         self.query = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_multi_get,
-            decrypt_method=decrypt_dynamodb_item,
-            crypto_config_method=self._item_crypto_config,
-            read_method=self._client.query
+            decrypt_dynamodb_item,
+            self._item_crypto_config,
+            self._client.query
         )
         self.scan = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_multi_get,
-            decrypt_method=decrypt_dynamodb_item,
-            crypto_config_method=self._item_crypto_config,
-            read_method=self._client.scan
+            decrypt_dynamodb_item,
+            self._item_crypto_config,
+            self._client.scan
         )
         self.batch_get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_batch_get_item,
-            decrypt_method=decrypt_dynamodb_item,
-            crypto_config_method=self._table_crypto_config,
-            read_method=self._client.batch_get_item
+            decrypt_dynamodb_item,
+            self._table_crypto_config,
+            self._client.batch_get_item
         )
         self.batch_write_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             encrypt_batch_write_item,
-            encrypt_method=encrypt_dynamodb_item,
-            crypto_config_method=self._table_crypto_config,
-            write_method=self._client.batch_write_item
+            encrypt_dynamodb_item,
+            self._table_crypto_config,
+            self._client.batch_write_item
         )
 
     def __getattr__(self, name):

@@ -140,9 +140,9 @@ class EncryptedResource(object):
         )
         self._crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             crypto_config_from_cache,
-            materials_provider=self._materials_provider,
-            attribute_actions=self._attribute_actions,
-            table_info_cache=self._table_info_cache
+            self._materials_provider,
+            self._attribute_actions,
+            self._table_info_cache
         )
         self.tables = EncryptedTablesCollectionManager(  # attrs confuses pylint: disable=attribute-defined-outside-init
             collection=self._resource.tables,
@@ -152,15 +152,15 @@ class EncryptedResource(object):
         )
         self.batch_get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             decrypt_batch_get_item,
-            decrypt_method=decrypt_python_item,
-            crypto_config_method=self._crypto_config,
-            read_method=self._resource.batch_get_item
+            decrypt_python_item,
+            self._crypto_config,
+            self._resource.batch_get_item
         )
         self.batch_write_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             encrypt_batch_write_item,
-            encrypt_method=encrypt_python_item,
-            crypto_config_method=self._crypto_config,
-            write_method=self._resource.batch_write_item
+            encrypt_python_item,
+            self._crypto_config,
+            self._resource.batch_write_item
         )
 
     def __getattr__(self, name):
