@@ -146,11 +146,11 @@ class EncryptedClient(object):
     def __attrs_post_init__(self):
         """Set up the table info cache and translation methods."""
         if self._expect_standard_dictionaries:
-            self._encrypt_item = encrypt_python_item
-            self._decrypt_item = decrypt_python_item
+            self._encrypt_item = encrypt_python_item  # attrs confuses pylint: disable=attribute-defined-outside-init
+            self._decrypt_item = decrypt_python_item  # attrs confuses pylint: disable=attribute-defined-outside-init
         else:
-            self._encrypt_item = encrypt_dynamodb_item
-            self._decrypt_item = decrypt_dynamodb_item
+            self._encrypt_item = encrypt_dynamodb_item  # attrs confuses pylint: disable=attribute-defined-outside-init
+            self._decrypt_item = decrypt_dynamodb_item  # attrs confuses pylint: disable=attribute-defined-outside-init
         self._table_info_cache = TableInfoCache(  # attrs confuses pylint: disable=attribute-defined-outside-init
             client=self._client,
             auto_refresh_table_indexes=self._auto_refresh_table_indexes
@@ -217,7 +217,13 @@ class EncryptedClient(object):
         raise NotImplementedError('"update_item" is not yet implemented')
 
     def get_paginator(self, operation_name):
-        """"""
+        """Get a paginator from the underlying client. If the paginator requested is for
+        "scan" or "query", the paginator returned will transparently decrypt the returned items.
+
+        :param str operation_name: Name of operation for which to get paginator
+        :returns: Paginator for name
+        :rtype: Paginator or EncryptedPaginator
+        """
         paginator = self._client.get_paginator(operation_name)
 
         if operation_name in ('scan', 'query'):

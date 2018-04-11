@@ -1,3 +1,10 @@
+[MESSAGES CONTROL]
+# Disabling messages that we either don't care about
+# for tests or are necessary to break for tests.
+#
+# R0801 : duplicate-code (causes lots of problems with implementations of common interfaces)
+disable = R0801
+
 [BASIC]
 # Allow function names up to 50 characters
 function-rgx = [a-z_][a-z0-9_]{2,50}$

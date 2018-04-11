@@ -72,7 +72,6 @@ def encrypt_dynamodb_item(item, crypto_config):
         encrypted_item = item.copy()
     else:
         # Add the attribute encryption mode to the inner material description
-        # TODO: This is awkward...see if we can break this out any
         encryption_mode = MaterialDescriptionValues.CBC_PKCS5_ATTRIBUTE_ENCRYPTION.value
         inner_material_description[
             MaterialDescriptionKeys.ATTRIBUTE_ENCRYPTION_MODE.value
