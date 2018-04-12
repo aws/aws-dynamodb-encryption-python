@@ -14,6 +14,13 @@
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Text  # noqa pylint: disable=unused-import
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.encrypted import CryptoConfig  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.identifiers import CryptoAction
@@ -71,7 +78,7 @@ def verify_item_signature(signature_attribute, encrypted_item, verification_key,
 
 
 def _string_to_sign(item, table_name, attribute_actions):
-    # type: (dynamodb_type.ITEM, Text, AttributeActions) -> bytes
+    # type: (dynamodb_types.ITEM, Text, AttributeActions) -> bytes
     """Generate the string to sign from an encrypted item and configuration.
 
     :param dict item: Encrypted DynamoDB item

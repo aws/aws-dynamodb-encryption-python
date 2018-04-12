@@ -20,7 +20,7 @@ from . import CryptographicMaterialsProvider
 __all__ = ('StaticCryptographicMaterialsProvider',)
 
 
-@attr.s
+@attr.s(init=False)
 class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Manually combine encryption and decryption materials for use as a cryptographic materials provider.
 
@@ -38,6 +38,20 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         validator=attr.validators.optional(attr.validators.instance_of(EncryptionMaterials)),
         default=None
     )
+
+    def __init__(
+            self,
+            decryption_materials=None,  # type: Optional[DecryptionMaterials]
+            encryption_materials=None  # type: Optional[EncryptionMaterials]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self._decryption_materials = decryption_materials
+        self._encryption_materials = encryption_materials
+        attr.validate(self)
 
     def decryption_materials(self, encryption_context):
         # type: (EncryptionContext) -> DecryptionMaterials

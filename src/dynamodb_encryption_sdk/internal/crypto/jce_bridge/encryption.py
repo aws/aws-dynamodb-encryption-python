@@ -21,7 +21,7 @@ from .primitives import (
 __all__ = ('JavaCipher',)
 
 
-@attr.s
+@attr.s(init=False)
 class JavaCipher(object):
     """Defines the encryption cipher, mode, and padding type to use for encryption.
 
@@ -35,6 +35,22 @@ class JavaCipher(object):
     cipher = attr.ib(validator=attr.validators.instance_of(JavaEncryptionAlgorithm))
     mode = attr.ib(validator=attr.validators.instance_of(JavaMode))
     padding = attr.ib(validator=attr.validators.instance_of(JavaPadding))
+
+    def __init__(
+            self,
+            cipher,  # type: JavaEncryptionAlgorithm
+            mode,  # type: JavaMode
+            padding  # type: JavaPadding
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.cipher = cipher
+        self.mode = mode
+        self.padding = padding
+        attr.validate(self)
 
     def encrypt(self, key, data):
         """Encrypt data using loaded key.

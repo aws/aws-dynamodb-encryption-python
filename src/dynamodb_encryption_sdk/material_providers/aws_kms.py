@@ -27,6 +27,7 @@ import six
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
+    from typing import Dict, Optional, Text, Tuple  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -69,7 +70,7 @@ class EncryptionContextKeys(Enum):
     TABLE_NAME = '*aws-kms-table*'
 
 
-@attr.s
+@attr.s(init=False)
 class KeyInfo(object):
     # pylint: disable=too-few-public-methods
     """Identifying information for a specific key and how it should be used.
@@ -83,9 +84,25 @@ class KeyInfo(object):
     algorithm = attr.ib(validator=attr.validators.instance_of(six.string_types))
     length = attr.ib(validator=attr.validators.instance_of(six.integer_types))
 
+    def __init__(
+            self,
+            description,  # type: Text
+            algorithm,  # type: Text
+            length  # type: int
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.description = description
+        self.algorithm = algorithm
+        self.length = length
+        attr.validate(self)
+
     @classmethod
     def from_description(cls, description, default_key_length=None):
-        # type: (Text) -> KeyInfo
+        # type: (Text, Optional[int]) -> KeyInfo
         """Load key info from key info description.
 
         :param str description: Key info description
@@ -122,7 +139,7 @@ class KeyInfo(object):
         return cls.from_description(description, default_key_length)
 
 
-@attr.s
+@attr.s(init=False)
 class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Cryptographic materials provider for use with the AWS Key Management Service (KMS).
 
@@ -158,6 +175,36 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         validator=dictionary_validator(six.string_types, botocore.client.BaseClient),
         default=attr.Factory(dict)
     )
+
+    def __init__(
+            self,
+            key_id,  # type: Text
+            botocore_session=None,  # type: Optional[botocore.session.Session]
+            grant_tokens=None,  # type: Optional[Tuple[Text]]
+            material_description=None,  # type: Optional[Dict[Text, Text]]
+            regional_clients=None  # type: Optional[Dict[Text, botocore.client.BaseClient]]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if botocore_session is None:
+            botocore_session = botocore.session.Session()
+        if grant_tokens is None:
+            grant_tokens = ()
+        if material_description is None:
+            material_description = {}
+        if regional_clients is None:
+            regional_clients = {}
+
+        self._key_id = key_id
+        self._botocore_session = botocore_session
+        self._grant_tokens = grant_tokens
+        self._material_description = material_description
+        self._regional_clients = regional_clients
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         # type: () -> None
@@ -230,7 +277,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         return self._key_id
 
     def _validate_key_id(self, key_id, encryption_context):
-        # type: (EncryptionContext) -> None
+        # type: (Text, EncryptionContext) -> None
         # pylint: disable=unused-argument,no-self-use
         """Validate the selected key id.
 
@@ -299,7 +346,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         return kms_encryption_context
 
     def _generate_initial_material(self, encryption_context):
-        # type: () -> (bytes, bytes)
+        # type: (EncryptionContext) -> (bytes, bytes)
         """Generate the initial cryptographic material for use with HKDF.
 
         :param encryption_context: Encryption context providing information about request
@@ -332,7 +379,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             raise WrappingError(message)
 
     def _decrypt_initial_material(self, encryption_context):
-        # type: () -> bytes
+        # type: (EncryptionContext) -> bytes
         """Decrypt an encrypted initial cryptographic material value.
 
         :param encryption_context: Encryption context providing information about request

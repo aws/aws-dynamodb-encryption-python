@@ -17,6 +17,12 @@ import copy
 import attr
 import six
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
@@ -33,7 +39,7 @@ _WRAPPING_TRANSFORMATION = {
 }
 
 
-@attr.s
+@attr.s(init=False)
 class WrappedCryptographicMaterials(CryptographicMaterials):
     """Encryption/decryption key is a content key stored in the material description, wrapped
     by the wrapping key.
@@ -71,6 +77,28 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         converter=copy.deepcopy,
         default=attr.Factory(dict)
     )
+
+    def __init__(
+            self,
+            signing_key,  # type: DelegatedKey
+            wrapping_key=None,  # type: Optional[DelegatedKey]
+            unwrapping_key=None,  # type: Optional[DelegatedKey]
+            material_description=None  # type: Optional[Dict[Text, Text]]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if material_description is None:
+            material_description = {}
+
+        self._signing_key = signing_key
+        self._wrapping_key = wrapping_key
+        self._unwrapping_key = unwrapping_key
+        self._material_description = material_description
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Prepare the content key."""

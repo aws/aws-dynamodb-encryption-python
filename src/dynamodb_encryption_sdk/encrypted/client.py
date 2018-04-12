@@ -16,6 +16,12 @@ from functools import partial
 import attr
 import botocore
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Any, Callable, Dict, Optional  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.internal.utils import (
     crypto_config_from_cache, crypto_config_from_kwargs,
     decrypt_batch_get_item, decrypt_get_item, decrypt_multi_get,
@@ -30,7 +36,7 @@ from .item import decrypt_dynamodb_item, decrypt_python_item, encrypt_dynamodb_i
 __all__ = ('EncryptedClient',)
 
 
-@attr.s
+@attr.s(init=False)
 class EncryptedPaginator(object):
     """Paginator that decrypts returned items before returning them.
 
@@ -43,6 +49,22 @@ class EncryptedPaginator(object):
     _paginator = attr.ib(validator=attr.validators.instance_of(botocore.paginate.Paginator))
     _decrypt_method = attr.ib()
     _crypto_config_method = attr.ib(validator=callable_validator)
+
+    def __init__(
+            self,
+            paginator,  # type: botocore.paginate.Paginator
+            decrypt_method,  # type: Callable
+            crypto_config_method  # type: Callable
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self._paginator = paginator
+        self._decrypt_method = decrypt_method
+        self._crypto_config_method = crypto_config_method
+        attr.validate(self)
 
     @_decrypt_method.validator
     def validate_decrypt_method(self, attribute, value):
@@ -84,7 +106,7 @@ class EncryptedPaginator(object):
             yield page
 
 
-@attr.s
+@attr.s(init=False)
 class EncryptedClient(object):
     # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """High-level helper class to provide a familiar interface to encrypted tables.
@@ -142,6 +164,30 @@ class EncryptedClient(object):
         validator=attr.validators.instance_of(bool),
         default=False
     )
+
+    def __init__(
+            self,
+            client,  # type: botocore.client.BaseClient
+            materials_provider,  # type: CryptographicMaterialsProvider
+            attribute_actions=None,  # type: Optional[AttributeActions]
+            auto_refresh_table_indexes=True,  # type: Optional[bool]
+            expect_standard_dictionaries=False  # type: Optional[bool]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if attribute_actions is None:
+            attribute_actions = AttributeActions()
+
+        self._client = client
+        self._materials_provider = materials_provider
+        self._attribute_actions = attribute_actions
+        self._auto_refresh_table_indexes = auto_refresh_table_indexes
+        self._expect_standard_dictionaries = expect_standard_dictionaries
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Set up the table info cache and translation methods."""

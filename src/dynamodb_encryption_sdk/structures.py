@@ -16,6 +16,12 @@ import copy
 import attr
 import six
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Dict, Iterables, Optional, Set, Text  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
@@ -38,7 +44,7 @@ def _validate_attribute_values_are_ddb_items(instance, attribute, value):  # pyl
             raise TypeError('"{}" values do not look like DynamoDB items'.format(attribute.name))
 
 
-@attr.s
+@attr.s(init=False)
 class EncryptionContext(object):
     # pylint: disable=too-few-public-methods
     """Additional information about an encryption request.
@@ -75,8 +81,33 @@ class EncryptionContext(object):
         default=attr.Factory(dict)
     )
 
+    def __init__(
+            self,
+            table_name=None,  # type: Optional[Text]
+            partition_key_name=None,  # type: Optional[Text]
+            sort_key_name=None,  # type: Optional[Text]
+            attributes=None,  # type: Optional[Dict[Text, Dict]
+            material_description=None  # type: Optional[Dict[Text, Text]]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if attributes is None:
+            attributes = {}
+        if material_description is None:
+            material_description = {}
 
-@attr.s
+        self.table_name = table_name
+        self.partition_key_name = partition_key_name
+        self.sort_key_name = sort_key_name
+        self.attributes = attributes
+        self.material_description = material_description
+        attr.validate(self)
+
+
+@attr.s(init=False)
 class AttributeActions(object):
     """Configuration resource used to determine what action should be taken for a specific attribute.
 
@@ -93,6 +124,24 @@ class AttributeActions(object):
         validator=dictionary_validator(six.string_types, CryptoAction),
         default=attr.Factory(dict)
     )
+
+    def __init__(
+            self,
+            default_action=CryptoAction.ENCRYPT_AND_SIGN,  # type: Optional[CryptoAction]
+            attribute_actions=None  # type: Optional[Dict[Text, CryptoAction]]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if attribute_actions is None:
+            attribute_actions = {}
+
+        self.default_action = default_action
+        self.attribute_actions = attribute_actions
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         # () -> None
@@ -170,7 +219,7 @@ class AttributeActions(object):
         )
 
 
-@attr.s
+@attr.s(init=False)
 class TableIndex(object):
     # pylint: disable=too-few-public-methods
     """Describes a table index.
@@ -184,6 +233,21 @@ class TableIndex(object):
         validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
         default=None
     )
+
+    def __init__(
+            self,
+            partition,  # type: Text
+            sort=None  # type: Optional[Text]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.partition = partition
+        self.sort = sort
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Set the ``attributes`` attribute for ease of access later."""
@@ -217,7 +281,7 @@ class TableIndex(object):
         )
 
 
-@attr.s
+@attr.s(init=False)
 class TableInfo(object):
     """Describes a DynamoDB table.
 
@@ -238,6 +302,22 @@ class TableInfo(object):
         validator=attr.validators.optional(iterable_validator(set, TableIndex)),
         default=None
     )
+
+    def __init__(
+            self,
+            name,  # type: Text
+            primary_index=None,  # type: Optional[TableIndex]
+            secondary_indexes=None  # type: Optional[Set[TableIndex]]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.name = name
+        self._primary_index = primary_index
+        self._secondary_indexes = secondary_indexes
+        attr.validate(self)
 
     @property
     def primary_index(self):

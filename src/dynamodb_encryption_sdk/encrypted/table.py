@@ -29,7 +29,7 @@ from .item import decrypt_python_item, encrypt_python_item
 __all__ = ('EncryptedTable',)
 
 
-@attr.s
+@attr.s(init=False)
 class EncryptedTable(object):
     # pylint: disable=too-few-public-methods
     """High-level helper class to provide a familiar interface to encrypted tables.
@@ -85,6 +85,30 @@ class EncryptedTable(object):
         validator=attr.validators.instance_of(bool),
         default=True
     )
+
+    def __init__(
+            self,
+            table,  # type: ServiceResource
+            materials_provider,  # type: CryptographicMaterialsProvider
+            table_info=None,  # type: Optional[TableInfo]
+            attribute_actions=None,  # type: Optional[AttributeActions]
+            auto_refresh_table_indexes=True  # type: Optional[bool]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if attribute_actions is None:
+            attribute_actions = AttributeActions()
+
+        self._table = table
+        self._materials_provider = materials_provider
+        self._table_info = table_info
+        self._attribute_actions = attribute_actions
+        self._auto_refresh_table_indexes = auto_refresh_table_indexes
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Prepare table info is it was not set and set up translation methods."""
