@@ -30,7 +30,7 @@ from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionConte
 __all__ = ('CryptoConfig',)
 
 
-@attr.s
+@attr.s(init=False)
 class CryptoConfig(object):
     """Container for all configuration needed to encrypt or decrypt an item.
 
@@ -45,6 +45,23 @@ class CryptoConfig(object):
     materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     encryption_context = attr.ib(validator=attr.validators.instance_of(EncryptionContext))
     attribute_actions = attr.ib(validator=attr.validators.instance_of(AttributeActions))
+
+    def __init__(
+            self,
+            materials_provider,  # type: CryptographicMaterialsProvider
+            encryption_context,  # type: EncryptionContext
+            attribute_actions  # type: AttributeActions
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.materials_provider = materials_provider
+        self.encryption_context = encryption_context
+        self.attribute_actions = attribute_actions
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         # type: () -> None

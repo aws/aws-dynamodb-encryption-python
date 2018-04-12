@@ -28,7 +28,7 @@ from .table import EncryptedTable
 __all__ = ('EncryptedResource',)
 
 
-@attr.s
+@attr.s(init=False)
 class EncryptedTablesCollectionManager(object):
     # pylint: disable=too-few-public-methods
     """Tables collection manager that provides EncryptedTable objects.
@@ -49,6 +49,25 @@ class EncryptedTablesCollectionManager(object):
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(validator=attr.validators.instance_of(AttributeActions))
     _table_info_cache = attr.ib(validator=attr.validators.instance_of(TableInfoCache))
+
+    def __init__(
+            self,
+            collection,  # type: CollectionManager
+            materials_provider,  # type: CryptographicMaterialsProvider
+            attribute_actions,  # type: AttributeActions
+            table_info_cache  # type: TableInfoCache
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self._collection = collection
+        self._materials_provider = materials_provider
+        self._attribute_actions = attribute_actions
+        self._table_info_cache = table_info_cache
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Set up the translation methods."""
@@ -95,7 +114,7 @@ class EncryptedTablesCollectionManager(object):
             )
 
 
-@attr.s
+@attr.s(init=False)
 class EncryptedResource(object):
     # pylint: disable=too-few-public-methods
     """High-level helper class to provide a familiar interface to encrypted tables.
@@ -141,6 +160,28 @@ class EncryptedResource(object):
         validator=attr.validators.instance_of(bool),
         default=True
     )
+
+    def __init__(
+            self,
+            resource,  # type: ServiceResource
+            materials_provider,  # type: CryptographicMaterialsProvider
+            attribute_actions=None,  # type: Optional[AttributeActions]
+            auto_refresh_table_indexes=True  # type: Optional[bool]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if attribute_actions is None:
+            attribute_actions = AttributeActions()
+
+        self._resource = resource
+        self._materials_provider = materials_provider
+        self._attribute_actions = attribute_actions
+        self._auto_refresh_table_indexes = auto_refresh_table_indexes
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Set up the table info cache, encrypted tables collection manager, and translation methods."""

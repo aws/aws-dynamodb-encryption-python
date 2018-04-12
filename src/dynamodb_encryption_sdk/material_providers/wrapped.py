@@ -22,7 +22,7 @@ from . import CryptographicMaterialsProvider
 __all__ = ('WrappedCryptographicMaterialsProvider',)
 
 
-@attr.s
+@attr.s(init=False)
 class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Cryptographic materials provider to use ephemeral content encryption keys wrapped by delegated keys.
 
@@ -53,6 +53,22 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
         default=None
     )
+
+    def __init__(
+            self,
+            signing_key,  # type: DelegatedKey
+            wrapping_key=None,  # type: Optional[DelegatedKey]
+            unwrapping_key=None  # type: Optional[DelegatedKey]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self._signing_key = signing_key
+        self._wrapping_key = wrapping_key
+        self._unwrapping_key = unwrapping_key
+        attr.validate(self)
 
     def _build_materials(self, encryption_context):
         # type: (EncryptionContext) -> WrappedCryptographicMaterials

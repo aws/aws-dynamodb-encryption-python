@@ -20,7 +20,7 @@ from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 from dynamodb_encryption_sdk.structures import EncryptionContext, TableInfo
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Callable, Dict, Text  # noqa pylint: disable=unused-import
+    from typing import Any, Callable, Dict, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -50,7 +50,7 @@ def sorted_key_map(item, transform=to_bytes):
     return sorted_items
 
 
-@attr.s
+@attr.s(init=False)
 class TableInfoCache(object):
     # pylint: disable=too-few-public-methods
     """Very simple cache of TableInfo objects, providing configuration information about DynamoDB tables.
@@ -63,6 +63,21 @@ class TableInfoCache(object):
 
     _client = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
     _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool))
+
+    def __init__(
+            self,
+            client,  # type: botocore.client.BaseClient
+            auto_refresh_table_indexes  # type: bool
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self._client = client
+        self._auto_refresh_table_indexes = auto_refresh_table_indexes
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Set up the empty cache."""

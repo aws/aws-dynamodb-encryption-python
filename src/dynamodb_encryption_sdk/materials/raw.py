@@ -27,6 +27,12 @@ import copy
 import attr
 import six
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
@@ -34,7 +40,7 @@ from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMat
 __all__ = ('RawEncryptionMaterials', 'RawDecryptionMaterials')
 
 
-@attr.s
+@attr.s(init=False)
 class RawEncryptionMaterials(EncryptionMaterials):
     # inheritance confuses pylint: disable=abstract-method
     """Encryption materials for use directly with delegated keys.
@@ -60,6 +66,26 @@ class RawEncryptionMaterials(EncryptionMaterials):
         converter=copy.deepcopy,
         default=attr.Factory(dict)
     )
+
+    def __init__(
+            self,
+            signing_key,  # type: DelegatedKey
+            encryption_key=None,  # type: Optional[DelegatedKey]
+            material_description=None  # type: Optional[Dict[Text, Text]]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if material_description is None:
+            material_description = {}
+
+        self._signing_key = signing_key
+        self._encryption_key = encryption_key
+        self._material_description = material_description
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Verify that the encryption key is allowed be used for raw materials."""
@@ -102,7 +128,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
         return self._encryption_key
 
 
-@attr.s
+@attr.s(init=False)
 class RawDecryptionMaterials(DecryptionMaterials):
     # inheritance confuses pylint: disable=abstract-method
     """Encryption materials for use directly with delegated keys.
@@ -128,6 +154,26 @@ class RawDecryptionMaterials(DecryptionMaterials):
         converter=copy.deepcopy,
         default=attr.Factory(dict)
     )
+
+    def __init__(
+            self,
+            verification_key,  # type: DelegatedKey
+            decryption_key=None,  # type: Optional[DelegatedKey]
+            material_description=None  # type: Optional[Dict[Text, Text]]
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        if material_description is None:
+            material_description = {}
+
+        self._verification_key = verification_key
+        self._decryption_key = decryption_key
+        self._material_description = material_description
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     def __attrs_post_init__(self):
         """Verify that the encryption key is allowed be used for raw materials."""

@@ -22,6 +22,12 @@ from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padd
 from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 import six
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Callable, Text  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.exceptions import (
     DecryptionError, EncryptionError, InvalidAlgorithmError, UnwrappingError, WrappingError
 )
@@ -89,7 +95,7 @@ class JavaPadding(object):
         """Build an instance of this padding type."""
 
 
-@attr.s
+@attr.s(init=False)
 class SimplePadding(JavaPadding):
     # pylint: disable=too-few-public-methods
     """Padding types that do not require any preparation."""
@@ -97,8 +103,22 @@ class SimplePadding(JavaPadding):
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     padding = attr.ib(validator=callable_validator)
 
+    def __init__(
+            self,
+            java_name,  # type: Text
+            padding  # type: Callable
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.java_name = java_name
+        self.padding = padding
+        attr.validate(self)
+
     def build(self, block_size=None):
-        # type: (int) -> ANY
+        # type: (int) -> Any
         """Build an instance of this padding type.
 
         :param int block_size: Not used by SimplePadding. Ignored and not required.
@@ -107,7 +127,7 @@ class SimplePadding(JavaPadding):
         return self.padding()
 
 
-@attr.s
+@attr.s(init=False)
 class BlockSizePadding(JavaPadding):
     # pylint: disable=too-few-public-methods
     """Padding types that require a block size input."""
@@ -115,8 +135,22 @@ class BlockSizePadding(JavaPadding):
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     padding = attr.ib(validator=callable_validator)
 
+    def __init__(
+            self,
+            java_name,  # type: Text
+            padding  # type: Callable
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.java_name = java_name
+        self.padding = padding
+        attr.validate(self)
+
     def build(self, block_size):
-        # type: (int) -> ANY
+        # type: (int) -> Any
         """Build an instance of this padding type.
 
         :param int block_size: Block size of algorithm for which to build padder.
@@ -125,7 +159,7 @@ class BlockSizePadding(JavaPadding):
         return self.padding(block_size)
 
 
-@attr.s
+@attr.s(init=False)
 class OaepPadding(JavaPadding):
     # pylint: disable=too-few-public-methods
     """OAEP padding types. These require more complex setup.
@@ -143,8 +177,28 @@ class OaepPadding(JavaPadding):
     mgf = attr.ib(validator=callable_validator)
     mgf_digest = attr.ib(validator=callable_validator)
 
+    def __init__(
+            self,
+            java_name,  # type: Text
+            padding,  # type: Callable
+            digest,  # type: Callable
+            mgf,  # type: Callable
+            mgf_digest  # type: Callable
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.java_name = java_name
+        self.padding = padding
+        self.digest = digest
+        self.mgf = mgf
+        self.mgf_digest = mgf_digest
+        attr.validate(self)
+
     def build(self, block_size=None):
-        # type: (int) -> ANY
+        # type: (int) -> Any
         """Build an instance of this padding type.
 
         :param int block_size: Not used by OaepPadding. Ignored and not required.
@@ -157,7 +211,7 @@ class OaepPadding(JavaPadding):
         )
 
 
-@attr.s
+@attr.s(init=False)
 class JavaMode(object):
     # pylint: disable=too-few-public-methods
     """Bridge the gap from the Java encryption mode names and Python resources.
@@ -167,8 +221,22 @@ class JavaMode(object):
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     mode = attr.ib(validator=callable_validator)
 
+    def __init__(
+            self,
+            java_name,  # type: Text
+            mode  # type: Callable
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.java_name = java_name
+        self.mode = mode
+        attr.validate(self)
+
     def build(self, iv):
-        # type: (int) -> ANY
+        # type: (int) -> Any
         """Build an instance of this mode type.
 
         :param bytes iv: Initialization vector bytes
@@ -177,7 +245,7 @@ class JavaMode(object):
         return self.mode(iv)
 
 
-@attr.s
+@attr.s(init=False)
 class JavaEncryptionAlgorithm(object):
     # pylint: disable=too-few-public-methods
     """Bridge the gap from the Java encryption algorithm names and Python resources.
@@ -186,6 +254,22 @@ class JavaEncryptionAlgorithm(object):
 
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     cipher = attr.ib()
+
+    def __init__(
+            self,
+            java_name,  # type: Text
+            cipher  # type: Callable
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.java_name = java_name
+        self.cipher = cipher
+        attr.validate(self)
+        if hasattr(self, '__attrs_post_init__'):
+            self.__attrs_post_init__()
 
     def validate_algorithm(self, algorithm):
         # type: (Text) -> None

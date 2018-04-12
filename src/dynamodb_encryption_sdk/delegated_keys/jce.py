@@ -22,6 +22,12 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 import six
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.exceptions import JceTransformationError, UnwrappingError
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
@@ -67,7 +73,7 @@ _ALGORITHM_GENERATE_MAP = {
 }
 
 
-@attr.s
+@attr.s(init=False)
 class JceNameLocalDelegatedKey(DelegatedKey):
     # pylint: disable=too-many-instance-attributes
     """Delegated key that uses JCE StandardName algorithm values to determine behavior.
@@ -113,6 +119,25 @@ class JceNameLocalDelegatedKey(DelegatedKey):
     _algorithm = attr.ib(validator=attr.validators.instance_of(six.string_types))
     _key_type = attr.ib(validator=attr.validators.instance_of(EncryptionKeyType))
     _key_encoding = attr.ib(validator=attr.validators.instance_of(KeyEncodingType))
+
+    def __init__(
+            self,
+            key,  # type: bytes
+            algorithm,  # type: Text
+            key_type,  # type: EncryptionKeyType
+            key_encoding  # type: KeyEncodingType
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.key = key
+        self._algorithm = algorithm
+        self._key_type = key_type
+        self._key_encoding = key_encoding
+        attr.validate(self)
+        self.__attrs_post_init__()
 
     @property
     def algorithm(self):

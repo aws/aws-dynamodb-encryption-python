@@ -21,7 +21,7 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 import six
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Text  # noqa pylint: disable=unused-import
+    from typing import Any, Callable, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -87,7 +87,7 @@ class JavaAuthenticator(object):
         """
 
 
-@attr.s
+@attr.s(init=False)
 class JavaMac(JavaAuthenticator):
     """Symmetric MAC authenticators.
 
@@ -98,6 +98,22 @@ class JavaMac(JavaAuthenticator):
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     algorithm_type = attr.ib(validator=callable_validator)
     hash_type = attr.ib(validator=callable_validator)
+
+    def __init__(
+            self,
+            java_name,  # type: Text
+            algorithm_type,  # type: Callable
+            hash_type  # type: Callable
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.java_name = java_name
+        self.algorithm_type = algorithm_type
+        self.hash_type = hash_type
+        attr.validate(self)
 
     def _build_hmac_signer(self, key):
         # type: (bytes) -> Any
@@ -182,7 +198,7 @@ class JavaMac(JavaAuthenticator):
             raise SignatureVerificationError(message)
 
 
-@attr.s
+@attr.s(init=False)
 class JavaSignature(JavaAuthenticator):
     """Asymmetric signature authenticators.
 
@@ -194,6 +210,24 @@ class JavaSignature(JavaAuthenticator):
     algorithm_type = attr.ib()
     hash_type = attr.ib(validator=callable_validator)
     padding_type = attr.ib(validator=callable_validator)
+
+    def __init__(
+            self,
+            java_name,  # type: Text
+            algorithm_type,
+            hash_type,  # type: Callable
+            padding_type  # type: Callable
+    ):
+        # type: (...) -> None
+        """Workaround pending resolution of attrs/mypy interaction.
+        https://github.com/python/mypy/issues/2088
+        https://github.com/python-attrs/attrs/issues/215
+        """
+        self.java_name = java_name
+        self.algorithm_type = algorithm_type
+        self.hash_type = hash_type
+        self.padding_type = padding_type
+        attr.validate(self)
 
     def validate_algorithm(self, algorithm):
         # type: (Text) -> None
