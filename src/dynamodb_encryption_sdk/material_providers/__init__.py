@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Cryptographic materials providers."""
-from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 
 __all__ = ('CryptographicMaterialsProvider',)
@@ -21,7 +21,7 @@ class CryptographicMaterialsProvider(object):
     """Base class for all cryptographic materials providers."""
 
     def decryption_materials(self, encryption_context):
-        # type: (EncryptionContext) -> DecryptionMaterials
+        # type: (EncryptionContext) -> CryptographicMaterials
         # pylint: disable=unused-argument,no-self-use
         """Return decryption materials.
 
@@ -32,7 +32,7 @@ class CryptographicMaterialsProvider(object):
         raise AttributeError('No decryption materials available')
 
     def encryption_materials(self, encryption_context):
-        # type: (EncryptionContext) -> EncryptionMaterials
+        # type: (EncryptionContext) -> CryptographicMaterials
         # pylint: disable=unused-argument,no-self-use
         """Return encryption materials.
 
