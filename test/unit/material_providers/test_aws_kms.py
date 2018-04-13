@@ -318,7 +318,7 @@ def test_select_id(default_kms_cmp):
 
 # TODO: vectorize
 @pytest.mark.parametrize('attribute, expected_value', (
-    ({'B': Binary(b'\x00\x01\x02\x03')}, 'AAECAw=='),
+    ({'B': b'\x00\x01\x02\x03'}, 'AAECAw=='),
     ({'S': 'some string value'}, 'some string value'),
     ({'N': '55.2'}, '55.2')
 ))
