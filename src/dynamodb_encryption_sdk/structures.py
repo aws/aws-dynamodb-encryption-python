@@ -17,7 +17,7 @@ import attr
 import six
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Iterables, Optional, Set, Text  # noqa pylint: disable=unused-import
+    from typing import Dict, Iterable, Optional, Set, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -86,7 +86,7 @@ class EncryptionContext(object):
             table_name=None,  # type: Optional[Text]
             partition_key_name=None,  # type: Optional[Text]
             sort_key_name=None,  # type: Optional[Text]
-            attributes=None,  # type: Optional[Dict[Text, Dict]
+            attributes=None,  # type: Optional[Dict[Text, Dict]]
             material_description=None  # type: Optional[Dict[Text, Text]]
     ):
         # type: (...) -> None

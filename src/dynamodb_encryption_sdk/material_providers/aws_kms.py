@@ -192,7 +192,8 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         if botocore_session is None:
             botocore_session = botocore.session.Session()
         if grant_tokens is None:
-            grant_tokens = ()
+            # reassignment confuses mypy
+            grant_tokens = ()  # type: ignore
         if material_description is None:
             material_description = {}
         if regional_clients is None:
@@ -292,7 +293,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         """
 
     def _attribute_to_value(self, attribute):
-        # type: (dynamodb_types.ITEM) -> str
+        # type: (dynamodb_types.ITEM) -> Text
         """Convert a DynamoDB attribute to a value that can be added to the KMS encryption context.
 
         :param dict attribute: Attribute to convert
@@ -307,7 +308,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         raise ValueError('Attribute of type "{}" cannot be used in KMS encryption context.'.format(attribute_type))
 
     def _kms_encryption_context(self, encryption_context, encryption_description, signing_description):
-        # type: (EncryptionContext, Text, Text) -> Dict[str, str]
+        # type: (EncryptionContext, Text, Text) -> Dict[Text, Text]
         """Build the KMS encryption context from the encryption context and key descriptions.
 
         :param encryption_context: Encryption context providing information about request
@@ -346,7 +347,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         return kms_encryption_context
 
     def _generate_initial_material(self, encryption_context):
-        # type: (EncryptionContext) -> (bytes, bytes)
+        # type: (EncryptionContext) -> Tuple[bytes, bytes]
         """Generate the initial cryptographic material for use with HKDF.
 
         :param encryption_context: Encryption context providing information about request

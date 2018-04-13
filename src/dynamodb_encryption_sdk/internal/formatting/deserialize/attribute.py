@@ -18,7 +18,7 @@ import logging
 import struct
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Callable, Dict, List, Union  # noqa pylint: disable=unused-import
+    from typing import Callable, Dict, List, Text, Union  # noqa pylint: disable=unused-import
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import,ungrouped-imports
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
@@ -52,7 +52,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         return value
 
     def _deserialize_binary(stream):
-        # type: (io.BytesIO) -> Dict[str, bytes]
+        # type: (io.BytesIO) -> Dict[Text, bytes]
         """Deserializes a binary object.
 
         :param stream: Stream containing serialized object
@@ -72,7 +72,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         return codecs.decode(value, TEXT_ENCODING)
 
     def _deserialize_string(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.STRING]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.STRING]
         """Deserializes a string object.
 
         :param stream: Stream containing serialized object
@@ -94,7 +94,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         return '{0:f}'.format(decimal_value)
 
     def _deserialize_number(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.STRING]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.STRING]
         """Deserializes a number object.
 
         :param stream: Stream containing serialized object
@@ -110,7 +110,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
     }
 
     def _deserialize_boolean(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.BOOLEAN]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.BOOLEAN]
         """Deserializes a boolean object.
 
         :param stream: Stream containing serialized object
@@ -121,7 +121,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         return {Tag.BOOLEAN.dynamodb_tag: _boolean_map[value]}
 
     def _deserialize_null(stream):  # we want a consistent API but don't use stream, so pylint: disable=unused-argument
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.BOOLEAN]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.BOOLEAN]
         """Deserializes a null object.
 
         :param stream: Stream containing serialized object
@@ -145,7 +145,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         ])
 
     def _deserialize_binary_set(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.SET[dynamodb_types.BINARY]]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.SET[dynamodb_types.BINARY]]
         """Deserializes a binary set object.
 
         :param stream: Stream containing serialized object
@@ -155,7 +155,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         return {Tag.BINARY_SET.dynamodb_tag: _deserialize_set(stream, _transform_binary_value)}
 
     def _deserialize_string_set(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.SET[dynamodb_types.STRING]]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.SET[dynamodb_types.STRING]]
         """Deserializes a string set object.
 
         :param stream: Stream containing serialized object
@@ -165,7 +165,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         return {Tag.STRING_SET.dynamodb_tag: _deserialize_set(stream, _transform_string_value)}
 
     def _deserialize_number_set(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.SET[dynamodb_types.STRING]]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.SET[dynamodb_types.STRING]]
         """Deserializes a number set object.
 
         :param stream: Stream containing serialized object
@@ -175,7 +175,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         return {Tag.NUMBER_SET.dynamodb_tag: _deserialize_set(stream, _transform_number_value)}
 
     def _deserialize_list(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.LIST]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.LIST]
         """Deserializes a list object.
 
         :param stream: Stream containing serialized object
@@ -189,7 +189,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         ]}
 
     def _deserialize_map(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.MAP]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.MAP]
         """Deserializes a map object.
 
         :param stream: Stream containing serialized object
@@ -197,7 +197,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :rtype: dict
         """
         member_count = decode_length(stream)
-        members = {}
+        members = {}  # type: dynamodb_types.MAP
         for _ in range(member_count):
             key = _deserialize(stream)
             if Tag.STRING.dynamodb_tag not in key:
@@ -236,7 +236,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
             raise DeserializationError('Unsupported tag: "{}"'.format(tag))
 
     def _deserialize(stream):
-        # type: (io.BytesIO) -> Dict[str, dynamodb_types.RAW_ATTRIBUTE]
+        # type: (io.BytesIO) -> Dict[Text, dynamodb_types.RAW_ATTRIBUTE]
         """Deserializes a serialized object.
 
         :param stream: Stream containing serialized object

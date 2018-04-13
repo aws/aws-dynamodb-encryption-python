@@ -228,6 +228,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     @property
     def allowed_for_raw_materials(self):
+        # type: () -> bool
         """Only ``JceNameLocalDelegatedKey`` backed by AES keys are allowed to be used with
         ``RawCryptographicMaterials``.
 
@@ -237,7 +238,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         return self.algorithm == 'AES'
 
     def _encrypt(self, algorithm, name, plaintext, additional_associated_data=None):
-        # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+        # type: (Text, Text, bytes, Optional[Dict[Text, Text]]) -> bytes
         # pylint: disable=unused-argument
         """
         Encrypt data.
@@ -255,7 +256,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         return encryptor.encrypt(self.__key, plaintext)
 
     def _decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):
-        # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+        # type: (Text, Text, bytes, Optional[Dict[Text, Text]]) -> bytes
         # pylint: disable=unused-argument
         """Encrypt data.
 
@@ -271,7 +272,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         return decryptor.decrypt(self.__key, ciphertext)
 
     def _wrap(self, algorithm, content_key, additional_associated_data=None):
-        # type: (Text, bytes, Dict[Text, Text]) -> bytes
+        # type: (Text, bytes, Optional[Dict[Text, Text]]) -> bytes
         # pylint: disable=unused-argument
         """Wrap content key.
 
@@ -288,7 +289,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         )
 
     def _unwrap(self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None):
-        # type: (Text, bytes, Text, EncryptionKeyType, Dict[Text, Text]) -> DelegatedKey
+        # type: (Text, bytes, Text, EncryptionKeyType, Optional[Dict[Text, Text]]) -> DelegatedKey
         # pylint: disable=unused-argument
         """Wrap content key.
 
@@ -341,7 +342,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     def _signing_algorithm(self):
         # type: () -> Text
-        """Provides a description that can inform an appropriate cryptographic materials
+        """Provide a description that can inform an appropriate cryptographic materials
         provider about how to build a ``JceNameLocalDelegatedKey`` for signature verification.
         The return value of this method is included in the material description written to
         the encrypted item.

@@ -106,7 +106,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
 
     @property
     def signing_key(self):
-        # type: () -> Dict[Text, Text]
+        # type: () -> DelegatedKey
         """Delegated key used for calculating digital signatures.
 
         :returns: Signing key
@@ -116,7 +116,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
 
     @property
     def encryption_key(self):
-        # type: () -> Dict[Text, Text]
+        # type: () -> DelegatedKey
         """Delegated key used for encrypting attributes.
 
         :returns: Encryption key
@@ -194,7 +194,7 @@ class RawDecryptionMaterials(DecryptionMaterials):
 
     @property
     def verification_key(self):
-        # type: () -> Dict[Text, Text]
+        # type: () -> DelegatedKey
         """Delegated key used for verifying digital signatures.
 
         :returns: Verification key
@@ -204,7 +204,7 @@ class RawDecryptionMaterials(DecryptionMaterials):
 
     @property
     def decryption_key(self):
-        # type: () -> Dict[Text, Text]
+        # type: () -> DelegatedKey
         """Delegated key used for decrypting attributes.
 
         :returns: Decryption key
