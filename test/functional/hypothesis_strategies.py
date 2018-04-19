@@ -53,11 +53,7 @@ NEGATIVE_NUMBER_RANGE = NumberRange(
 
 ddb_string = text(
     min_size=1,
-    max_size=MAX_ITEM_BYTES,
-    alphabet=characters(
-        blacklist_categories=('Cs',),
-        blacklist_characters=('"', "'")  # Quotes break moto :(
-    )
+    max_size=MAX_ITEM_BYTES
 )
 ddb_string_set = sets(ddb_string, min_size=1)
 
@@ -100,11 +96,7 @@ ddb_set_types = (
 )
 ddb_attribute_names = text(
     min_size=1,
-    max_size=255,
-    alphabet=characters(
-        blacklist_categories=('Cs',),
-        blacklist_characters=('"', "'")  # Quotes break moto :(
-    )
+    max_size=255
 )
 # TODO: List and Map types have a max depth of 32
 ddb_map_type = deferred(lambda: dictionaries(
