@@ -1,0 +1,7 @@
+hypothesis
+mock
+git+https://github.com/spulec/moto.git
+pytest>=3.3.1
+pytest-cov
+pytest-mock
+pytest-xdist

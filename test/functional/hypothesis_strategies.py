@@ -17,7 +17,9 @@ from decimal import Decimal
 
 from boto3.dynamodb.types import Binary, DYNAMODB_CONTEXT
 import hypothesis
-from hypothesis.strategies import binary, booleans, dictionaries, deferred, fractions, just, lists, none, sets, text
+from hypothesis.strategies import (
+    binary, booleans, characters, dictionaries, deferred, fractions, just, lists, none, sets, text
+)
 
 SLOW_SETTINGS = hypothesis.settings(
     suppress_health_check=(
@@ -49,7 +51,10 @@ NEGATIVE_NUMBER_RANGE = NumberRange(
 )
 
 
-ddb_string = text(min_size=1, max_size=MAX_ITEM_BYTES)
+ddb_string = text(
+    min_size=1,
+    max_size=MAX_ITEM_BYTES
+)
 ddb_string_set = sets(ddb_string, min_size=1)
 
 
@@ -89,9 +94,13 @@ ddb_set_types = (
     | ddb_number_set
     | ddb_binary_set
 )
+ddb_attribute_names = text(
+    min_size=1,
+    max_size=255
+)
 # TODO: List and Map types have a max depth of 32
 ddb_map_type = deferred(lambda: dictionaries(
-    keys=text(),
+    keys=ddb_attribute_names,
     values=(
         ddb_scalar_types
         | ddb_set_types
@@ -112,7 +121,7 @@ ddb_document_types = ddb_map_type | ddb_list_type
 ddb_attribute_values = ddb_scalar_types | ddb_set_types | ddb_list_type
 
 ddb_items = dictionaries(
-    keys=text(min_size=1, max_size=255),
+    keys=ddb_attribute_names,
     values=ddb_scalar_types | ddb_set_types | ddb_list_type
 )
 

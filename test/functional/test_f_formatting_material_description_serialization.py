@@ -77,6 +77,7 @@ def _serialize_deserialize_cycle(material_description):
 
 
 @pytest.mark.slow
+@pytest.mark.hypothesis
 @SLOW_SETTINGS
 @hypothesis.given(material_descriptions)
 def test_serialize_deserialize_material_description_slow(material_description):
@@ -84,6 +85,7 @@ def test_serialize_deserialize_material_description_slow(material_description):
 
 
 @pytest.mark.veryslow
+@pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(material_descriptions)
 def test_serialize_deserialize_material_description_vslow(material_description):
