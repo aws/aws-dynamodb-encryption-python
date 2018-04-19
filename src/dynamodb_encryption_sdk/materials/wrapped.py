@@ -16,12 +16,14 @@ import base64
 import copy
 
 import attr
+import six
 
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import CryptographicMaterials
 
 __all__ = ('WrappedRawCryptographicMaterials',)
@@ -65,7 +67,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         default=None
     )
     _material_description = attr.ib(
-        validator=attr.validators.instance_of(dict),
+        validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
         default=attr.Factory(dict)
     )
