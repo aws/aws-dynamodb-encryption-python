@@ -45,61 +45,48 @@ def test_unsigned_item():
     exc_info.match(r'No signature attribute found in item')
 
 
+def _item_cycle_check(materials_provider, attribute_actions, item):
+    crypto_config = CryptoConfig(
+        materials_provider=materials_provider,
+        encryption_context=EncryptionContext(),
+        attribute_actions=attribute_actions
+    )
+    cycle_item_check(item, crypto_config)
+
+
 def test_ephemeral_item_cycle(some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
-    crypto_config = CryptoConfig(
-        materials_provider=some_cmps,
-        encryption_context=EncryptionContext(),
-        attribute_actions=parametrized_actions
-    )
-    cycle_item_check(parametrized_item, crypto_config)
+    _item_cycle_check(some_cmps, parametrized_actions, parametrized_item)
 
 
 @pytest.mark.slow
 def test_ephemeral_item_cycle_slow(all_the_cmps, parametrized_actions, parametrized_item):
     """Test ALL THE CMPS against a small number of curated items."""
-    crypto_config = CryptoConfig(
-        materials_provider=all_the_cmps,
-        encryption_context=EncryptionContext(),
-        attribute_actions=parametrized_actions
-    )
-    cycle_item_check(parametrized_item, crypto_config)
+    _item_cycle_check(all_the_cmps, parametrized_actions, parametrized_item)
 
 
 @pytest.mark.slow
+@pytest.mark.hypothesis
 @SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
 def test_ephemeral_item_cycle_hypothesis_slow(some_cmps, parametrized_actions, item):
     """Test a small number of curated CMPs against a large number of items."""
-    crypto_config = CryptoConfig(
-        materials_provider=some_cmps,
-        encryption_context=EncryptionContext(),
-        attribute_actions=parametrized_actions
-    )
-    cycle_item_check(item, crypto_config)
+    _item_cycle_check(some_cmps, parametrized_actions, item)
 
 
 @pytest.mark.veryslow
+@pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
 def test_ephemeral_item_cycle_hypothesis_veryslow(some_cmps, parametrized_actions, item):
     """Test a small number of curated CMPs against ALL THE ITEMS."""
-    crypto_config = CryptoConfig(
-        materials_provider=some_cmps,
-        encryption_context=EncryptionContext(),
-        attribute_actions=parametrized_actions
-    )
-    cycle_item_check(item, crypto_config)
+    _item_cycle_check(some_cmps, parametrized_actions, item)
 
 
 @pytest.mark.nope
+@pytest.mark.hypothesis
 @VERY_SLOW_SETTINGS
 @hypothesis.given(item=ddb_items)
 def test_ephemeral_item_cycle_hypothesis_nope(all_the_cmps, parametrized_actions, item):
     """Test ALL THE CMPs against ALL THE ITEMS."""
-    crypto_config = CryptoConfig(
-        materials_provider=all_the_cmps,
-        encryption_context=EncryptionContext(),
-        attribute_actions=parametrized_actions
-    )
-    cycle_item_check(item, crypto_config)
+    _item_cycle_check(all_the_cmps, parametrized_actions, item)
