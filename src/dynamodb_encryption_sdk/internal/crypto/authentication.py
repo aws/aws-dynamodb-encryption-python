@@ -18,7 +18,7 @@ from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.identifiers import ItemAction
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
-from dynamodb_encryption_sdk.internal.identifiers import SignatureValues, Tag
+from dynamodb_encryption_sdk.internal.identifiers import SignatureValues, Tag, TEXT_ENCODING
 from dynamodb_encryption_sdk.structures import AttributeActions
 
 __all__ = ('sign_item', 'verify_item_signature')
@@ -85,7 +85,7 @@ def _string_to_sign(item, table_name, attribute_actions):
     data_to_sign = bytearray()
     data_to_sign.extend(_hash_data(
         hasher=hasher,
-        data='TABLE>{}<TABLE'.format(table_name).encode('utf-8')
+        data='TABLE>{}<TABLE'.format(table_name).encode(TEXT_ENCODING)
     ))
     for key in sorted(item.keys()):
         action = attribute_actions.action(key)
@@ -94,7 +94,7 @@ def _string_to_sign(item, table_name, attribute_actions):
 
         data_to_sign.extend(_hash_data(
             hasher=hasher,
-            data=key.encode('utf-8')
+            data=key.encode(TEXT_ENCODING)
         ))
 
         if action is ItemAction.SIGN_ONLY:

@@ -19,6 +19,10 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
+#: Encoding to use for all text values.
+#: This is noted here for consistency but should not be changed.
+TEXT_ENCODING = 'utf-8'
+
 
 class ReservedAttributes(Enum):
     """Item attributes reserved for use by DynamoDBEncryptionClient"""
