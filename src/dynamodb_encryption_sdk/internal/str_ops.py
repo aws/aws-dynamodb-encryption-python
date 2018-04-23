@@ -15,6 +15,8 @@ import codecs
 
 import six
 
+from dynamodb_encryption_sdk.internal.identifiers import TEXT_ENCODING
+
 
 def to_str(data):
     """Takes an input str or bytes object and returns an equivalent str object.
@@ -25,7 +27,7 @@ def to_str(data):
     :rtype: str
     """
     if isinstance(data, bytes):
-        return codecs.decode(data, 'utf-8')
+        return codecs.decode(data, TEXT_ENCODING)
     return data
 
 
@@ -38,5 +40,5 @@ def to_bytes(data):
     :rtype: bytes
     """
     if isinstance(data, six.string_types) and not isinstance(data, bytes):
-        return codecs.encode(data, 'utf-8')
+        return codecs.encode(data, TEXT_ENCODING)
     return data

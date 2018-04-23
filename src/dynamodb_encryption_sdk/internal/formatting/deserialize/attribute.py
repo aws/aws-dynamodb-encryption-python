@@ -29,7 +29,7 @@ from boto3.dynamodb.types import Binary
 from dynamodb_encryption_sdk.exceptions import DeserializationError
 from dynamodb_encryption_sdk.internal.defaults import LOGGING_NAME
 from dynamodb_encryption_sdk.internal.formatting.deserialize import decode_byte, decode_length, decode_tag, decode_value
-from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues
+from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues, TEXT_ENCODING
 from dynamodb_encryption_sdk.internal.str_ops import to_str
 
 __all__ = ('deserialize_attribute',)
@@ -69,7 +69,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :param bytes value: Raw deserialized value
         :rtype: dynamodb_encryption_sdk.internal.dynamodb_types.STRING
         """
-        return codecs.decode(value, 'utf-8')
+        return codecs.decode(value, TEXT_ENCODING)
 
     def _deserialize_string(stream):
         # type: (io.BytesIO) -> Dict[str, dynamodb_types.STRING]
@@ -89,7 +89,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :param bytes value: Raw deserialized value
         :rtype: dynamodb_encryption_sdk.internal.dynamodb_types.STRING
         """
-        raw_value = codecs.decode(value, 'utf-8')
+        raw_value = codecs.decode(value, TEXT_ENCODING)
         decimal_value = Decimal(to_str(raw_value))
         return str(decimal_value.normalize())
 

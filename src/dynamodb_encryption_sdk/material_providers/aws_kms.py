@@ -29,7 +29,7 @@ from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnknownRegionError, UnwrappingError, WrappingError
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
 from dynamodb_encryption_sdk.internal import dynamodb_types
-from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
+from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys, TEXT_ENCODING
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
@@ -219,7 +219,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         """
         attribute_type, attribute_value = list(attribute.items())[0]
         if attribute_type == 'B':
-            return base64.b64encode(attribute_value.value).decode('utf-8')
+            return base64.b64encode(attribute_value.value).decode(TEXT_ENCODING)
         if attribute_type == 'S':
             return attribute_value
         raise ValueError('Attribute of type "{}" cannot be used in KMS encryption context.'.format(attribute_type))
