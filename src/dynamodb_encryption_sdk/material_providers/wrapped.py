@@ -12,15 +12,17 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider to use ephemeral content encryption keys wrapped by delegated keys."""
 import attr
+import six
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Optional  # noqa pylint: disable=unused-import
+    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMaterials
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 from . import CryptographicMaterialsProvider
@@ -59,21 +61,30 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
         default=None
     )
+    _material_description = attr.ib(
+        validator=attr.validators.optional(dictionary_validator(six.string_types, six.string_types)),
+        default=attr.Factory(dict)
+    )
 
     def __init__(
             self,
             signing_key,  # type: DelegatedKey
             wrapping_key=None,  # type: Optional[DelegatedKey]
-            unwrapping_key=None  # type: Optional[DelegatedKey]
+            unwrapping_key=None,  # type: Optional[DelegatedKey]
+            material_description=None  # type: Optional[Dict[Text, Text]]
     ):
         # type: (...) -> None
         """Workaround pending resolution of attrs/mypy interaction.
         https://github.com/python/mypy/issues/2088
         https://github.com/python-attrs/attrs/issues/215
         """
+        if material_description is None:
+            material_description = {}
+
         self._signing_key = signing_key
         self._wrapping_key = wrapping_key
         self._unwrapping_key = unwrapping_key
+        self._material_description = material_description
         attr.validate(self)
 
     def _build_materials(self, encryption_context):
@@ -85,11 +96,13 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         :returns: Wrapped cryptographic materials
         :rtype: dynamodb_encryption_sdk.materials.wrapped.WrappedCryptographicMaterials
         """
+        material_description = self._material_description.copy()
+        material_description.update(encryption_context.material_description)
         return WrappedCryptographicMaterials(
             wrapping_key=self._wrapping_key,
             unwrapping_key=self._unwrapping_key,
             signing_key=self._signing_key,
-            material_description=encryption_context.material_description.copy()
+            material_description=material_description
         )
 
     def encryption_materials(self, encryption_context):

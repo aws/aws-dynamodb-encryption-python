@@ -87,3 +87,19 @@ class SigningError(DynamodbEncryptionSdkError):
 
 class SignatureVerificationError(DynamodbEncryptionSdkError):
     """Otherwise undifferentiated error encountered while verifying a signature."""
+
+
+class ProviderStoreError(DynamodbEncryptionSdkError):
+    """Otherwise undifferentiated error encountered by a provider store."""
+
+
+class NoKnownVersionError(ProviderStoreError):
+    """Raised if a provider store cannot locate any version of the requested material."""
+
+
+class InvalidVersionError(ProviderStoreError):
+    """Raised if an invalid version of a material is requested."""
+
+
+class VersionAlreadyExistsError(ProviderStoreError):
+    """Raised if a version that is being added to a provider store already exists."""
