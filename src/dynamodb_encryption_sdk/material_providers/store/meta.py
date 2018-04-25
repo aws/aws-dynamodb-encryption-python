@@ -345,7 +345,3 @@ class MetaStore(ProviderStore):
             raise NoKnownVersionError('No known version for name: "{}"'.format(material_name))
 
         return int(response['Items'][0][MetaStoreAttributeNames.SORT.value])
-
-    def replicate(self, material_name, version, target):
-        """"""
-        raise NotImplementedError('TODO: implement this')
