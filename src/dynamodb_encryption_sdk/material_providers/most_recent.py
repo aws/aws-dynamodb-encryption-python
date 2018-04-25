@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Meta cryptographic provider store."""
+"""Cryptographic materials provider that uses a provider store to obtain cryptographic materials."""
 from collections import OrderedDict
 import logging
 from threading import RLock
@@ -197,6 +197,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         """
         if self._can_use_current():
             return self._cache.get(self._version)
+            # TODO: handle key errors
 
         try:
             version = self._provider_store.max_version(self._material_name)

@@ -16,6 +16,7 @@ from enum import Enum
 import attr
 from boto3.dynamodb.conditions import Attr, Key
 from boto3.dynamodb.types import Binary
+from boto3.resources.base import ServiceResource
 import botocore
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
@@ -71,11 +72,11 @@ class MetaStore(ProviderStore):
     :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
     """
 
-    _table = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
+    _table = attr.ib(validator=attr.validators.instance_of(ServiceResource))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
 
     def __init__(self, table, materials_provider):
-        # type: (botocore.client.BaseClient, CryptographicMaterialsProvider) -> None
+        # type: (ServiceResource, CryptographicMaterialsProvider) -> None
         """Workaround pending resolution of attrs/mypy interaction.
         https://github.com/python/mypy/issues/2088
         https://github.com/python-attrs/attrs/issues/215
@@ -93,16 +94,20 @@ class MetaStore(ProviderStore):
             materials_provider=self._materials_provider
         )
 
-    def create_table(self, read_units, write_units):
-        # type: (int, int) -> None
+    @classmethod
+    def create_table(cls, client, table_name, read_units, write_units):
+        # type: (botocore.client.BaseClient, Text, int, int) -> None
         """Create the table for this MetaStore.
 
+        :param table: Pre-configured boto3 DynamoDB client object
+        :type table: boto3.resources.base.BaseClient
+        :param str table_name: Name of table to create
         :param int read_units: Read capacity units to provision
         :param int write_units: Write capacity units to provision
         """
         try:
-            self._table.meta.client.create_table(
-                TableName=self._table.name,
+            client.create_table(
+                TableName=table_name,
                 AttributeDefinitions=[
                     {
                         'AttributeName': MetaStoreAttributeNames.PARTITION.value,
@@ -110,7 +115,7 @@ class MetaStore(ProviderStore):
                     },
                     {
                         'AttributeName': MetaStoreAttributeNames.SORT.value,
-                        'AttributeName': 'N'
+                        'AttributeType': 'N'
                     }
                 ],
                 KeySchema=[
@@ -150,13 +155,13 @@ class MetaStore(ProviderStore):
 
         try:
             encryption_key_kwargs = dict(
-                key=item[MetaStoreAttributeNames.ENCRYPTION_KEY.value],
+                key=item[MetaStoreAttributeNames.ENCRYPTION_KEY.value].value,
                 algorithm=item[MetaStoreAttributeNames.ENCRYPTION_ALGORITHM.value],
                 key_type=EncryptionKeyType.SYMMETRIC,
                 key_encoding=KeyEncodingType.RAW
             )
             signing_key_kwargs = dict(
-                key=item[MetaStoreAttributeNames.INTEGRITY_KEY.value],
+                key=item[MetaStoreAttributeNames.INTEGRITY_KEY.value].value,
                 algorithm=item[MetaStoreAttributeNames.INTEGRITY_ALGORITHM.value],
                 key_type=EncryptionKeyType.SYMMETRIC,
                 key_encoding=KeyEncodingType.RAW
@@ -164,9 +169,10 @@ class MetaStore(ProviderStore):
         except KeyError:
             raise Exception('TODO: Invalid record')
 
-        if item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION] != MetaStoreValues.MATERIAL_TYPE_VERSION:
+        # TODO: handle if the material type version is not in the item
+        if item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION.value] != MetaStoreValues.MATERIAL_TYPE_VERSION.value:
             raise InvalidVersionError('Unsupported material type: "{}"'.format(
-                item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION]
+                item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION.value]
             ))
 
         encryption_key = JceNameLocalDelegatedKey(**encryption_key_kwargs)
@@ -242,6 +248,8 @@ class MetaStore(ProviderStore):
         # type: (Text, int) -> CryptographicMaterialsProvider
         """Load a provider from the table.
 
+        If the requested version does not exist, an error will be raised.
+
         :param str material_name: Material to locate
         :param int version: Version of material to locate
         """
@@ -296,7 +304,7 @@ class MetaStore(ProviderStore):
         :raises InvalidVersionError: if the requested version is not found
         """
         if version is not None:
-            return self._load_materials(material_name, version)
+            return self._load_provider_from_table(material_name, version)
 
         return super(MetaStore, self).provider(material_name, version)
 
