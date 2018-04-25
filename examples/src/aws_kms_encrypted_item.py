@@ -63,14 +63,14 @@ def encrypt_item(table_name, aws_cmk_id):
         attributes=dict_to_ddb(index_key)
     )
 
-    # Create attribute actions that tells the encrypted table to encrypt all attributes
-    # except the primary index attributes and the one identified attribute to ignore.
+    # Create attribute actions that tells the encrypted table to encrypt all attributes,
+    # only sign the primary index attributes, and ignore the one identified attribute to
+    # ignore.
+    override_actions = {'leave me': CryptoAction.DO_NOTHING}
+    override_actions.update({name: CryptoAction.SIGN_ONLY for name in table_info.protected_index_keys()})
     actions = AttributeActions(
         default_action=CryptoAction.ENCRYPT_AND_SIGN,
-        attribute_actions={
-            name: CryptoAction.DO_NOTHING
-            for name in set(['leave me']).union(table_info.protected_index_keys())
-        }
+        attribute_actions=override_actions
     )
 
     # Build the crypto config to use for this item.
