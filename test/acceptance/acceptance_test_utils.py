@@ -13,17 +13,22 @@
 """Helper tools for use with acceptance tests."""
 import base64
 from collections import defaultdict
+from functools import partial
 import json
 import os
 import sys
 
+import boto3
+from moto import mock_dynamodb2
 import pytest
 from six.moves.urllib.parse import urlparse  # moves confuse pylint: disable=wrong-import-order
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType
 from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentProvider
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials
 from dynamodb_encryption_sdk.structures import AttributeActions
@@ -177,19 +182,65 @@ def _build_aws_kms_cmp(decrypt_key, verify_key):
     return AwsKmsCryptographicMaterialsProvider(key_id=key_id)
 
 
+def _meta_table_prep(table_name, items_filename):
+    if table_name is None:
+        return
+
+    client = boto3.client('dynamodb', region_name='us-west-2')
+    MetaStore.create_table(client, table_name, 100, 100)
+
+    with open(_filename_from_uri(items_filename)) as f:
+        table_data = json.load(f)
+    request_items = {}
+
+    for table_name, items in table_data.items():
+        requests = []
+        for item in items:
+            _decode_item(item)
+            requests.append({'PutRequest': {'Item': item}})
+        request_items[table_name] = requests
+    client.batch_write_item(RequestItems=request_items)
+
+
+def _build_most_recent_cmp(scenario, keys):
+    table = boto3.resource('dynamodb', region_name='us-west-2').Table(scenario['metastore']['table_name'])
+    meta_cmp, _, _ = _build_cmp(scenario['metastore'], keys)
+    metastore = MetaStore(table=table, materials_provider=meta_cmp())
+
+    most_recent_cmp = MostRecentProvider(
+        provider_store=metastore,
+        material_name=scenario['material_name'],
+        version_ttl=600.0
+    )
+    return most_recent_cmp
+
+
 _CMP_TYPE_MAP = {
     'STATIC': _build_static_cmp,
     'WRAPPED': _build_wrapped_cmp,
-    'AWSKMS': _build_aws_kms_cmp
+    'AWSKMS': _build_aws_kms_cmp,
+    'MOST_RECENT': _build_most_recent_cmp
 }
 
 
-def _build_cmp(provider_type, decrypt_key, verify_key):
+def _build_cmp(scenario, keys):
     try:
-        cmp_builder = _CMP_TYPE_MAP[provider_type.upper()]
+        cmp_builder = _CMP_TYPE_MAP[scenario['provider'].upper()]
     except KeyError:
-        raise ValueError('Unsupported cryptographic materials provider type: "{}"'.format(provider_type))
-    return cmp_builder(decrypt_key, verify_key)
+        raise ValueError('Unsupported cryptographic materials provider type: "{}"'.format(scenario['provider']))
+
+    if cmp_builder is _build_most_recent_cmp:
+        return (
+            partial(cmp_builder, scenario, keys),
+            scenario['metastore']['keys']['decrypt'],
+            scenario['metastore']['keys']['verify']
+        )
+
+    return (
+        partial(cmp_builder, keys[scenario['keys']['decrypt']], keys[scenario['keys']['verify']]),
+        scenario['keys']['decrypt'],
+        scenario['keys']['verify']
+    )
 
 
 def _index(item, keys):
@@ -216,23 +267,28 @@ def _expand_items(ciphertext_items, plaintext_items):
             yield table_name, table_index, ciphertext_item, pt_item['item'], pt_item['action']
 
 
-def load_scenarios():
+def load_scenarios(online):
     # pylint: disable=too-many-locals
     with open(_SCENARIO_FILE) as f:
         scenarios = json.load(f)
     keys_file = _filename_from_uri(scenarios['keys'])
     keys = _load_keys(keys_file)
     for scenario in scenarios['scenarios']:
+        if (not online and scenario['network']) or (online and not scenario['network']):
+            continue
+
         plaintext_file = _filename_from_uri(scenario['plaintext'])
-        ciphertext_file = _filename_from_uri(scenario['ciphertext'])
         plaintext_items = _build_plaintext_items(plaintext_file, scenario['version'])
+
+        ciphertext_file = _filename_from_uri(scenario['ciphertext'])
         ciphertext_items = _load_ciphertext_items(ciphertext_file)
-        materials_provider = _build_cmp(
-            provider_type=scenario['provider'],
-            decrypt_key=keys[scenario['keys']['decrypt']],
-            verify_key=keys[scenario['keys']['verify']]
-        )
+
+        materials_provider, decrypt_key_name, verify_key_name = _build_cmp(scenario, keys)
+
         items = _expand_items(ciphertext_items, plaintext_items)
+
+        metastore_info = scenario.get('metastore', {'table_name': None, 'ciphertext': None})
+
         for table_name, table_index, ciphertext_item, plaintext_item, attribute_actions in items:
             item_index = _index(ciphertext_item, table_index.values())
             yield pytest.param(
@@ -242,11 +298,12 @@ def load_scenarios():
                 ciphertext_item,
                 plaintext_item,
                 attribute_actions,
+                partial(_meta_table_prep, metastore_info['table_name'], metastore_info['ciphertext']),
                 id='{version}-{provider}-{decrypt_key}-{verify_key}-{table}-{index}'.format(
                     version=scenario['version'],
                     provider=scenario['provider'],
-                    decrypt_key=scenario['keys']['decrypt'],
-                    verify_key=scenario['keys']['verify'],
+                    decrypt_key=decrypt_key_name,
+                    verify_key=verify_key_name,
                     table=table_name,
                     index=str(item_index)
                 )
