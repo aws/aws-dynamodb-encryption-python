@@ -490,7 +490,7 @@ def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initia
 
     ddb_keys = [key for key in TEST_BATCH_KEYS]
     encrypted_items = [
-        raw_table.get_item(Key=key)['Item']
+        raw_table.get_item(Key=key, ConsistentRead=True)['Item']
         for key in ddb_keys
     ]
     check_many_encrypted_items(
@@ -501,7 +501,7 @@ def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initia
     )
 
     decrypted_result = [
-        encrypted_table.get_item(Key=key)['Item']
+        encrypted_table.get_item(Key=key, ConsistentRead=True)['Item']
         for key in ddb_keys
     ]
     assert_equal_lists_of_items(
@@ -549,10 +549,10 @@ def table_cycle_check(materials_provider, initial_actions, initial_item, table_n
 
     _put_result = e_table.put_item(Item=item)  # noqa
 
-    encrypted_result = table.get_item(Key=TEST_KEY)
+    encrypted_result = table.get_item(Key=TEST_KEY, ConsistentRead=True)
     check_encrypted_item(item, encrypted_result['Item'], check_attribute_actions)
 
-    decrypted_result = e_table.get_item(Key=TEST_KEY)
+    decrypted_result = e_table.get_item(Key=TEST_KEY, ConsistentRead=True)
     assert decrypted_result['Item'] == item
 
     e_table.delete_item(Key=TEST_KEY)
@@ -593,8 +593,8 @@ def resource_cycle_batch_items_check(materials_provider, initial_actions, initia
         table_name=table_name
     )
 
-    raw_scan_result = resource.Table(table_name).scan()
-    e_scan_result = e_resource.Table(table_name).scan()
+    raw_scan_result = resource.Table(table_name).scan(ConsistentRead=True)
+    e_scan_result = e_resource.Table(table_name).scan(ConsistentRead=True)
     assert not raw_scan_result['Items']
     assert not e_scan_result['Items']
 
@@ -624,13 +624,15 @@ def client_cycle_single_item_check(materials_provider, initial_actions, initial_
 
     encrypted_result = client.get_item(
         TableName=table_name,
-        Key=ddb_key
+        Key=ddb_key,
+        ConsistentRead=True
     )
     check_encrypted_item(item, ddb_to_dict(encrypted_result['Item']), check_attribute_actions)
 
     decrypted_result = e_client.get_item(
         TableName=table_name,
-        Key=ddb_key
+        Key=ddb_key,
+        ConsistentRead=True
     )
     assert ddb_to_dict(decrypted_result['Item']) == item
 
@@ -663,8 +665,8 @@ def client_cycle_batch_items_check(materials_provider, initial_actions, initial_
         table_name=table_name
     )
 
-    raw_scan_result = client.scan(TableName=table_name)
-    e_scan_result = e_client.scan(TableName=table_name)
+    raw_scan_result = client.scan(TableName=table_name, ConsistentRead=True)
+    e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
     assert not raw_scan_result['Items']
     assert not e_scan_result['Items']
 
@@ -699,12 +701,12 @@ def client_cycle_batch_items_check_paginators(
 
     encrypted_items = []
     raw_paginator = client.get_paginator('scan')
-    for page in raw_paginator.paginate(TableName=table_name):
+    for page in raw_paginator.paginate(TableName=table_name, ConsistentRead=True):
         encrypted_items.extend(page['Items'])
 
     decrypted_items = []
     encrypted_paginator = e_client.get_paginator('scan')
-    for page in encrypted_paginator.paginate(TableName=table_name):
+    for page in encrypted_paginator.paginate(TableName=table_name, ConsistentRead=True):
         decrypted_items.extend(page['Items'])
 
     print(encrypted_items)
@@ -725,7 +727,7 @@ def client_cycle_batch_items_check_paginators(
         table_name=table_name
     )
 
-    raw_scan_result = client.scan(TableName=table_name)
-    e_scan_result = e_client.scan(TableName=table_name)
+    raw_scan_result = client.scan(TableName=table_name, ConsistentRead=True)
+    e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
     assert not raw_scan_result['Items']
     assert not e_scan_result['Items']
