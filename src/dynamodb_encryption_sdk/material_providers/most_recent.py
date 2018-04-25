@@ -12,8 +12,9 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider that uses a provider store to obtain cryptographic materials."""
 from collections import OrderedDict
+from enum import Enum
 import logging
-from threading import RLock
+from threading import Lock, RLock
 import time
 
 import attr
@@ -34,6 +35,17 @@ from .store import ProviderStore
 
 __all__ = ('MostRecentProvider',)
 _LOGGER = logging.getLogger(LOGGER_NAME)
+#: Grace period during which we will return the latest local materials. This allows multiple
+#: threads to be using this same provider without risking lock contention or many threads
+#: all attempting to create new versions simultaneously.
+_GRACE_PERIOD = 0.5
+
+
+class TtlActions(Enum):
+    """Actions that can be taken based on the version TTl state."""
+    EXPIRED = 0
+    GRACE_PERIOD = 1
+    LIVE = 2
 
 
 def _min_capacity_validator(instance, attribute, value):
@@ -139,7 +151,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
     def __attrs_post_init__(self):
         # type: () -> None
         """Initialize the cache."""
-        self._lock = RLock()
+        self._lock = Lock()
         self._cache = BasicCache(1000)
         self.refresh()
 
@@ -165,6 +177,26 @@ class MostRecentProvider(CryptographicMaterialsProvider):
 
         return provider.decryption_materials(encryption_context)
 
+    def _ttl_action(self):
+        # type: () -> bool
+        """Determine the correct action to take based on the local resources and TTL.
+
+        :returns: decision
+        :rtype: TtlActions
+        """
+        if self._version is None:
+            return TtlActions.EXPIRED
+
+        time_since_updated = time.time() - self._last_updated
+
+        if time_since_updated < self._version_ttl:
+            return TtlActions.LIVE
+
+        elif time_since_updated < self._version_ttl + _GRACE_PERIOD:
+            return TtlActions.GRACE_PERIOD
+
+        return TtlActions.EXPIRED
+
     def _can_use_current(self):
         # type: () -> bool
         """Determine if we can use the current known max version without asking the provider store.
@@ -187,6 +219,64 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             self._version = version
             self._last_updated = time.time()
 
+    def _get_max_version(self):
+        # type: () -> int
+        """Ask the provider store for the most recent version of this material.
+
+        :returns: Latest version in the provider store (0 if not found)
+        :rtype: int
+        """
+        try:
+            return self._provider_store.max_version(self._material_name)
+        except NoKnownVersionError:
+            return 0
+
+    def _get_provider(self, version):
+        # type: (int) -> CryptographicMaterialsProvider
+        """Ask the provider for a specific version of this material.
+
+        :param int version: Version to request
+        :returns: Cryptographic materials provider for the requested version
+        :rtype: CryptographicMaterialsProvider
+        :raises AttributeError: if provider could not locate version
+        """
+        try:
+            return self._provider_store.get_or_create_provider(self._material_name, version)
+        except InvalidVersionError:
+            _LOGGER.exception('Unable to get encryption materials from provider store.')
+            raise AttributeError('No encryption materials available')
+
+    def _get_most_recent_version(self, allow_local):
+        # type: (bool) -> Tuple[int, CryptographicMaterialsProvider]
+        """Get the most recent version of the provider.
+
+        If allowing local and we cannot obtain the lock, just return the most recent local
+        version. Otherwise, wait for the lock and ask the provider store for the most recent
+        version of the provider.
+
+        :param bool allow_local: Should we allow returning the local version if we cannot obtain the lock?
+        :returns: version and corresponding cryptographic materials provider
+        :rtype: tuple containing int and CryptographicMaterialsProvider
+        """
+        acquired = self._lock.acquire(blocking=not allow_local)
+
+        if not acquired:
+            # We failed to acquire the lock.
+            # If blocking, we will never reach this point.
+            # If not blocking, we want whatever the latest local version is.
+            version = self._version
+            return version, self._cache.get(version)
+
+        try:
+            version = self._get_max_version()
+            provider = self._get_provider(version)
+            actual_version = self._provider_store.version_from_material_description(provider._material_description)
+            # TODO: ^ should we promote material description from hidden?
+        finally:
+            self._lock.release()
+
+        return actual_version, provider
+
     def encryption_materials(self, encryption_context):
         # type: (EncryptionContext) -> CryptographicMaterials
         """Return encryption materials.
@@ -195,22 +285,22 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
         :raises AttributeError: if no encryption materials are available
         """
-        if self._can_use_current():
-            return self._cache.get(self._version)
-            # TODO: handle key errors
+        ttl_action = self._ttl_action()
 
-        try:
-            version = self._provider_store.max_version(self._material_name)
-        except NoKnownVersionError:
-            version = 0
+        if ttl_action is TtlActions.LIVE:
+            try:
+                return self._cache.get(self._version)
+            except KeyError:
+                ttl_action = TtlActions.EXPIRED
 
-        try:
-            provider = self._provider_store.get_or_create_provider(self._material_name, version)
-        except InvalidVersionError:
-            _LOGGER.exception('Unable to get encryption materials from provider store.')
-            raise AttributeError('No encryption materials available')
-        actual_version = self._provider_store.version_from_material_description(provider._material_description)
-        # TODO: ^ should we promote material description from hidden?
+        if ttl_action is TtlActions.GRACE_PERIOD:
+            # Just get the latest local version if we cannot acquire the lock.
+            allow_local = True
+        else:
+            # Block until we can acquire the lock.
+            allow_local = False
+
+        actual_version, provider = self._get_most_recent_version(allow_local)
 
         self._cache.put(actual_version, provider)
         self._set_most_recent_version(actual_version)
@@ -223,4 +313,4 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         with self._lock:
             self._cache.clear()
             self._version = None  # type: int
-            self._last_updated = None  # type: CryptographicMaterialsProvider
+            self._last_updated = None  # type: float
