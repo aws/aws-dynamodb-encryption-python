@@ -89,12 +89,11 @@ class KeyInfo(object):
             description,  # type: Text
             algorithm,  # type: Text
             length  # type: int
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.description = description
         self.algorithm = algorithm
         self.length = length
@@ -183,12 +182,11 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             grant_tokens=None,  # type: Optional[Tuple[Text]]
             material_description=None,  # type: Optional[Dict[Text, Text]]
             regional_clients=None  # type: Optional[Dict[Text, botocore.client.BaseClient]]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         if botocore_session is None:
             botocore_session = botocore.session.Session()
         if grant_tokens is None:

@@ -62,12 +62,11 @@ class EncryptedTablesCollectionManager(object):
             materials_provider,  # type: CryptographicMaterialsProvider
             attribute_actions,  # type: AttributeActions
             table_info_cache  # type: TableInfoCache
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self._collection = collection
         self._materials_provider = materials_provider
         self._attribute_actions = attribute_actions
@@ -173,12 +172,11 @@ class EncryptedResource(object):
             materials_provider,  # type: CryptographicMaterialsProvider
             attribute_actions=None,  # type: Optional[AttributeActions]
             auto_refresh_table_indexes=True  # type: Optional[bool]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         if attribute_actions is None:
             attribute_actions = AttributeActions()
 

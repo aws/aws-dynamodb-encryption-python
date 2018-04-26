@@ -75,12 +75,11 @@ class MetaStore(ProviderStore):
     _table = attr.ib(validator=attr.validators.instance_of(ServiceResource))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
 
-    def __init__(self, table, materials_provider):
+    def __init__(self, table, materials_provider):  # noqa=D107
         # type: (ServiceResource, CryptographicMaterialsProvider) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self._table = table
         self._materials_provider = materials_provider
         attr.validate(self)

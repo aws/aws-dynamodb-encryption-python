@@ -55,12 +55,11 @@ class EncryptedPaginator(object):
             paginator,  # type: botocore.paginate.Paginator
             decrypt_method,  # type: Callable
             crypto_config_method  # type: Callable
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self._paginator = paginator
         self._decrypt_method = decrypt_method
         self._crypto_config_method = crypto_config_method
@@ -172,12 +171,11 @@ class EncryptedClient(object):
             attribute_actions=None,  # type: Optional[AttributeActions]
             auto_refresh_table_indexes=True,  # type: Optional[bool]
             expect_standard_dictionaries=False  # type: Optional[bool]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         if attribute_actions is None:
             attribute_actions = AttributeActions()
 

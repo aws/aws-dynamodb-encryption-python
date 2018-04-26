@@ -50,12 +50,11 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             self,
             decryption_materials=None,  # type: Optional[DecryptionMaterials]
             encryption_materials=None  # type: Optional[EncryptionMaterials]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self._decryption_materials = decryption_materials
         self._encryption_materials = encryption_materials
         attr.validate(self)

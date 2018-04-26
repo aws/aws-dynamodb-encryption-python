@@ -125,13 +125,12 @@ class JceNameLocalDelegatedKey(DelegatedKey):
             key,  # type: bytes
             algorithm,  # type: Text
             key_type,  # type: EncryptionKeyType
-            key_encoding  # type: KeyEncodingType
-    ):
+            key_encoding,  # type: KeyEncodingType
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.key = key
         self._algorithm = algorithm
         self._key_type = key_type
