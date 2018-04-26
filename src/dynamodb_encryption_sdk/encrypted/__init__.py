@@ -12,12 +12,14 @@
 # language governing permissions and limitations under the License.
 import attr
 import copy
-import six
 
+from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.identifiers import ItemAction
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
+
+__all__ = ('CryptoConfig',)
 
 
 @attr.s(hash=False)
@@ -36,17 +38,14 @@ class CryptoConfig(object):
     attribute_actions = attr.ib(validator=attr.validators.instance_of(AttributeActions))
 
     def __attrs_post_init__(self):
-        """Make sure that restricted, indexed, attributes are not being encrypted."""
+        """Make sure that primary index attributes are not being encrypted."""
         if self.encryption_context.partition_key_name is not None:
             if self.attribute_actions.action(self.encryption_context.partition_key_name) is ItemAction.ENCRYPT_AND_SIGN:
-                raise Exception('TODO:Cannot encrypt partition key')
+                raise InvalidArgumentError('Cannot encrypt partition key')
 
         if self.encryption_context.sort_key_name is not None:
             if self.attribute_actions.action(self.encryption_context.sort_key_name) is ItemAction.ENCRYPT_AND_SIGN:
-                raise Exception('TODO:Cannot encrypt sort key')
-
-        # TODO: secondary indexes?
-        # TODO: our own restricted attributes?
+                raise InvalidArgumentError('Cannot encrypt sort key')
 
     def decryption_materials(self):
         """Load decryption materials from instance resources.
@@ -75,3 +74,16 @@ class CryptoConfig(object):
             encryption_context=copy.copy(self.encryption_context),
             attribute_actions=self.attribute_actions
         )
+
+
+def validate_get_arguments(kwargs):
+    """Verify that attribute filtering parameters are not found in the request.
+
+    :raises InvalidArgumentError: if banned parameters are found
+    """
+    for arg in ('AttributesToGet', 'ProjectionExpression'):
+        if arg in kwargs:
+            raise InvalidArgumentError('"{}" is not supported for this operation'.format(arg))
+
+    if kwargs.get('Select', None) in ('SPECIFIC_ATTRIBUTES', 'ALL_PROJECTED_ATTRIBUTES', 'SPECIFIC_ATTRIBUTES'):
+        raise InvalidArgumentError('Scan "Select" value of "{}" is not supported'.format(kwargs['Select']))

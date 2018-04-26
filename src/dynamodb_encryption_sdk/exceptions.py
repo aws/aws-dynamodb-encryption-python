@@ -16,6 +16,10 @@ class DynamodbEncryptionSdkError(Exception):
     """Base class for all custom exceptions."""
 
 
+class InvalidArgumentError(DynamodbEncryptionSdkError):
+    """"""
+
+
 class SerializationError(DynamodbEncryptionSdkError):
     """Otherwise undifferentiated errors encountered while serializing data."""
 

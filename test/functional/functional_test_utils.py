@@ -16,7 +16,9 @@ from collections import defaultdict
 from decimal import Decimal
 import itertools
 
+import boto3
 from boto3.dynamodb.types import Binary
+from moto import mock_dynamodb2
 import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
@@ -29,6 +31,97 @@ from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEnc
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
 
 _DELEGATED_KEY_CACHE = defaultdict(lambda: defaultdict(dict))
+TEST_TABLE_NAME = 'my_table'
+TEST_INDEX = {
+    'partition_attribute': {
+        'type': 'S',
+        'value': 'test_value'
+    },
+    'sort_attribute': {
+        'type': 'N',
+        'value':  Decimal('99.233')
+    }
+}
+TEST_KEY = {name: value['value'] for name, value in TEST_INDEX.items()}
+TEST_BATCH_INDEXES = [
+    {
+        'partition_attribute': {
+            'type': 'S',
+            'value': 'test_value'
+        },
+        'sort_attribute': {
+            'type': 'N',
+            'value':  Decimal('99.233')
+        }
+    },
+    {
+        'partition_attribute': {
+            'type': 'S',
+            'value': 'test_value'
+        },
+        'sort_attribute': {
+            'type': 'N',
+            'value':  Decimal('92986745')
+        }
+    },
+    {
+        'partition_attribute': {
+            'type': 'S',
+            'value': 'test_value'
+        },
+        'sort_attribute': {
+            'type': 'N',
+            'value':  Decimal('2231.0001')
+        }
+    },
+    {
+        'partition_attribute': {
+            'type': 'S',
+            'value': 'another_test_value'
+        },
+        'sort_attribute': {
+            'type': 'N',
+            'value':  Decimal('732342')
+        }
+    }
+]
+TEST_BATCH_KEYS = [
+    {name: value['value'] for name, value in key.items()}
+    for key in TEST_BATCH_INDEXES
+]
+
+
+@pytest.fixture
+def example_table():
+    mock_dynamodb2().start()
+    ddb = boto3.client('dynamodb', region_name='us-west-2')
+    ddb.create_table(
+        TableName=TEST_TABLE_NAME,
+        KeySchema=[
+            {
+                'AttributeName': 'partition_attribute',
+                'KeyType': 'HASH'
+            },
+            {
+                'AttributeName': 'sort_attribute',
+                'KeyType': 'RANGE'
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': name,
+                'AttributeType': value['type']
+            }
+            for name, value in TEST_INDEX.items()
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 100,
+            'WriteCapacityUnits': 100
+        }
+    )
+    yield
+    ddb.delete_table(TableName=TEST_TABLE_NAME)
+    mock_dynamodb2().stop()
 
 
 def _get_from_cache(dk_class, algorithm, key_length):
@@ -152,61 +245,66 @@ def set_parametrized_cmp(metafunc):
     """Set paramatrized values for cryptographic materials providers."""
     for name, algorithm_generator in (('all_the_cmps', _all_algorithm_pairs), ('some_cmps', _some_algorithm_pairs)):
         if name in metafunc.fixturenames:
-            metafunc.parametrize(name, _all_possible_cmps(algorithm_generator), scope='module')
+            metafunc.parametrize(name, _all_possible_cmps(algorithm_generator))
+
+
+_ACTIONS = {
+    'hypothesis_actions': (
+        pytest.param(AttributeActions(default_action=ItemAction.ENCRYPT_AND_SIGN), id='encrypt all'),
+        pytest.param(AttributeActions(default_action=ItemAction.SIGN_ONLY), id='sign only all'),
+        pytest.param(AttributeActions(default_action=ItemAction.DO_NOTHING), id='do nothing'),
+    )
+}
+_ACTIONS['parametrized_actions'] = _ACTIONS['hypothesis_actions'] + (
+    pytest.param(
+        AttributeActions(
+            default_action=ItemAction.ENCRYPT_AND_SIGN,
+            attribute_actions={
+                'number_set': ItemAction.SIGN_ONLY,
+                'string_set': ItemAction.SIGN_ONLY,
+                'binary_set': ItemAction.SIGN_ONLY
+            }
+        ),
+        id='sign sets, encrypt everything else'
+    ),
+    pytest.param(
+        AttributeActions(
+            default_action=ItemAction.ENCRYPT_AND_SIGN,
+            attribute_actions={
+                'number_set': ItemAction.DO_NOTHING,
+                'string_set': ItemAction.DO_NOTHING,
+                'binary_set': ItemAction.DO_NOTHING
+            }
+        ),
+        id='ignore sets, encrypt everything else'
+    ),
+    pytest.param(
+        AttributeActions(
+            default_action=ItemAction.DO_NOTHING,
+            attribute_actions={'map': ItemAction.ENCRYPT_AND_SIGN}
+        ),
+        id='encrypt map, ignore everything else'
+    ),
+    pytest.param(
+        AttributeActions(
+            default_action=ItemAction.SIGN_ONLY,
+            attribute_actions={
+                'number_set': ItemAction.DO_NOTHING,
+                'string_set': ItemAction.DO_NOTHING,
+                'binary_set': ItemAction.DO_NOTHING,
+                'map': ItemAction.ENCRYPT_AND_SIGN
+            }
+        ),
+        id='ignore sets, encrypt map, sign everything else'
+    )
+)
 
 
 def set_parametrized_actions(metafunc):
     """Set parametrized values for attribute actions"""
-    if 'parametrized_actions' in metafunc.fixturenames:
-        metafunc.parametrize(
-            'parametrized_actions',
-            (
-                pytest.param(AttributeActions(default_action=ItemAction.ENCRYPT_AND_SIGN), id='encrypt all'),
-                pytest.param(AttributeActions(default_action=ItemAction.SIGN_ONLY), id='sign only all'),
-                pytest.param(AttributeActions(default_action=ItemAction.DO_NOTHING), id='do nothing'),
-                pytest.param(
-                    AttributeActions(
-                        default_action=ItemAction.ENCRYPT_AND_SIGN,
-                        attribute_actions={
-                            'number_set': ItemAction.SIGN_ONLY,
-                            'string_set': ItemAction.SIGN_ONLY,
-                            'binary_set': ItemAction.SIGN_ONLY
-                        }
-                    ),
-                    id='sign sets, encrypt everything else'
-                ),
-                pytest.param(
-                    AttributeActions(
-                        default_action=ItemAction.ENCRYPT_AND_SIGN,
-                        attribute_actions={
-                            'number_set': ItemAction.DO_NOTHING,
-                            'string_set': ItemAction.DO_NOTHING,
-                            'binary_set': ItemAction.DO_NOTHING
-                        }
-                    ),
-                    id='ignore sets, encrypt everything else'
-                ),
-                pytest.param(
-                    AttributeActions(
-                        default_action=ItemAction.DO_NOTHING,
-                        attribute_actions={'map': ItemAction.ENCRYPT_AND_SIGN}
-                    ),
-                    id='encrypt map, ignore everything else'
-                ),
-                pytest.param(
-                    AttributeActions(
-                        default_action=ItemAction.SIGN_ONLY,
-                        attribute_actions={
-                            'number_set': ItemAction.DO_NOTHING,
-                            'string_set': ItemAction.DO_NOTHING,
-                            'binary_set': ItemAction.DO_NOTHING,
-                            'map': ItemAction.ENCRYPT_AND_SIGN
-                        }
-                    ),
-                    id='ignore sets, encrypt map, sign everything else'
-                )
-            )
-        )
+    for name, actions in _ACTIONS.items():
+        if name in metafunc.fixturenames:
+            metafunc.parametrize(name, actions)
 
 
 def set_parametrized_item(metafunc):
@@ -242,7 +340,7 @@ def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
     # Verify that all expected attributes are present
     ciphertext_attributes = set(ciphertext_item.keys())
     plaintext_attributes = set(plaintext_item.keys())
-    if crypto_config.attribute_actions.take_no_actions:
+    if attribute_actions.take_no_actions:
         assert ciphertext_attributes == plaintext_attributes
     else:
         assert ciphertext_attributes == plaintext_attributes.union(_reserved_attributes)
@@ -261,6 +359,107 @@ def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
             assert value == plaintext_item[name]
 
 
+def _matching_key(actual_item, expected):
+        expected_item = [
+            i for i in expected
+            if i['partition_attribute'] == actual_item['partition_attribute']
+            and i['sort_attribute'] == actual_item['sort_attribute']
+        ]
+        assert len(expected_item) == 1
+        return expected_item[0]
+
+
+def _nop_transformer(item):
+    return item
+
+
+def assert_equal_lists_of_items(actual, expected, transformer=_nop_transformer):
+    assert len(actual) == len(expected)
+
+    for actual_item in actual:
+        expected_item = _matching_key(actual_item, expected)
+        assert transformer(actual_item) == transformer(expected_item)
+
+
+def check_many_encrypted_items(actual, expected, attribute_actions, transformer=_nop_transformer):
+    assert len(actual) == len(expected)
+
+    for actual_item in actual:
+        expected_item = _matching_key(actual_item, expected)
+        check_encrypted_item(
+            plaintext_item=transformer(expected_item),
+            ciphertext_item=transformer(actual_item),
+            attribute_actions=attribute_actions
+        )
+
+
+def cycle_batch_item_check(
+        raw,
+        encrypted,
+        initial_actions,
+        initial_item,
+        write_transformer=_nop_transformer,
+        read_transformer=_nop_transformer
+):
+    """Common logic for cycling batch items."""
+    check_attribute_actions = initial_actions.copy()
+    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+    items = []
+    for key in TEST_BATCH_KEYS:
+        _item = initial_item.copy()
+        _item.update(key)
+        items.append(write_transformer(_item))
+
+    _put_result = encrypted.batch_write_item(
+        RequestItems={
+            TEST_TABLE_NAME: [
+                {'PutRequest': {'Item': _item}}
+                for _item in items
+            ]
+        }
+    )
+
+    ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
+    encrypted_result = raw.batch_get_item(
+        RequestItems={
+            TEST_TABLE_NAME: {
+                'Keys': ddb_keys
+            }
+        }
+    )
+    check_many_encrypted_items(
+        actual=encrypted_result['Responses'][TEST_TABLE_NAME],
+        expected=items,
+        attribute_actions=check_attribute_actions,
+        transformer=read_transformer
+    )
+
+    decrypted_result = encrypted.batch_get_item(
+        RequestItems={
+            TEST_TABLE_NAME: {
+                'Keys': ddb_keys
+            }
+        }
+    )
+    assert_equal_lists_of_items(
+        actual=decrypted_result['Responses'][TEST_TABLE_NAME],
+        expected=items,
+        transformer=read_transformer
+    )
+
+    _delete_result = encrypted.batch_write_item(
+        RequestItems={
+            TEST_TABLE_NAME: [
+                {'DeleteRequest': {'Key': _key}}
+                for _key in ddb_keys
+            ]
+        }
+    )
+
+    del check_attribute_actions
+    del items
+
+
 def cycle_item_check(plaintext_item, crypto_config):
     """Common logic for cycled item (plaintext->encrypted->decrypted) tests: used by many test suites."""
     ciphertext_item = encrypt_python_item(plaintext_item, crypto_config)
@@ -268,4 +467,7 @@ def cycle_item_check(plaintext_item, crypto_config):
     check_encrypted_item(plaintext_item, ciphertext_item, crypto_config.attribute_actions)
 
     cycled_item = decrypt_python_item(ciphertext_item, crypto_config)
+
     assert cycled_item == plaintext_item
+    del ciphertext_item
+    del cycled_item
