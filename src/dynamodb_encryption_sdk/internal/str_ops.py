@@ -10,7 +10,12 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Helper functions for consistently obtaining str and bytes objects in both Python2 and Python3."""
+"""Helper functions for consistently obtaining str and bytes objects in both Python2 and Python3.
+
+.. warning::
+    No guarantee is provided on the modules and APIs within this
+    namespace staying consistent. Directly reference at your own risk.
+"""
 import codecs
 
 import six

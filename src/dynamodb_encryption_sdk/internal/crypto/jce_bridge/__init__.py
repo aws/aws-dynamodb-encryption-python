@@ -12,4 +12,8 @@
 # language governing permissions and limitations under the License.
 """Components to provide cryptographic primitives based on JCE Standard Names.
 https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html
+
+.. warning::
+    No guarantee is provided on the modules and APIs within this
+    namespace staying consistent. Directly reference at your own risk.
 """

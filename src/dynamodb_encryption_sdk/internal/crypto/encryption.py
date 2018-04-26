@@ -10,7 +10,12 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Functions to handle encrypting and decrypting DynamoDB attributes."""
+"""Functions to handle encrypting and decrypting DynamoDB attributes.
+
+.. warning::
+    No guarantee is provided on the modules and APIs within this
+    namespace staying consistent. Directly reference at your own risk.
+"""
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Text  # noqa pylint: disable=unused-import
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
