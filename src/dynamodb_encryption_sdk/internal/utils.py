@@ -40,7 +40,7 @@ def sorted_key_map(item, transform=to_bytes):
     :param dict item: Source dictionary
     :param function transform: Transform function
     :returns: List of tuples containing transformed key, original value, and original key for each entry
-    :rtype: list of tuples
+    :rtype: list(tuple)
     """
     sorted_items = []
     for key, value in item.items():
@@ -89,7 +89,7 @@ class TableInfoCache(object):
 
         :param str table_name: Name of table
         :returns: TableInfo describing the requested table
-        :rtype: dynamodb_encryption_sdk.structures.TableInfo
+        :rtype: TableInfo
         """
         try:
             return self._all_tables_info[table_name]
@@ -136,7 +136,7 @@ def crypto_config_from_table_info(materials_provider, attribute_actions, table_i
     """Build a crypto config from the provided values and table info.
 
     :returns: crypto config and updated kwargs
-    :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
+    :rtype: tuple(CryptoConfig, dict)
     """
     return CryptoConfig(
         materials_provider=materials_provider,
@@ -149,7 +149,7 @@ def crypto_config_from_cache(materials_provider, attribute_actions, table_info_c
     """Build a crypto config from the provided values, loading the table info from the provided cache.
 
     :returns: crypto config and updated kwargs
-    :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
+    :rtype: tuple(CryptoConfig, dict)
     """
     table_info = table_info_cache.table_info(table_name)
 
@@ -165,8 +165,11 @@ def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwarg
     """Transparently decrypt multiple items after getting them from the table.
 
     :param callable decrypt_method: Method to use to decrypt items
-    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a ``CryptoConfig``
+    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
     :param callable read_method: Method that reads from the table
+    :param **kwargs: Keyword arguments to pass to ``read_method``
+    :return: DynamoDB response
+    :rtype: dict
     """
     validate_get_arguments(kwargs)
     crypto_config, ddb_kwargs = crypto_config_method(**kwargs)
@@ -185,8 +188,11 @@ def decrypt_get_item(decrypt_method, crypto_config_method, read_method, **kwargs
     """Transparently decrypt an item after getting it from the table.
 
     :param callable decrypt_method: Method to use to decrypt item
-    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a ``CryptoConfig``
+    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
     :param callable read_method: Method that reads from the table
+    :param **kwargs: Keyword arguments to pass to ``read_method``
+    :return: DynamoDB response
+    :rtype: dict
     """
     validate_get_arguments(kwargs)
     crypto_config, ddb_kwargs = crypto_config_method(**kwargs)
@@ -205,8 +211,11 @@ def decrypt_batch_get_item(decrypt_method, crypto_config_method, read_method, **
     """Transparently decrypt multiple items after getting them in a batch request.
 
     :param callable decrypt_method: Method to use to decrypt items
-    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a ``CryptoConfig``
+    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
     :param callable read_method: Method that reads from the table
+    :param **kwargs: Keyword arguments to pass to ``read_method``
+    :return: DynamoDB response
+    :rtype: dict
     """
     request_crypto_config = kwargs.pop('crypto_config', None)
 
@@ -234,8 +243,11 @@ def encrypt_put_item(encrypt_method, crypto_config_method, write_method, **kwarg
     """Transparently encrypt an item before putting it to the table.
 
     :param callable encrypt_method: Method to use to encrypt items
-    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a ``CryptoConfig``
-    :param callable read_method: Method that reads from the table
+    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
+    :param callable write_method: Method that writes to the table
+    :param **kwargs: Keyword arguments to pass to ``write_method``
+    :return: DynamoDB response
+    :rtype: dict
     """
     crypto_config, ddb_kwargs = crypto_config_method(**kwargs)
     ddb_kwargs['Item'] = encrypt_method(
@@ -251,8 +263,11 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
     """Transparently encrypt multiple items before putting them in a batch request.
 
     :param callable encrypt_method: Method to use to encrypt items
-    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a ``CryptoConfig``
-    :param callable read_method: Method that reads from the table
+    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
+    :param callable write_method: Method that writes to the table
+    :param **kwargs: Keyword arguments to pass to ``write_method``
+    :return: DynamoDB response
+    :rtype: dict
     """
     request_crypto_config = kwargs.pop('crypto_config', None)
 

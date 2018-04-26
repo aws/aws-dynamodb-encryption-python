@@ -44,17 +44,14 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
     """Encryption/decryption key is a content key stored in the material description, wrapped
     by the wrapping key.
 
-    :param signing_key: Delegated key used as signing and verification key
-    :type signing_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
-    :param wrapping_key: Delegated key used to wrap content key
-    :type wrapping_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+    :param DelegatedKey signing_key: Delegated key used as signing and verification key
+    :param DelegatedKey wrapping_key: Delegated key used to wrap content key
 
     .. note::
 
         ``wrapping_key`` must be provided if material description contains a wrapped content key
 
-    :param unwrapping_key: Delegated key used to unwrap content key
-    :type unwrapping_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+    :param DelegatedKey unwrapping_key: Delegated key used to unwrap content key
 
     .. note::
 
@@ -126,7 +123,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         """Load the content key from material description and unwrap it for use.
 
         :returns: Unwrapped content key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         if self._unwrapping_key is None:
             raise UnwrappingError(
@@ -154,7 +151,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         necessary information about the content and wrapping keys.
 
         :returns content key and new material description
-        :rtype: tuple containing dynamodb_encryption_sdk.delegated_keys.DelegatedKey and dict
+        :rtype: tuple containing DelegatedKey and dict
         """
         if self._wrapping_key is None:
             raise WrappingError('Cryptographic materials cannot be generated: no wrapping key')
@@ -201,7 +198,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         """Content key used for encrypting attributes.
 
         :returns: Encryption key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         return self._content_key
 
@@ -210,7 +207,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         """Content key used for decrypting attributes.
 
         :returns: Decryption key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         return self._content_key
 
@@ -219,7 +216,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         """Delegated key used for calculating digital signatures.
 
         :returns: Signing key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         return self._signing_key
 
@@ -228,6 +225,6 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
         """Delegated key used for verifying digital signatures.
 
         :returns: Verification key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         return self._signing_key

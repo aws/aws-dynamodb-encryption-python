@@ -59,7 +59,7 @@ class EncryptedTable(object):
 
         If you want to provide per-request cryptographic details, the ``put_item``, ``get_item``,
         ``query``, and ``scan`` methods will also accept a ``crypto_config`` parameter, defining
-        a custom ``CryptoConfig`` instance for this request.
+        a custom :class:`CryptoConfig` instance for this request.
 
     .. warning::
 
@@ -67,12 +67,11 @@ class EncryptedTable(object):
 
     :param table: Pre-configured boto3 DynamoDB Table object
     :type table: boto3.resources.base.ServiceResource
-    :param materials_provider: Cryptographic materials provider to use
-    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
-    :param table_info: Information about the target DynamoDB table
-    :type table_info: dynamodb_encryption_sdk.structures.TableInfo
-    :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
-    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param CryptographicMaterialsProvider materials_provider: Cryptographic materials provider
+        to use
+    :param TableInfo table_info: Information about the target DynamoDB table
+    :param AttributeActions attribute_actions: Table-level configuration of how to encrypt/sign
+        attributes
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     """

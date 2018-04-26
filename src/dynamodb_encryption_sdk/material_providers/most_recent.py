@@ -43,6 +43,7 @@ _GRACE_PERIOD = 0.5
 
 class TtlActions(Enum):
     """Actions that can be taken based on the version TTl state."""
+
     EXPIRED = 0
     GRACE_PERIOD = 1
     LIVE = 2
@@ -99,7 +100,11 @@ class BasicCache(object):
 
     def get(self, name):
         # type: (Any) -> Any
-        """Get a value from the cache."""
+        """Get a value from the cache.
+
+        :param name: Object to identify the value in the cache
+        :returns: Value from cache
+        """
         with self._cache_lock:
             value = self._cache.pop(name)
             self.put(name, value)  # bump to the from of the LRU
@@ -120,8 +125,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
     When encrypting, the most recent provider that the provider store knows about will always
     be used.
 
-    :param provider_store: Provider store to use
-    :type provider_store: dynamodb_encryption_sdk.material_providers.store.ProviderStore
+    :param ProviderStore provider_store: Provider store to use
     :param str material_name: Name of materials for which to ask the provider store
     :param float version_ttl: Max time in seconds to go until checking with provider store
         for a more recent version
@@ -159,8 +163,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> CryptographicMaterials
         """Return decryption materials.
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :raises AttributeError: if no decryption materials are available
         """
         version = self._provider_store.version_from_material_description(encryption_context.material_description)
@@ -266,8 +269,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> CryptographicMaterials
         """Return encryption materials.
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :raises AttributeError: if no encryption materials are available
         """
         ttl_action = self._ttl_action()

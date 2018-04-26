@@ -40,17 +40,14 @@ __all__ = ('WrappedCryptographicMaterialsProvider',)
 class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Cryptographic materials provider to use ephemeral content encryption keys wrapped by delegated keys.
 
-    :param signing_key: Delegated key used as signing and verification key
-    :type signing_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
-    :param wrapping_key: Delegated key used to wrap content key
-    :type wrapping_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+    :param DelegatedKey signing_key: Delegated key used as signing and verification key
+    :param DelegatedKey wrapping_key: Delegated key used to wrap content key
 
     .. note::
 
         ``wrapping_key`` must be provided if providing encryption materials
 
-    :param unwrapping_key: Delegated key used to unwrap content key
-    :type unwrapping_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+    :param DelegatedKey unwrapping_key: Delegated key used to unwrap content key
 
     .. note::
 
@@ -113,10 +110,9 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> WrappedCryptographicMaterials
         """Construct
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :returns: Wrapped cryptographic materials
-        :rtype: dynamodb_encryption_sdk.materials.wrapped.WrappedCryptographicMaterials
+        :rtype: WrappedCryptographicMaterials
         """
         material_description = self._material_description.copy()
         material_description.update(encryption_context.material_description)
@@ -131,10 +127,9 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> WrappedCryptographicMaterials
         """Provide encryption materials.
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :returns: Encryption materials
-        :rtype: dynamodb_encryption_sdk.materials.wrapped.WrappedCryptographicMaterials
+        :rtype: WrappedCryptographicMaterials
         :raises WrappingError: if no wrapping key is available
         """
         if self._wrapping_key is None:
@@ -146,10 +141,9 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> WrappedCryptographicMaterials
         """Provide decryption materials.
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :returns: Decryption materials
-        :rtype: dynamodb_encryption_sdk.materials.wrapped.WrappedCryptographicMaterials
+        :rtype: WrappedCryptographicMaterials
         :raises UnwrappingError: if no unwrapping key is available
         """
         if self._unwrapping_key is None:

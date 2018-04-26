@@ -24,7 +24,7 @@ except ImportError:  # pragma: no cover
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
 
 __all__ = ('CryptoConfig',)
@@ -34,12 +34,12 @@ __all__ = ('CryptoConfig',)
 class CryptoConfig(object):
     """Container for all configuration needed to encrypt or decrypt an item.
 
-    :param materials_provider: Cryptographic materials provider to use
-    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
-    :param encryption_context: Context data describing what is being encrypted or decrypted.
-    :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
-    :param attribute_actions: Description of what action should be taken for each attribute
-    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param CryptographicMaterialsProvider materials_provider: Cryptographic materials provider
+        to use
+    :param EncryptionContext encryption_context: Context data describing what is being encrypted
+        or decrypted
+    :param AttributeActions attribute_actions: Description of what action should be taken
+        for each attribute
     """
 
     materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
@@ -75,20 +75,20 @@ class CryptoConfig(object):
                 raise InvalidArgumentError('Cannot encrypt sort key')
 
     def decryption_materials(self):
-        # type: () -> DecryptionMaterials
+        # type: () -> CryptographicMaterials
         """Load decryption materials from instance resources.
 
         :returns: Decryption materials
-        :rtype: dynamodb_encryption_sdk.materials.DecryptionMaterials
+        :rtype: CryptographicMaterials
         """
         return self.materials_provider.decryption_materials(self.encryption_context)
 
     def encryption_materials(self):
-        # type: () -> EncryptionMaterials
+        # type: () -> CryptographicMaterials
         """Load encryption materials from instance resources.
 
         :returns: Encryption materials
-        :rtype: dynamodb_encryption_sdk.materials.EncryptionMaterials
+        :rtype: CryptographicMaterials
         """
         return self.materials_provider.encryption_materials(self.encryption_context)
 
@@ -96,7 +96,7 @@ class CryptoConfig(object):
         # type: () -> CryptoConfig
         """Return a copy of this instance with a copied instance of its encryption context.
 
-        :returns: New CryptoConfig identical to this one
+        :returns: New :class:`CryptoConfig` identical to this one
         :rtype: CryptoConfig
         """
         return CryptoConfig(

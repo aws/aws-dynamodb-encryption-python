@@ -21,8 +21,8 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.exceptions import InvalidVersionError, NoKnownVersionError
-from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
+from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
+from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider  # noqa pylint: disable=unused-import
 
 __all__ = ('ProviderStore',)
 
@@ -41,7 +41,7 @@ class ProviderStore(object):
         :param str material_name: Material to locate
         :param int version: Version of material to locate (optional)
         :returns: cryptographic materials provider
-        :rtype: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+        :rtype: CryptographicMaterialsProvider
         :raises InvalidVersionError: if the requested version is not available and cannot be created
         """
 
@@ -66,7 +66,7 @@ class ProviderStore(object):
         :param str material_name: Material to locate
         :returns: Maximum known version
         :rtype: int
-        :raises NoKnownVersion: if no version can be found
+        :raises NoKnownVersionError: if no version can be found
         """
         raise NoKnownVersionError('No known version for name: "{}"'.format(material_name))
 
@@ -79,7 +79,7 @@ class ProviderStore(object):
         :param str material_name: Material to locate
         :param int version: Version of material to locate (optional)
         :returns: cryptographic materials provider
-        :rtype: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+        :rtype: CryptographicMaterialsProvider
         :raises InvalidVersionError: if the requested version is not found
         """
         if version is None:
@@ -95,7 +95,7 @@ class ProviderStore(object):
 
         :param str material_name: Material to locate
         :returns: cryptographic materials provider
-        :rtype: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+        :rtype: CryptographicMaterialsProvider
         """
         version = self.max_version(material_name) + 1
         return self.get_or_create_provider(material_name, version)

@@ -46,7 +46,7 @@ class CryptographicMaterials(object):
         """Delegated key used for encrypting attributes.
 
         :returns: Encryption key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
 
     @abc.abstractproperty
@@ -55,7 +55,7 @@ class CryptographicMaterials(object):
         """Delegated key used for decrypting attributes.
 
         :returns: Decryption key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
 
     @abc.abstractproperty
@@ -64,7 +64,7 @@ class CryptographicMaterials(object):
         """Delegated key used for calculating digital signatures.
 
         :returns: Signing key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
 
     @abc.abstractproperty
@@ -73,7 +73,7 @@ class CryptographicMaterials(object):
         """Delegated key used for verifying digital signatures.
 
         :returns: Verification key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
 
 

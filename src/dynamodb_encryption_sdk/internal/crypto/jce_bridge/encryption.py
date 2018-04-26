@@ -27,9 +27,9 @@ class JavaCipher(object):
 
     https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
 
-    :param cipher: TODO:
-    :param mode: TODO:
-    :param padding: TODO:
+    :param JavaEncryptionAlgorithm cipher: Encryption algorithm to use
+    :param JavaMode mode: Encryption mode to use
+    :param JavaPadding padding: Encryption padding to use
     """
 
     cipher = attr.ib(validator=attr.validators.instance_of(JavaEncryptionAlgorithm))
@@ -145,7 +145,7 @@ class JavaCipher(object):
 
         :param str cipher_transformation: Formatted transformation
         :returns: JavaCipher instance
-        :rtype: dynamodb_encryption_sdk.internal.structures.EncryptionClient
+        :rtype: JavaCipher
         """
         if cipher_transformation == 'AESWrap':
             # AESWrap does not support encrypt or decrypt, so mode and padding are never

@@ -39,7 +39,7 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
     # type: (dynamodb_types.RAW_ATTRIBUTE) -> bytes
     """Serializes a raw attribute to a byte string as defined for the DynamoDB Client-Side Encryption Standard.
 
-    :param attribute: Item attribute value
+    :param dict attribute: Item attribute value
     :returns: Serialized attribute
     :rtype: bytes
     """

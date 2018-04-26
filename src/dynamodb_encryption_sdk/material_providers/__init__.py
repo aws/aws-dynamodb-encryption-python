@@ -25,8 +25,7 @@ class CryptographicMaterialsProvider(object):
         # pylint: disable=unused-argument,no-self-use
         """Return decryption materials.
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :raises AttributeError: if no decryption materials are available
         """
         raise AttributeError('No decryption materials available')
@@ -36,8 +35,7 @@ class CryptographicMaterialsProvider(object):
         # pylint: disable=unused-argument,no-self-use
         """Return encryption materials.
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :raises AttributeError: if no encryption materials are available
         """
         raise AttributeError('No encryption materials available')

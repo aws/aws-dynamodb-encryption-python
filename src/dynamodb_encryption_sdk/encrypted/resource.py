@@ -31,24 +31,21 @@ from dynamodb_encryption_sdk.structures import AttributeActions
 from .item import decrypt_python_item, encrypt_python_item
 from .table import EncryptedTable
 
-__all__ = ('EncryptedResource',)
+__all__ = ('EncryptedResource', 'EncryptedTablesCollectionManager')
 
 
 @attr.s(init=False)
 class EncryptedTablesCollectionManager(object):
     # pylint: disable=too-few-public-methods
-    """Tables collection manager that provides EncryptedTable objects.
+    """Tables collection manager that provides :class:`EncryptedTable` objects.
 
     https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.tables
 
     :param collection: Pre-configured boto3 DynamoDB table collection manager
     :type collection: boto3.resources.collection.CollectionManager
-    :param materials_provider: Cryptographic materials provider to use
-    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
-    :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
-    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
-    :param table_info_cache: Local cache from which to obtain TableInfo data
-    :type table_info_cache: dynamodb_encryption_sdk.internal.utils.TableInfoCache
+    :param CryptographicMaterialsProvider materials_provider: Cryptographic materials provider to use
+    :param AttributeActions attribute_actions: Table-level configuration of how to encrypt/sign attributes
+    :param TableInfoCache table_info_cache: Local cache from which to obtain TableInfo data
     """
 
     _collection = attr.ib(validator=attr.validators.instance_of(CollectionManager))
@@ -144,14 +141,12 @@ class EncryptedResource(object):
 
         If you want to provide per-request cryptographic details, the ``batch_write_item``
         and ``batch_get_item`` methods will also accept a ``crypto_config`` parameter, defining
-        a custom ``CryptoConfig`` instance for this request.
+        a custom :class:`CryptoConfig` instance for this request.
 
     :param resource: Pre-configured boto3 DynamoDB service resource object
     :type resource: boto3.resources.base.ServiceResource
-    :param materials_provider: Cryptographic materials provider to use
-    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
-    :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
-    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param CryptographicMaterialsProvider materials_provider: Cryptographic materials provider to use
+    :param AttributeActions attribute_actions: Table-level configuration of how to encrypt/sign attributes
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     """
@@ -240,12 +235,11 @@ class EncryptedResource(object):
         https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.Table
 
         :param name: The table name.
-        :param materials_provider: Cryptographic materials provider to use (optional)
-        :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
-        :param table_info: Information about the target DynamoDB table (optional)
-        :type table_info: dynamodb_encryption_sdk.structures.TableInfo
-        :param attribute_actions: Table-level configuration of how to encrypt/sign attributes (optional)
-        :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+        :param CryptographicMaterialsProvider materials_provider: Cryptographic materials
+            provider to use (optional)
+        :param TableInfo table_info: Information about the target DynamoDB table (optional)
+        :param AttributeActions attribute_actions: Table-level configuration of how to encrypt/sign
+            attributes (optional)
         """
         table_kwargs = dict(
             table=self._resource.Table(name),

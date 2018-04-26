@@ -42,7 +42,7 @@ def _generate_symmetric_key(key_length):
 
     :param int key_length: Required key length in bits
     :returns: raw key, symmetric key identifier, and RAW encoding identifier
-    :rtype: tuple of bytes, EncryptionKeyType, and KeyEncodingType
+    :rtype: tuple(bytes, :class:`EncryptionKeyType`, :class:`KeyEncodingType`)
     """
     return os.urandom(key_length // 8), EncryptionKeyType.SYMMETRIC, KeyEncodingType.RAW
 
@@ -52,7 +52,7 @@ def _generate_rsa_key(key_length):
 
     :param int key_length: Required key length in bits
     :returns: DER-encoded private key, private key identifier, and DER encoding identifier
-    :rtype: tuple of bytes, EncryptionKeyType, and KeyEncodingType
+    :rtype: tuple(bytes, :class:`EncryptionKeyType`, :class:`KeyEncodingType`)
     """
     private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -109,10 +109,8 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
     :param bytes key: Raw key bytes
     :param str algorithm: JCE Standard Algorithm Name
-    :param key_type: Identifies what type of key is being provided
-    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
-    :param key_encoding: Identifies how the provided key is encoded
-    :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingTypes
+    :param EncryptionKeyType key_type: Identifies what type of key is being provided
+    :param KeyEncodingType key_encoding: Identifies how the provided key is encoded
     """
 
     key = attr.ib(validator=attr.validators.instance_of(bytes), repr=False)
@@ -204,12 +202,13 @@ class JceNameLocalDelegatedKey(DelegatedKey):
     @classmethod
     def generate(cls, algorithm, key_length=None):
         # type: (Text, Optional[int]) -> JceNameLocalDelegatedKey
-        """Generate an instance of this DelegatedKey using the specified algorithm and key length.
+        """Generate an instance of this :class:`DelegatedKey` using the specified algorithm
+        and key length.
 
         :param str algorithm: Text description of algorithm to be used
         :param int key_length: Size in bits of key to generate
         :returns: Generated delegated key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         # Normalize to allow generating both encryption and signing keys
         algorithm_lookup = algorithm.upper()
@@ -229,8 +228,8 @@ class JceNameLocalDelegatedKey(DelegatedKey):
     @property
     def allowed_for_raw_materials(self):
         # type: () -> bool
-        """Only ``JceNameLocalDelegatedKey`` backed by AES keys are allowed to be used with
-        ``RawCryptographicMaterials``.
+        """Only :class:`JceNameLocalDelegatedKey` backed by AES keys are allowed to be used
+        with :class:`RawDecryptionMaterials` or :class:`RawEncryptionMaterials`.
 
         :returns: decision
         :rtype: bool
@@ -264,7 +263,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
             https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
         :param str name: Name associated with ciphertext data
         :param bytes ciphertext: Ciphertext data to decrypt
-        :param dict additional_associated_data: Not used by ``JceNameLocalDelegatedKey``
+        :param dict additional_associated_data: Not used by :class:`JceNameLocalDelegatedKey`
         :returns: Decrypted plaintext
         :rtype: bytes
         """
@@ -278,7 +277,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
 
         :param str algorithm: Text description of algorithm to use to wrap key
         :param bytes content_key: Raw content key to wrap
-        :param dict additional_associated_data: Not used by ``JceNameLocalDelegatedKey``
+        :param dict additional_associated_data: Not used by :class:`JceNameLocalDelegatedKey`
         :returns: Wrapped key
         :rtype: bytes
         """
@@ -296,11 +295,10 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         :param str algorithm: Text description of algorithm to use to unwrap key
         :param bytes content_key: Raw content key to wrap
         :param str wrapped_key_algorithm: Text description of algorithm for unwrapped key to use
-        :param wrapped_key_type: Type of key to treat key as once unwrapped
-        :type wrapped_key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
-        :param dict additional_associated_data: Not used by ``JceNameLocalDelegatedKey``
+        :param EncryptionKeyType wrapped_key_type: Type of key to treat key as once unwrapped
+        :param dict additional_associated_data: Not used by :class:`JceNameLocalDelegatedKey`
         :returns: Delegated key using unwrapped key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         if wrapped_key_type is not EncryptionKeyType.SYMMETRIC:
             raise UnwrappingError('Unsupported wrapped key type: "{}"'.format(wrapped_key_type))
