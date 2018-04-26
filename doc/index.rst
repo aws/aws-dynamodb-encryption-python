@@ -1,3 +1,7 @@
+#####################################
+DynamoDB Encryption Client for Python
+#####################################
+
 .. include:: ../README.rst
 
 ***
