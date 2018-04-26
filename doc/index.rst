@@ -1,14 +1,14 @@
-#####################################
-DynamoDB Encryption Client for Python
-#####################################
-
 .. include:: ../README.rst
+
+API
+***
 
 .. toctree::
    :maxdepth: 2
    :caption: Encryption Helpers
 
-   lib/encrypted/index
+   lib/encrypted/helpers
+   lib/encrypted/item
 
 .. toctree::
    :maxdepth: 2
