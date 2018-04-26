@@ -31,4 +31,10 @@ DynamoDB Encryption Client for Python
    lib/tools/index
    lib/tools/exceptions
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Informational Only
+
+   lib/internal
+
 .. include:: ../CHANGELOG.rst

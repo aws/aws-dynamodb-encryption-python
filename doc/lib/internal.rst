@@ -1,3 +1,11 @@
+Internal Resources
+==================
+
+.. warning::
+
+   These are provided for informational purposes only. No guarantee is provided on the modules
+   and APIs described here remaining consistent. Directly reference at your own risk.
+
 .. autosummary::
 
     dynamodb_encryption_sdk.internal
