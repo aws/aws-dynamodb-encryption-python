@@ -7,9 +7,8 @@ Internal Resources
    and APIs described here remaining consistent. Directly reference at your own risk.
 
 .. autosummary::
+   :toctree: generated
 
-    dynamodb_encryption_sdk.internal
-    dynamodb_encryption_sdk.internal.dynamodb_types
     dynamodb_encryption_sdk.internal.identifiers
     dynamodb_encryption_sdk.internal.str_ops
     dynamodb_encryption_sdk.internal.utils

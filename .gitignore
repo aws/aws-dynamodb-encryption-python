@@ -8,6 +8,7 @@
 /.coverage*
 /build
 /doc/generated/*
+/doc/lib/generated/*
 /runpy
 __pycache__
 build

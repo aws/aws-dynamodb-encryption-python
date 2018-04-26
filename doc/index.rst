@@ -32,7 +32,7 @@ API
    lib/tools/exceptions
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Informational Only
 
    lib/internal

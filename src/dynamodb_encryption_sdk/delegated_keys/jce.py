@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Delegated key that JCE StandardName algorithm values to determine behavior."""
+"""Delegated key that uses JCE StandardName values to determine behavior."""
 from __future__ import division
 
 import logging
@@ -76,7 +76,7 @@ _ALGORITHM_GENERATE_MAP = {
 @attr.s(init=False)
 class JceNameLocalDelegatedKey(DelegatedKey):
     # pylint: disable=too-many-instance-attributes
-    """Delegated key that uses JCE StandardName algorithm values to determine behavior.
+    """Delegated key that uses JCE StandardName values to determine behavior.
 
     Accepted algorithm names for this include:
 
