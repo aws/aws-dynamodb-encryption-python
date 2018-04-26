@@ -14,4 +14,3 @@ Cryptographic Materials Providers
     dynamodb_encryption_sdk.material_providers.wrapped
     dynamodb_encryption_sdk.material_providers.most_recent
     dynamodb_encryption_sdk.material_providers.static
-   

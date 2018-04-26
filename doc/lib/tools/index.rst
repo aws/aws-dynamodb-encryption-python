@@ -12,4 +12,3 @@ Tools
     dynamodb_encryption_sdk.identifiers
     dynamodb_encryption_sdk.structures
     dynamodb_encryption_sdk.transform
-   
