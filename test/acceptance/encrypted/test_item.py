@@ -18,7 +18,7 @@ from dynamodb_encryption_sdk.encrypted.item import decrypt_dynamodb_item
 from dynamodb_encryption_sdk.structures import EncryptionContext
 from ..acceptance_test_utils import load_scenarios
 
-pytestmark = [pytest.mark.acceptance, pytest.mark.local]
+pytestmark = [pytest.mark.acceptance, pytest.mark.integ]
 
 
 @pytest.mark.parametrize(
@@ -36,7 +36,8 @@ def test_item_encryptor(
     encryption_context = EncryptionContext(
         table_name=table_name,
         partition_key_name=table_index['partition'],
-        sort_key_name=table_index.get('sort', None)
+        sort_key_name=table_index.get('sort', None),
+        attributes=ciphertext_item
     )
     crypto_config = CryptoConfig(
         materials_provider=materials_provider,

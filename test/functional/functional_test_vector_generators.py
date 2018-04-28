@@ -47,7 +47,7 @@ def decode_value(value, transform_binary=False):  # noqa: C901
         return _value
 
     def _decode_number(_value):
-        return str(Decimal(_value).normalize())
+        return '{0:f}'.format(Decimal(_value))
 
     def _decode_binary(_value):
         raw = base64.b64decode(_value)

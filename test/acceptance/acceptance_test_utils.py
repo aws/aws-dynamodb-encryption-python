@@ -22,6 +22,7 @@ from six.moves.urllib.parse import urlparse  # moves confuse pylint: disable=wro
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
+from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials
@@ -171,9 +172,15 @@ def _build_wrapped_cmp(decrypt_key, verify_key):
     )
 
 
+def _build_aws_kms_cmp(decrypt_key, verify_key):
+    key_id = decrypt_key['keyId']
+    return AwsKmsCryptographicMaterialsProvider(key_id=key_id)
+
+
 _CMP_TYPE_MAP = {
     'STATIC': _build_static_cmp,
-    'WRAPPED': _build_wrapped_cmp
+    'WRAPPED': _build_wrapped_cmp,
+    'AWSKMS': _build_aws_kms_cmp
 }
 
 
