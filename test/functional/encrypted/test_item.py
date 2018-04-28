@@ -10,18 +10,19 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+"""Functional tests for ``dynamodb_encryption_sdk.encrypted.item``."""
 import hypothesis
 import pytest
 
-from ..functional_test_utils import (
-    build_static_jce_cmp, cycle_item_check, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item
-)
-from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.exceptions import DecryptionError, EncryptionError
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
+from ..functional_test_utils import (
+    build_static_jce_cmp, cycle_item_check, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item
+)
+from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 

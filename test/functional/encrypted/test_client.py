@@ -10,18 +10,19 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""Functional tests for ``dynamodb_encryption_sdk.encrypted.client``."""
 import boto3
 import hypothesis
 import pytest
 
-from ..functional_test_utils import (
-    check_encrypted_item, example_table, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
-    cycle_batch_item_check, TEST_KEY, TEST_TABLE_NAME
-)
-from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
 from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
+from ..functional_test_utils import (
+    check_encrypted_item, cycle_batch_item_check, set_parametrized_actions, set_parametrized_cmp,
+    set_parametrized_item, TEST_KEY, TEST_TABLE_NAME
+)
+from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
+from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
@@ -47,7 +48,7 @@ def _client_cycle_single_item_check(materials_provider, initial_actions, initial
         attribute_actions=initial_actions
     )
 
-    _put_result = e_client.put_item(
+    _put_result = e_client.put_item(  # noqa
         TableName=TEST_TABLE_NAME,
         Item=ddb_item
     )

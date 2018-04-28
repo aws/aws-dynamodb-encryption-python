@@ -11,14 +11,14 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Helper resources for functional tests."""
+"""Hypothesis strategies for use in tests."""
 from collections import namedtuple
 from decimal import Decimal
 
 from boto3.dynamodb.types import Binary, DYNAMODB_CONTEXT
 import hypothesis
 from hypothesis.strategies import (
-    binary, booleans, characters, dictionaries, deferred, fractions, just, lists, none, sets, text
+    binary, booleans, characters, deferred, dictionaries, fractions, just, lists, none, sets, text
 )
 
 SLOW_SETTINGS = hypothesis.settings(
@@ -59,7 +59,7 @@ ddb_string_set = sets(ddb_string, min_size=1)
 
 
 def _ddb_fraction_to_decimal(val):
-    """hypothesis does not support providing a custom Context, so working around that"""
+    """Hypothesis does not support providing a custom Context, so working around that."""
     return DYNAMODB_CONTEXT.create_decimal(Decimal(val.numerator) / Decimal(val.denominator))
 
 
@@ -82,17 +82,17 @@ ddb_boolean = booleans()
 ddb_null = none()
 
 ddb_scalar_types = (
-    ddb_string
-    | ddb_number
-    | ddb_binary
-    | ddb_boolean
-    | ddb_null
+    ddb_string |
+    ddb_number |
+    ddb_binary |
+    ddb_boolean |
+    ddb_null
 )
 
 ddb_set_types = (
-    ddb_string_set
-    | ddb_number_set
-    | ddb_binary_set
+    ddb_string_set |
+    ddb_number_set |
+    ddb_binary_set
 )
 ddb_attribute_names = text(
     min_size=1,
@@ -102,18 +102,18 @@ ddb_attribute_names = text(
 ddb_map_type = deferred(lambda: dictionaries(
     keys=ddb_attribute_names,
     values=(
-        ddb_scalar_types
-        | ddb_set_types
-        | ddb_list_type
-        | ddb_map_type
+        ddb_scalar_types |
+        ddb_set_types |
+        ddb_list_type |
+        ddb_map_type
     ),
     min_size=1
 ))
 ddb_list_type = deferred(lambda: lists(
-    ddb_scalar_types
-    | ddb_set_types
-    | ddb_list_type
-    | ddb_map_type,
+    ddb_scalar_types |
+    ddb_set_types |
+    ddb_list_type |
+    ddb_map_type,
     min_size=1
 ))
 ddb_document_types = ddb_map_type | ddb_list_type

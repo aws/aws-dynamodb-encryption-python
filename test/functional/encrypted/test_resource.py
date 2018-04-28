@@ -10,16 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""Functional tests for ``dynamodb_encryption_sdk.encrypted.resource``."""
 import boto3
 import pytest
 
-from ..functional_test_utils import (
-    example_table, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
-    cycle_batch_item_check, TEST_TABLE_NAME
-)
-from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
 from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
+from ..functional_test_utils import (
+    cycle_batch_item_check, set_parametrized_actions, set_parametrized_cmp, set_parametrized_item, TEST_TABLE_NAME
+)
+from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
