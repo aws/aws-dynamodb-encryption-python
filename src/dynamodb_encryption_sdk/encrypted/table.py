@@ -11,12 +11,17 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """High-level helper class to provide a familiar interface to encrypted tables."""
+from functools import partial
+
 import attr
 from boto3.resources.base import ServiceResource
 
+from dynamodb_encryption_sdk.internal.utils import (
+    crypto_config_from_kwargs, crypto_config_from_table_info,
+    decrypt_get_item, decrypt_multi_get, encrypt_put_item
+)
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext, TableInfo
-from . import CryptoConfig, validate_get_arguments
+from dynamodb_encryption_sdk.structures import AttributeActions, TableInfo
 from .item import decrypt_python_item, encrypt_python_item
 
 __all__ = ('EncryptedTable',)
@@ -24,6 +29,7 @@ __all__ = ('EncryptedTable',)
 
 @attr.s
 class EncryptedTable(object):
+    # pylint: disable=too-few-public-methods
     """High-level helper class to provide a familiar interface to encrypted tables.
 
     .. note::
@@ -69,7 +75,7 @@ class EncryptedTable(object):
     )
 
     def __attrs_post_init__(self):
-        """Prepare table info is it was not set."""
+        """Prepare table info is it was not set and set up translation methods."""
         if self._table_info is None:
             self._table_info = TableInfo(name=self._table.name)
 
@@ -79,6 +85,40 @@ class EncryptedTable(object):
         # Clone the attribute actions before we modify them
         self._attribute_actions = self._attribute_actions.copy()
         self._attribute_actions.set_index_keys(*self._table_info.protected_index_keys())
+
+        self._crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            crypto_config_from_kwargs,
+            partial(
+                crypto_config_from_table_info,
+                self._materials_provider,
+                self._attribute_actions,
+                self._table_info
+            )
+        )
+        self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            decrypt_get_item,
+            decrypt_python_item,
+            self._crypto_config,
+            self._table.get_item
+        )
+        self.put_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            encrypt_put_item,
+            encrypt_python_item,
+            self._crypto_config,
+            self._table.put_item
+        )
+        self.query = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            decrypt_multi_get,
+            decrypt_python_item,
+            self._crypto_config,
+            self._table.query
+        )
+        self.scan = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
+            decrypt_multi_get,
+            decrypt_python_item,
+            self._crypto_config,
+            self._table.scan
+        )
 
     def __getattr__(self, name):
         """Catch any method/attribute lookups that are not defined in this class and try
@@ -93,78 +133,3 @@ class EncryptedTable(object):
     def update_item(self, **kwargs):
         """Update item is not yet supported."""
         raise NotImplementedError('"update_item" is not yet implemented')
-
-    def _crypto_config(self, **kwargs):
-        """Pull all encryption-specific parameters from the request and use them to build a crypto config.
-
-        :returns: crypto config and updated kwargs
-        :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
-        """
-        crypto_config = kwargs.pop('crypto_config', None)
-
-        if crypto_config is not None:
-            return crypto_config, kwargs
-
-        crypto_config = CryptoConfig(
-            materials_provider=self._materials_provider,
-            encryption_context=EncryptionContext(**self._table_info.encryption_context_values),
-            attribute_actions=self._attribute_actions
-        )
-        return crypto_config, kwargs
-
-    def get_item(self, **kwargs):
-        """Transparently decrypt an item after getting it from the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.get_item
-        """
-        validate_get_arguments(kwargs)
-        crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
-        response = self._table.get_item(**ddb_kwargs)
-        if 'Item' in response:
-            response['Item'] = decrypt_python_item(
-                item=response['Item'],
-                crypto_config=crypto_config
-            )
-        return response
-
-    def put_item(self, **kwargs):
-        """Transparently encrypt an item before putting it to the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
-        """
-        crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
-        ddb_kwargs['Item'] = encrypt_python_item(
-            item=ddb_kwargs['Item'],
-            crypto_config=crypto_config
-        )
-        return self._table.put_item(**ddb_kwargs)
-
-    def _encrypted_multi_get(self, method, **kwargs):
-        """Transparently decrypt multiple items after getting them from the table.
-
-        :param method: Method from underlying DynamoDB table object to use
-        :type method: callable
-        """
-        validate_get_arguments(kwargs)
-        crypto_config, ddb_kwargs = self._crypto_config(**kwargs)
-        response = method(**ddb_kwargs)
-        for pos in range(len(response['Items'])):
-            response['Items'][pos] = decrypt_python_item(
-                item=response['Items'][pos],
-                crypto_config=crypto_config
-            )
-        return response
-
-    def query(self, **kwargs):
-        """Transparently decrypt multiple items after getting them from a query request to the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.query
-        """
-        return self._encrypted_multi_get(self._table.query, **kwargs)
-
-    def scan(self, **kwargs):
-        """Transparently decrypt multiple items after getting them from a scan request to the table.
-
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.scan
-        """
-        return self._encrypted_multi_get(self._table.scan, **kwargs)

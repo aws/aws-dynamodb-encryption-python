@@ -87,17 +87,3 @@ class CryptoConfig(object):
             encryption_context=copy.copy(self.encryption_context),
             attribute_actions=self.attribute_actions
         )
-
-
-def validate_get_arguments(kwargs):
-    # type: (Dict[Text, Any]) -> None
-    """Verify that attribute filtering parameters are not found in the request.
-
-    :raises InvalidArgumentError: if banned parameters are found
-    """
-    for arg in ('AttributesToGet', 'ProjectionExpression'):
-        if arg in kwargs:
-            raise InvalidArgumentError('"{}" is not supported for this operation'.format(arg))
-
-    if kwargs.get('Select', None) in ('SPECIFIC_ATTRIBUTES', 'ALL_PROJECTED_ATTRIBUTES', 'SPECIFIC_ATTRIBUTES'):
-        raise InvalidArgumentError('Scan "Select" value of "{}" is not supported'.format(kwargs['Select']))
