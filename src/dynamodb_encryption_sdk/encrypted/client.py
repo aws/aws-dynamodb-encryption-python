@@ -10,15 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""High-level helper class to provide a familiar interface to encrypted tables."""
 import attr
 import botocore.client
 
-from . import CryptoConfig, validate_get_arguments
-from .item import decrypt_dynamodb_item, encrypt_dynamodb_item
 from dynamodb_encryption_sdk.internal.utils import TableInfoCache
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
+from . import CryptoConfig, validate_get_arguments
+from .item import decrypt_dynamodb_item, encrypt_dynamodb_item
 
 __all__ = ('EncryptedClient',)
 
@@ -44,6 +44,7 @@ class EncryptedClient(object):
         We do not currently support the ``update_item`` method.
 
     """
+
     _client = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(

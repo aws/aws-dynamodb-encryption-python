@@ -15,15 +15,16 @@ import io
 import logging
 import struct
 
-from .deserialize import decode_value, unpack_value
-from .serialize import encode_value
 from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
-from dynamodb_encryption_sdk.internal.defaults import LOGGING_NAME, MATERIAL_DESCRIPTION_VERSION
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
 from dynamodb_encryption_sdk.internal.identifiers import Tag
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
+from .deserialize import decode_value, unpack_value
+from .serialize import encode_value
 
 __all__ = ('serialize', 'deserialize')
-_LOGGER = logging.getLogger(LOGGING_NAME)
+_LOGGER = logging.getLogger(LOGGER_NAME)
+_MATERIAL_DESCRIPTION_VERSION = b'\00' * 4
 
 
 def serialize(material_description):
@@ -34,7 +35,7 @@ def serialize(material_description):
     :returns: Serialized material description as a DynamoDB binary attribute value
     :rtype: dict
     """
-    material_description_bytes = bytearray(MATERIAL_DESCRIPTION_VERSION)
+    material_description_bytes = bytearray(_MATERIAL_DESCRIPTION_VERSION)
 
     # TODO: verify Java sorting order
     for name, value in sorted(material_description.items(), key=lambda x: x[0]):
@@ -42,10 +43,12 @@ def serialize(material_description):
             material_description_bytes.extend(encode_value(to_bytes(name)))
             material_description_bytes.extend(encode_value(to_bytes(value)))
         except (TypeError, struct.error):
-            raise InvalidMaterialDescriptionError('Invalid name or value in material description: "{name}"="{value}"'.format(
-                name=name,
-                value=value
-            ))
+            raise InvalidMaterialDescriptionError(
+                'Invalid name or value in material description: "{name}"="{value}"'.format(
+                    name=name,
+                    value=value
+                )
+            )
 
     return {Tag.BINARY.dynamodb_tag: bytes(material_description_bytes)}
 
@@ -99,5 +102,5 @@ def _read_version(material_description_bytes):
         message = 'Malformed material description version'
         _LOGGER.exception(message)
         raise InvalidMaterialDescriptionError(message)
-    if version != MATERIAL_DESCRIPTION_VERSION:
+    if version != _MATERIAL_DESCRIPTION_VERSION:
         raise InvalidMaterialDescriptionVersionError('Invalid material description version: {}'.format(repr(version)))

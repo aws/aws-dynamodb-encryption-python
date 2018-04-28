@@ -14,10 +14,10 @@
 import attr
 from boto3.resources.base import ServiceResource
 
-from . import CryptoConfig, validate_get_arguments
-from .item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext, TableInfo
+from . import CryptoConfig, validate_get_arguments
+from .item import decrypt_python_item, encrypt_python_item
 
 __all__ = ('EncryptedTable',)
 
@@ -52,6 +52,7 @@ class EncryptedTable(object):
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     """
+
     _table = attr.ib(validator=attr.validators.instance_of(ServiceResource))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _table_info = attr.ib(

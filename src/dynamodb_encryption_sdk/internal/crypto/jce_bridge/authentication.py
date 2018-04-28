@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 """Cryptographic authentication resources for JCE bridge."""
 import abc
+import logging
 
 import attr
 from cryptography.hazmat.backends import default_backend
@@ -19,11 +20,19 @@ from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 import six
 
-from .primitives import load_rsa_key
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Text  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.exceptions import InvalidAlgorithmError, SignatureVerificationError, SigningError
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.validators import callable_validator
+from .primitives import load_rsa_key
 
 __all__ = ('JavaAuthenticator', 'JavaMac', 'JavaSignature', 'JAVA_AUTHENTICATOR')
+_LOGGER = logging.getLogger(LOGGER_NAME)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -32,19 +41,50 @@ class JavaAuthenticator(object):
 
     @abc.abstractmethod
     def load_key(self, key, key_type, key_encoding):
-        """"""
+        # (bytes, EncryptionKeyTypes, KeyEncodingType) -> Any
+        # TODO: narrow down the output type
+        """Load a key from bytes.
+
+        :param bytes key: Raw key bytes to load
+        :param key_type: Type of key to load
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :param key_encoding: Encoding used to serialize ``key``
+        :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+        :returns: Loaded key
+        :rtype: bytes
+        """
 
     @abc.abstractmethod
     def validate_algorithm(self, algorithm):
-        """"""
+        # type: (Text) -> None
+        """Determine whether the requested algorithm name is compatible with this authenticator.
+
+        :param str algorithm: Algorithm name
+        :raises InvalidAlgorithmError: if specified algorithm name is not compatible with this authenticator
+        """
 
     @abc.abstractmethod
     def sign(self, key, data):
-        """"""
+        # type: (Any, bytes) -> bytes
+        """Sign ``data`` using loaded ``key``.
+
+        :param key: Loaded key
+        :param bytes data: Data to sign
+        :returns: Calculated signature
+        :rtype: bytes
+        :raises SigningError: if unable to sign ``data`` with ``key``
+        """
 
     @abc.abstractmethod
     def verify(self, key, signature, data):
-        """"""
+        # type: (Any, bytes, bytes) -> None
+        """Verify ``signature`` over ``data`` using ``key``.
+
+        :param key: Loaded key
+        :param bytes signature: Signature to verify
+        :param bytes data: Data over which to verify signature
+        :raises SignatureVerificationError: if unable to verify ``signature``
+        """
 
 
 @attr.s
@@ -54,12 +94,17 @@ class JavaMac(JavaAuthenticator):
     https://docs.oracle.com/javase/8/docs/api/javax/crypto/Mac.html
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Mac
     """
+
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     algorithm_type = attr.ib(validator=callable_validator)
     hash_type = attr.ib(validator=callable_validator)
 
     def _build_hmac_signer(self, key):
-        """"""
+        # type: (bytes) -> Any
+        """Build HMAC signer using instance algorithm and hash type and ``key``.
+
+        :param bytes key: Key to use in signer
+        """
         return self.algorithm_type(
             key,
             self.hash_type(),
@@ -67,13 +112,28 @@ class JavaMac(JavaAuthenticator):
         )
 
     def load_key(self, key, key_type, key_encoding):
-        """"""
+        # (bytes, EncryptionKeyTypes, KeyEncodingType) -> bytes
+        """Load a raw key from bytes.
+
+        :param bytes key: Raw key bytes to load
+        :param key_type: Type of key to load
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :param key_encoding: Encoding used to serialize ``key``
+        :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+        :returns: Loaded key
+        :rtype: bytes
+        :raises ValueError: if ``key_type`` is not symmetric or ``key_encoding`` is not raw
+        """
+        if not (key_type is EncryptionKeyTypes.SYMMETRIC and key_encoding is KeyEncodingType.RAW):
+            raise ValueError('Key type must be symmetric and encoding must be raw.')
+
         return key
 
     def validate_algorithm(self, algorithm):
         # type: (Text) -> None
-        """Determine whether the requested algorithm name is compatible with this signature.
+        """Determine whether the requested algorithm name is compatible with this authenticator.
 
+        :param str algorithm: Algorithm name
         :raises InvalidAlgorithmError: if specified algorithm name is not compatible with this authenticator
         """
         if not algorithm.startswith(self.java_name):
@@ -88,25 +148,38 @@ class JavaMac(JavaAuthenticator):
         # type: (bytes, bytes) -> bytes
         """Sign ``data`` using loaded ``key``.
 
-        :param bytes key: Raw HMAC key
+        :param bytes key: Loaded key
         :param bytes data: Data to sign
         :returns: Calculated signature
         :rtype: bytes
+        :raises SigningError: if unable to sign ``data`` with ``key``
         """
-        signer = self._build_hmac_signer(key)
-        signer.update(data)
-        return signer.finalize()
+        try:
+            signer = self._build_hmac_signer(key)
+            signer.update(data)
+            return signer.finalize()
+        except Exception:
+            message = 'Unable to sign data'
+            _LOGGER.exception(message)
+            raise SigningError(message)
 
     def verify(self, key, signature, data):
-        """
+        # type: (bytes, bytes, bytes) -> None
+        """Verify ``signature`` over ``data`` using ``key``.
 
-        :param bytes key: Raw HMAC key
+        :param bytes key: Loaded key
         :param bytes signature: Signature to verify
         :param bytes data: Data over which to verify signature
+        :raises SignatureVerificationError: if unable to verify ``signature``
         """
-        verifier = self._build_hmac_signer(key)
-        verifier.update(data)
-        verifier.verify(signature)
+        try:
+            verifier = self._build_hmac_signer(key)
+            verifier.update(data)
+            verifier.verify(signature)
+        except Exception:
+            message = 'Unable to verify signature'
+            _LOGGER.exception(message)
+            raise SignatureVerificationError(message)
 
 
 @attr.s
@@ -116,6 +189,7 @@ class JavaSignature(JavaAuthenticator):
     https://docs.oracle.com/javase/8/docs/api/java/security/Signature.html
     https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#Signature
     """
+
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     algorithm_type = attr.ib()
     hash_type = attr.ib(validator=callable_validator)
@@ -123,8 +197,9 @@ class JavaSignature(JavaAuthenticator):
 
     def validate_algorithm(self, algorithm):
         # type: (Text) -> None
-        """Determine whether the requested algorithm name is compatible with this signature.
+        """Determine whether the requested algorithm name is compatible with this authenticator.
 
+        :param str algorithm: Algorithm name
         :raises InvalidAlgorithmError: if specified algorithm name is not compatible with this authenticator
         """
         if not algorithm.endswith(self.java_name):
@@ -136,35 +211,77 @@ class JavaSignature(JavaAuthenticator):
             )
 
     def load_key(self, key, key_type, key_encoding):
-        """"""
+        # (bytes, EncryptionKeyTypes, KeyEncodingType) -> Any
+        # TODO: narrow down the output type
+        """Load a key object from the provided raw key bytes.
+
+        :param bytes key: Raw key bytes to load
+        :param key_type: Type of key to load
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :param key_encoding: Encoding used to serialize ``key``
+        :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+        :returns: Loaded key
+        :rtype: TODO:
+        :raises ValueError: if ``key_type`` and ``key_encoding`` are not a valid pairing
+        """
         return load_rsa_key(key, key_type, key_encoding)
 
     def sign(self, key, data):
-        """"""
+        # type: (Any, bytes) -> bytes
+        # TODO: narrow down the key type
+        """Sign ``data`` using loaded ``key``.
+
+        :param key: Loaded key
+        :type key: TODO:
+        :param bytes data: Data to sign
+        :returns: Calculated signature
+        :rtype: bytes
+        :raises SigningError: if unable to sign ``data`` with ``key``
+        """
         if hasattr(key, 'public_bytes'):
             raise SigningError('"sign" is not supported by public keys')
-        # TODO: normalize to SigningError
-        return key.sign(
-            data,
-            self.padding_type(),
-            self.hash_type()
-        )
+        try:
+            return key.sign(
+                data,
+                self.padding_type(),
+                self.hash_type()
+            )
+        except Exception:
+            message = 'Unable to sign data'
+            _LOGGER.exception(message)
+            raise SigningError(message)
 
     def verify(self, key, signature, data):
-        """"""
+        # type: (Any, bytes, bytes) -> None
+        # TODO: narrow down the key type
+        """Verify ``signature`` over ``data`` using ``key``.
+
+        :param key: Loaded key
+        :type key: TODO:
+        :param bytes signature: Signature to verify
+        :param bytes data: Data over which to verify signature
+        :raises SignatureVerificationError: if unable to verify ``signature``
+        """
         if hasattr(key, 'private_bytes'):
             _key = key.public_key()
         else:
             _key = key
-        # TODO: normalize to SignatureVerificationError
-        _key.verify(
-            signature,
-            data,
-            self.padding_type(),
-            self.hash_type()
-        )
+        try:
+            _key.verify(
+                signature,
+                data,
+                self.padding_type(),
+                self.hash_type()
+            )
+        except Exception:
+            message = 'Unable to verify signature'
+            _LOGGER.exception(message)
+            raise SignatureVerificationError(message)
 
 
+# Additional possible JCE names that we might support in the future if needed
+# HmacSHA1
+# SHA(1|224|256|384|512)with(|EC)DSA
 JAVA_AUTHENTICATOR = {
     'HmacSHA224': JavaMac('HmacSHA224', hmac.HMAC, hashes.SHA224),
     'HmacSHA256': JavaMac('HmacSHA256', hmac.HMAC, hashes.SHA256),
@@ -174,9 +291,4 @@ JAVA_AUTHENTICATOR = {
     'SHA256withRSA': JavaSignature('SHA256withRSA', rsa, hashes.SHA256, padding.PKCS1v15),
     'SHA384withRSA': JavaSignature('SHA384withRSA', rsa, hashes.SHA384, padding.PKCS1v15),
     'SHA512withRSA': JavaSignature('SHA512withRSA', rsa, hashes.SHA512, padding.PKCS1v15)
-    # TODO: should we support these?
-    # HmacMD5
-    # HmacSHA1
-    # (NONE|SHA(1|224|256|384|512))with(|EC)DSA
-    # (NONE|SHA1)withRSA
 }

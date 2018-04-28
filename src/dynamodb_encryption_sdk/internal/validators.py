@@ -10,15 +10,16 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Custom attrs validators."""
+"""Custom validators for ``attrs``."""
 
 __all__ = ('dictionary_validator', 'iterable_validator')
 
 
 def dictionary_validator(key_type, value_type):
-    """attrs validator that performs deep type checking of dictionaries."""
+    """Validator for ``attrs`` that performs deep type checking of dictionaries."""
 
     def _validate_dictionary(instance, attribute, value):
+        # pylint: disable=unused-argument
         """Validate that a dictionary is structured as expected.
 
         :raises TypeError: if ``value`` is not a dictionary
@@ -45,9 +46,10 @@ def dictionary_validator(key_type, value_type):
 
 
 def iterable_validator(iterable_type, member_type):
-    """attrs validator that performs deep type checking of iterables."""
+    """Validator for ``attrs`` that performs deep type checking of iterables."""
 
     def _validate_tuple(instance, attribute, value):
+        # pylint: disable=unused-argument
         """Validate that a dictionary is structured as expected.
 
         :raises TypeError: if ``value`` is not of ``iterable_type`` type
@@ -70,6 +72,7 @@ def iterable_validator(iterable_type, member_type):
 
 
 def callable_validator(instance, attribute, value):
+    # pylint: disable=unused-argument
     """Validate that an attribute value is callable.
 
     :raises TypeError: if ``value`` is not callable

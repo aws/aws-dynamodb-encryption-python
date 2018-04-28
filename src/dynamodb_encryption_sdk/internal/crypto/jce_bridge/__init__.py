@@ -10,4 +10,6 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""Components to provide cryptographic primitives based on JCE Standard Names.
+https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html
+"""

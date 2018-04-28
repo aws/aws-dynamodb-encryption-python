@@ -10,19 +10,14 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-""""""
+"""DynamoDB Encryption Client."""
+from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
 from dynamodb_encryption_sdk.encrypted.item import (
     decrypt_dynamodb_item, decrypt_python_item,
     encrypt_dynamodb_item, encrypt_python_item
 )
-
-# encrypt_item
-# encrypt_raw_item
-# decrypt_item
-# decrypt_raw_item
-# EncryptedTable
-# EncryptedResource
-# EncryptedClient
+from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
+from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 
 # TableConfiguration
 # MaterialDescription
@@ -30,5 +25,6 @@ from dynamodb_encryption_sdk.encrypted.item import (
 
 __all__ = (
     'decrypt_dynamodb_item', 'decrypt_python_item',
-    'encrypt_dynamodb_item', 'encrypt_python_item'
+    'encrypt_dynamodb_item', 'encrypt_python_item',
+    'EncryptedClient', 'EncryptedResource', 'EncryptedTable'
 )
