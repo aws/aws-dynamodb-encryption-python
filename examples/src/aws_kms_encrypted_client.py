@@ -51,20 +51,20 @@ def encrypt_item(table_name, aws_cmk_id):
         }
     )
     # Use these objects to create an encrypted client.
-    encrypted_table = EncryptedClient(
+    encrypted_client = EncryptedClient(
         client=client,
         materials_provider=aws_kms_cmp,
         attribute_actions=actions
     )
 
     # Put the item to the table, using the encrypted client to transparently encrypt it.
-    encrypted_table.put_item(TableName=table_name, Item=plaintext_item)
+    encrypted_client.put_item(TableName=table_name, Item=plaintext_item)
 
     # Get the encrypted item using the standard client.
     encrypted_item = client.get_item(TableName=table_name, Key=index_key)['Item']
 
     # Get the item using the encrypted client, transparently decyrpting it.
-    decrypted_item = encrypted_table.get_item(TableName=table_name, Key=index_key)['Item']
+    decrypted_item = encrypted_client.get_item(TableName=table_name, Key=index_key)['Item']
 
     # Verify that all of the attributes are different in the encrypted item
     for name in encrypted_attributes:
@@ -76,7 +76,7 @@ def encrypt_item(table_name, aws_cmk_id):
         assert decrypted_item[name] == encrypted_item[name] == plaintext_item[name]
 
     # Clean up the item
-    encrypted_table.delete_item(TableName=table_name, Key=index_key)
+    encrypted_client.delete_item(TableName=table_name, Key=index_key)
 
 
 def encrypt_batch_items(table_name, aws_cmk_id):
