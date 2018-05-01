@@ -25,7 +25,7 @@ import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
-from dynamodb_encryption_sdk.identifiers import ItemAction
+from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
@@ -252,49 +252,49 @@ def set_parametrized_cmp(metafunc):
 
 _ACTIONS = {
     'hypothesis_actions': (
-        pytest.param(AttributeActions(default_action=ItemAction.ENCRYPT_AND_SIGN), id='encrypt all'),
-        pytest.param(AttributeActions(default_action=ItemAction.SIGN_ONLY), id='sign only all'),
-        pytest.param(AttributeActions(default_action=ItemAction.DO_NOTHING), id='do nothing'),
+        pytest.param(AttributeActions(default_action=CryptoAction.ENCRYPT_AND_SIGN), id='encrypt all'),
+        pytest.param(AttributeActions(default_action=CryptoAction.SIGN_ONLY), id='sign only all'),
+        pytest.param(AttributeActions(default_action=CryptoAction.DO_NOTHING), id='do nothing'),
     )
 }
 _ACTIONS['parametrized_actions'] = _ACTIONS['hypothesis_actions'] + (
     pytest.param(
         AttributeActions(
-            default_action=ItemAction.ENCRYPT_AND_SIGN,
+            default_action=CryptoAction.ENCRYPT_AND_SIGN,
             attribute_actions={
-                'number_set': ItemAction.SIGN_ONLY,
-                'string_set': ItemAction.SIGN_ONLY,
-                'binary_set': ItemAction.SIGN_ONLY
+                'number_set': CryptoAction.SIGN_ONLY,
+                'string_set': CryptoAction.SIGN_ONLY,
+                'binary_set': CryptoAction.SIGN_ONLY
             }
         ),
         id='sign sets, encrypt everything else'
     ),
     pytest.param(
         AttributeActions(
-            default_action=ItemAction.ENCRYPT_AND_SIGN,
+            default_action=CryptoAction.ENCRYPT_AND_SIGN,
             attribute_actions={
-                'number_set': ItemAction.DO_NOTHING,
-                'string_set': ItemAction.DO_NOTHING,
-                'binary_set': ItemAction.DO_NOTHING
+                'number_set': CryptoAction.DO_NOTHING,
+                'string_set': CryptoAction.DO_NOTHING,
+                'binary_set': CryptoAction.DO_NOTHING
             }
         ),
         id='ignore sets, encrypt everything else'
     ),
     pytest.param(
         AttributeActions(
-            default_action=ItemAction.DO_NOTHING,
-            attribute_actions={'map': ItemAction.ENCRYPT_AND_SIGN}
+            default_action=CryptoAction.DO_NOTHING,
+            attribute_actions={'map': CryptoAction.ENCRYPT_AND_SIGN}
         ),
         id='encrypt map, ignore everything else'
     ),
     pytest.param(
         AttributeActions(
-            default_action=ItemAction.SIGN_ONLY,
+            default_action=CryptoAction.SIGN_ONLY,
             attribute_actions={
-                'number_set': ItemAction.DO_NOTHING,
-                'string_set': ItemAction.DO_NOTHING,
-                'binary_set': ItemAction.DO_NOTHING,
-                'map': ItemAction.ENCRYPT_AND_SIGN
+                'number_set': CryptoAction.DO_NOTHING,
+                'string_set': CryptoAction.DO_NOTHING,
+                'binary_set': CryptoAction.DO_NOTHING,
+                'map': CryptoAction.ENCRYPT_AND_SIGN
             }
         ),
         id='ignore sets, encrypt map, sign everything else'
@@ -353,7 +353,7 @@ def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
             continue
 
         # If the attribute should have been encrypted, verify that it is Binary and different from the original
-        if attribute_actions.action(name) is ItemAction.ENCRYPT_AND_SIGN:
+        if attribute_actions.action(name) is CryptoAction.ENCRYPT_AND_SIGN:
             assert isinstance(value, Binary)
             assert value != plaintext_item[name]
         # Otherwise, verify that it is the same as the original

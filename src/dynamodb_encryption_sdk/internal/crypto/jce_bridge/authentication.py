@@ -27,7 +27,7 @@ except ImportError:  # pragma: no cover
     pass
 
 from dynamodb_encryption_sdk.exceptions import InvalidAlgorithmError, SignatureVerificationError, SigningError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.validators import callable_validator
 from .primitives import load_rsa_key
 
@@ -41,13 +41,13 @@ class JavaAuthenticator(object):
 
     @abc.abstractmethod
     def load_key(self, key, key_type, key_encoding):
-        # (bytes, EncryptionKeyTypes, KeyEncodingType) -> Any
+        # (bytes, EncryptionKeyType, KeyEncodingType) -> Any
         # TODO: narrow down the output type
         """Load a key from bytes.
 
         :param bytes key: Raw key bytes to load
         :param key_type: Type of key to load
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param key_encoding: Encoding used to serialize ``key``
         :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
         :returns: Loaded key
@@ -112,19 +112,19 @@ class JavaMac(JavaAuthenticator):
         )
 
     def load_key(self, key, key_type, key_encoding):
-        # (bytes, EncryptionKeyTypes, KeyEncodingType) -> bytes
+        # (bytes, EncryptionKeyType, KeyEncodingType) -> bytes
         """Load a raw key from bytes.
 
         :param bytes key: Raw key bytes to load
         :param key_type: Type of key to load
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param key_encoding: Encoding used to serialize ``key``
         :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
         :returns: Loaded key
         :rtype: bytes
         :raises ValueError: if ``key_type`` is not symmetric or ``key_encoding`` is not raw
         """
-        if not (key_type is EncryptionKeyTypes.SYMMETRIC and key_encoding is KeyEncodingType.RAW):
+        if not (key_type is EncryptionKeyType.SYMMETRIC and key_encoding is KeyEncodingType.RAW):
             raise ValueError('Key type must be symmetric and encoding must be raw.')
 
         return key
@@ -211,13 +211,13 @@ class JavaSignature(JavaAuthenticator):
             )
 
     def load_key(self, key, key_type, key_encoding):
-        # (bytes, EncryptionKeyTypes, KeyEncodingType) -> Any
+        # (bytes, EncryptionKeyType, KeyEncodingType) -> Any
         # TODO: narrow down the output type
         """Load a key object from the provided raw key bytes.
 
         :param bytes key: Raw key bytes to load
         :param key_type: Type of key to load
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param key_encoding: Encoding used to serialize ``key``
         :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
         :returns: Loaded key

@@ -18,7 +18,7 @@ except ImportError:  # pragma: no cover
     pass
 
 from dynamodb_encryption_sdk.exceptions import DecryptionError, EncryptionError
-from dynamodb_encryption_sdk.identifiers import ItemAction
+from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.crypto.authentication import sign_item, verify_item_signature
 from dynamodb_encryption_sdk.internal.crypto.encryption import decrypt_attribute, encrypt_attribute
 from dynamodb_encryption_sdk.internal.formatting.material_description import (
@@ -72,7 +72,7 @@ def encrypt_dynamodb_item(item, crypto_config):
 
     encrypted_item = {}
     for name, attribute in item.items():
-        if crypto_config.attribute_actions.action(name) is not ItemAction.ENCRYPT_AND_SIGN:
+        if crypto_config.attribute_actions.action(name) is not CryptoAction.ENCRYPT_AND_SIGN:
             encrypted_item[name] = attribute.copy()
             continue
 
@@ -172,7 +172,7 @@ def decrypt_dynamodb_item(item, crypto_config):
     # Once the signature has been verified, actually decrypt the item attributes.
     decrypted_item = {}
     for name, attribute in item.items():
-        if inner_crypto_config.attribute_actions.action(name) is not ItemAction.ENCRYPT_AND_SIGN:
+        if inner_crypto_config.attribute_actions.action(name) is not CryptoAction.ENCRYPT_AND_SIGN:
             decrypted_item[name] = attribute.copy()
             continue
 

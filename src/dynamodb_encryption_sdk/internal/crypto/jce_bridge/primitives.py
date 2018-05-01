@@ -25,7 +25,7 @@ import six
 from dynamodb_encryption_sdk.exceptions import (
     DecryptionError, EncryptionError, InvalidAlgorithmError, UnwrappingError, WrappingError
 )
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.validators import callable_validator
 
 __all__ = (
@@ -229,12 +229,12 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
         :param bytes key: Key bytes
         :param key_type: Type of key
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param key_encoding: Encoding used to serialize key
         :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
         :returns: Loaded key
         """
-        if key_type is not EncryptionKeyTypes.SYMMETRIC:
+        if key_type is not EncryptionKeyType.SYMMETRIC:
             raise ValueError('Invalid key type "{key_type}" for cipher "{cipher}"'.format(
                 key_type=key_type,
                 cipher=self.java_name
@@ -361,11 +361,11 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
 
 _RSA_KEY_LOADING = {
-    EncryptionKeyTypes.PRIVATE: {
+    EncryptionKeyType.PRIVATE: {
         KeyEncodingType.DER: serialization.load_der_private_key,
         KeyEncodingType.PEM: serialization.load_pem_private_key
     },
-    EncryptionKeyTypes.PUBLIC: {
+    EncryptionKeyType.PUBLIC: {
         KeyEncodingType.DER: serialization.load_der_public_key,
         KeyEncodingType.PEM: serialization.load_pem_public_key
     }
@@ -373,13 +373,13 @@ _RSA_KEY_LOADING = {
 
 
 def load_rsa_key(key, key_type, key_encoding):
-    # (bytes, EncryptionKeyTypes, KeyEncodingType) -> Any
+    # (bytes, EncryptionKeyType, KeyEncodingType) -> Any
     # TODO: narrow down the output type
     """Load an RSA key object from the provided raw key bytes.
 
     :param bytes key: Raw key bytes to load
     :param key_type: Type of key to load
-    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
     :param key_encoding: Encoding used to serialize ``key``
     :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
     :returns: Loaded key
@@ -392,7 +392,7 @@ def load_rsa_key(key, key_type, key_encoding):
         raise ValueError('Invalid key type and encoding: {} and {}'.format(key_type, key_encoding))
 
     kwargs = dict(data=key, backend=default_backend())
-    if key_type is EncryptionKeyTypes.PRIVATE:
+    if key_type is EncryptionKeyType.PRIVATE:
         kwargs['password'] = None
 
     return loader(**kwargs)
@@ -414,12 +414,12 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
         :param bytes key: Key bytes
         :param key_type: Type of key
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param key_encoding: Encoding used to serialize key
         :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
         :returns: Loaded key
         """
-        if key_type not in (EncryptionKeyTypes.PRIVATE, EncryptionKeyTypes.PUBLIC):
+        if key_type not in (EncryptionKeyType.PRIVATE, EncryptionKeyType.PUBLIC):
             raise ValueError('Invalid key type "{key_type}" for cipher "{cipher}"'.format(
                 key_type=key_type,
                 cipher=self.java_name

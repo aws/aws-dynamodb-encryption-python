@@ -21,7 +21,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 import six
 
 from dynamodb_encryption_sdk.exceptions import JceTransformationError, UnwrappingError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType, LOGGER_NAME
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
 from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
 from . import DelegatedKey
 
@@ -34,9 +34,9 @@ def _generate_symmetric_key(key_length):
 
     :param int key_length: Required key length in bytes
     :returns: raw key, symmetric key identifier, and RAW encoding identifier
-    :rtype: tuple of bytes, EncryptionKeyTypes, and KeyEncodingType
+    :rtype: tuple of bytes, EncryptionKeyType, and KeyEncodingType
     """
-    return os.urandom(key_length), EncryptionKeyTypes.SYMMETRIC, KeyEncodingType.RAW
+    return os.urandom(key_length), EncryptionKeyType.SYMMETRIC, KeyEncodingType.RAW
 
 
 def _generate_rsa_key(key_length):
@@ -44,7 +44,7 @@ def _generate_rsa_key(key_length):
 
     :param int key_length: Required key length in bytes
     :returns: DER-encoded private key, private key identifier, and DER encoding identifier
-    :rtype: tuple of bytes, EncryptionKeyTypes, and KeyEncodingType
+    :rtype: tuple of bytes, EncryptionKeyType, and KeyEncodingType
     """
     private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -56,7 +56,7 @@ def _generate_rsa_key(key_length):
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
     )
-    return key_bytes, EncryptionKeyTypes.PRIVATE, KeyEncodingType.DER
+    return key_bytes, EncryptionKeyType.PRIVATE, KeyEncodingType.DER
 
 
 _ALGORITHM_GENERATE_MAP = {
@@ -73,14 +73,14 @@ class JceNameLocalDelegatedKey(DelegatedKey):
     :param bytes key: Raw key bytes
     :param str algorithm: JCE Standard Algorithm Name
     :param key_type: Identifies what type of key is being provided
-    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
     :param key_encoding: Identifies how the provided key is encoded
     :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingTypes
     """
 
     key = attr.ib(validator=attr.validators.instance_of(bytes), repr=False)
     _algorithm = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    _key_type = attr.ib(validator=attr.validators.instance_of(EncryptionKeyTypes))
+    _key_type = attr.ib(validator=attr.validators.instance_of(EncryptionKeyType))
     _key_encoding = attr.ib(validator=attr.validators.instance_of(KeyEncodingType))
 
     @property
@@ -232,7 +232,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         )
 
     def _unwrap(self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None):
-        # type: (Text, bytes, Text, EncryptionKeyTypes, Dict[Text, Text]) -> DelegatedKey
+        # type: (Text, bytes, Text, EncryptionKeyType, Dict[Text, Text]) -> DelegatedKey
         # pylint: disable=unused-argument
         """Wrap content key.
 
@@ -240,12 +240,12 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         :param bytes content_key: Raw content key to wrap
         :param str wrapped_key_algorithm: Text description of algorithm for unwrapped key to use
         :param wrapped_key_type: Type of key to treat key as once unwrapped
-        :type wrapped_key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type wrapped_key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param dict additional_associated_data: Not used by ``JceNameLocalDelegatedKey``
         :returns: Delegated key using unwrapped key
         :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
         """
-        if wrapped_key_type is not EncryptionKeyTypes.SYMMETRIC:
+        if wrapped_key_type is not EncryptionKeyType.SYMMETRIC:
             raise UnwrappingError('Unsupported wrapped key type: "{}"'.format(wrapped_key_type))
 
         unwrapper = encryption.JavaCipher.from_transformation(algorithm)

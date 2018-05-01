@@ -20,7 +20,7 @@ except ImportError:  # pragma: no cover
 
 import six
 
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType  # noqa pylint: disable=unused-import
 
 __all__ = ('DelegatedKey',)
 
@@ -109,7 +109,7 @@ class DelegatedKey(object):
         _raise_not_implemented('wrap')
 
     def unwrap(self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None):
-        # type: (Text, bytes, Text, EncryptionKeyTypes, Dict[Text, Text]) -> DelegatedKey
+        # type: (Text, bytes, Text, EncryptionKeyType, Dict[Text, Text]) -> DelegatedKey
         # pylint: disable=unused-argument,no-self-use
         """Wrap content key.
 
@@ -117,7 +117,7 @@ class DelegatedKey(object):
         :param bytes content_key: Raw content key to wrap
         :param str wrapped_key_algorithm: Text description of algorithm for unwrapped key to use
         :param wrapped_key_type: Type of key to treat key as once unwrapped
-        :type wrapped_key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyTypes
+        :type wrapped_key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
         :param dict additional_associated_data: Not used by all delegated keys, but if it
             is, then if it is provided on wrap it must be required on unwrap.
         :returns: Delegated key using unwrapped key

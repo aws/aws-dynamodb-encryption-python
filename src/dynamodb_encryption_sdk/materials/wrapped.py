@@ -22,7 +22,7 @@ import six
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import CryptographicMaterials
@@ -119,7 +119,7 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
             algorithm=wrapping_algorithm,
             wrapped_key=wrapped_key,
             wrapped_key_algorithm=content_key_algorithm,
-            wrapped_key_type=EncryptionKeyTypes.SYMMETRIC,
+            wrapped_key_type=EncryptionKeyType.SYMMETRIC,
             additional_associated_data=None
         )
 

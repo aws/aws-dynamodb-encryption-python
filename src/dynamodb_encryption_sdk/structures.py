@@ -19,7 +19,7 @@ import six
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
-from .identifiers import ItemAction
+from .identifiers import CryptoAction
 
 __all__ = ('EncryptionContext', 'AttributeActions', 'TableIndex', 'TableInfo')
 
@@ -81,16 +81,16 @@ class AttributeActions(object):
     """Configuration resource used to determine what action should be taken for a specific attribute.
 
     :param default_action: Action to take if no specific action is defined in ``attribute_actions``
-    :type default_action: dynamodb_encryption_sdk.identifiers.ItemAction
+    :type default_action: dynamodb_encryption_sdk.identifiers.CryptoAction
     :param dict attribute_actions: Dictionary mapping attribute names to specific actions
     """
 
     default_action = attr.ib(
-        validator=attr.validators.instance_of(ItemAction),
-        default=ItemAction.ENCRYPT_AND_SIGN
+        validator=attr.validators.instance_of(CryptoAction),
+        default=CryptoAction.ENCRYPT_AND_SIGN
     )
     attribute_actions = attr.ib(
-        validator=dictionary_validator(six.string_types, ItemAction),
+        validator=dictionary_validator(six.string_types, CryptoAction),
         default=attr.Factory(dict)
     )
 
@@ -104,12 +104,12 @@ class AttributeActions(object):
         # Enums are not hashable, but their names are unique
         _unique_actions = set([self.default_action.name])
         _unique_actions.update(set([action.name for action in self.attribute_actions.values()]))
-        no_actions = _unique_actions == set([ItemAction.DO_NOTHING.name])
+        no_actions = _unique_actions == set([CryptoAction.DO_NOTHING.name])
         self.take_no_actions = no_actions  # attrs confuses pylint: disable=attribute-defined-outside-init
 
     def action(self, attribute_name):
-        # (text) -> ItemAction
-        """Determines the correct ItemAction to apply to a supplied attribute based on this config."""
+        # (text) -> CryptoAction
+        """Determines the correct CryptoAction to apply to a supplied attribute based on this config."""
         return self.attribute_actions.get(attribute_name, self.default_action)
 
     def copy(self):
@@ -136,7 +136,7 @@ class AttributeActions(object):
             attributes
         """
         for key in keys:
-            index_action = min(self.action(key), ItemAction.SIGN_ONLY)
+            index_action = min(self.action(key), CryptoAction.SIGN_ONLY)
             try:
                 if self.attribute_actions[key] is not index_action:
                     raise InvalidArgumentError(

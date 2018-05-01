@@ -21,7 +21,7 @@ import pytest
 from six.moves.urllib.parse import urlparse  # moves confuse pylint: disable=wrong-import-order
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyTypes, KeyEncodingType
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType
 from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
@@ -125,9 +125,9 @@ def _load_keys(keys_file):
 
 
 _KEY_TYPE = {
-    'SYMMETRIC': EncryptionKeyTypes.SYMMETRIC,
-    'PUBLIC': EncryptionKeyTypes.PUBLIC,
-    'PRIVATE': EncryptionKeyTypes.PRIVATE
+    'SYMMETRIC': EncryptionKeyType.SYMMETRIC,
+    'PUBLIC': EncryptionKeyType.PUBLIC,
+    'PRIVATE': EncryptionKeyType.PRIVATE
 }
 _KEY_ENCODING = {
     'RAW': KeyEncodingType.RAW,

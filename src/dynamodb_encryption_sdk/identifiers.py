@@ -13,13 +13,13 @@
 """Unique identifiers used by the DynamoDB Encryption Client."""
 from enum import Enum
 
-__all__ = ('LOGGER_NAME', 'ItemAction', 'EncryptionKeyTypes', 'KeyEncodingType')
+__all__ = ('LOGGER_NAME', 'CryptoAction', 'EncryptionKeyType', 'KeyEncodingType')
 __version__ = '0.0.0'
 
 LOGGER_NAME = 'dynamodb_encryption_sdk'
 
 
-class ItemAction(Enum):
+class CryptoAction(Enum):
     """Possible actions to take on an item attribute."""
 
     DO_NOTHING = 0
@@ -27,22 +27,22 @@ class ItemAction(Enum):
     ENCRYPT_AND_SIGN = 2
 
     def __gt__(self, other):
-        # type: (ItemAction) -> bool
-        """Define ItemAction equality."""
+        # type: (CryptoAction) -> bool
+        """Define CryptoAction equality."""
         return not self.__lt__(other) and not self.__eq__(other)
 
     def __lt__(self, other):
-        # type: (ItemAction) -> bool
-        """Define ItemAction equality."""
+        # type: (CryptoAction) -> bool
+        """Define CryptoAction equality."""
         return self.value < other.value
 
     def __eq__(self, other):
-        # type: (ItemAction) -> bool
-        """Define ItemAction equality."""
+        # type: (CryptoAction) -> bool
+        """Define CryptoAction equality."""
         return self.value == other.value
 
 
-class EncryptionKeyTypes(Enum):
+class EncryptionKeyType(Enum):
     """Supported types of encryption keys."""
 
     SYMMETRIC = 0

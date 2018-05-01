@@ -22,7 +22,7 @@ except ImportError:  # pragma: no cover
     pass
 
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
-from dynamodb_encryption_sdk.identifiers import ItemAction
+from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
@@ -50,11 +50,11 @@ class CryptoConfig(object):
         # type: () -> None
         """Make sure that primary index attributes are not being encrypted."""
         if self.encryption_context.partition_key_name is not None:
-            if self.attribute_actions.action(self.encryption_context.partition_key_name) is ItemAction.ENCRYPT_AND_SIGN:
+            if self.attribute_actions.action(self.encryption_context.partition_key_name) is CryptoAction.ENCRYPT_AND_SIGN:
                 raise InvalidArgumentError('Cannot encrypt partition key')
 
         if self.encryption_context.sort_key_name is not None:
-            if self.attribute_actions.action(self.encryption_context.sort_key_name) is ItemAction.ENCRYPT_AND_SIGN:
+            if self.attribute_actions.action(self.encryption_context.sort_key_name) is CryptoAction.ENCRYPT_AND_SIGN:
                 raise InvalidArgumentError('Cannot encrypt sort key')
 
     def decryption_materials(self):
