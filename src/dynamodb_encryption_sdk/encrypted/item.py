@@ -82,16 +82,15 @@ def encrypt_dynamodb_item(item, crypto_config):
 
         encrypted_item = {}
         for name, attribute in item.items():
-            if crypto_config.attribute_actions.action(name) is not CryptoAction.ENCRYPT_AND_SIGN:
+            if crypto_config.attribute_actions.action(name) is CryptoAction.ENCRYPT_AND_SIGN:
+                encrypted_item[name] = encrypt_attribute(
+                    attribute_name=name,
+                    attribute=attribute,
+                    encryption_key=encryption_materials.encryption_key,
+                    algorithm=algorithm_descriptor
+                )
+            else:
                 encrypted_item[name] = attribute.copy()
-                continue
-
-            encrypted_item[name] = encrypt_attribute(
-                attribute_name=name,
-                attribute=attribute,
-                encryption_key=encryption_materials.encryption_key,
-                algorithm=algorithm_descriptor
-            )
 
     signature_attribute = sign_item(encrypted_item, encryption_materials.signing_key, crypto_config)
     encrypted_item[ReservedAttributes.SIGNATURE.value] = signature_attribute
@@ -192,16 +191,16 @@ def decrypt_dynamodb_item(item, crypto_config):
     # Once the signature has been verified, actually decrypt the item attributes.
     decrypted_item = {}
     for name, attribute in item.items():
-        if inner_crypto_config.attribute_actions.action(name) is not CryptoAction.ENCRYPT_AND_SIGN:
+        if inner_crypto_config.attribute_actions.action(name) is CryptoAction.ENCRYPT_AND_SIGN:
+            decrypted_item[name] = decrypt_attribute(
+                attribute_name=name,
+                attribute=attribute,
+                decryption_key=decryption_key,
+                algorithm=algorithm_descriptor
+            )
+        else:
             decrypted_item[name] = attribute.copy()
-            continue
 
-        decrypted_item[name] = decrypt_attribute(
-            attribute_name=name,
-            attribute=attribute,
-            decryption_key=decryption_key,
-            algorithm=algorithm_descriptor
-        )
     return decrypted_item
 
 
