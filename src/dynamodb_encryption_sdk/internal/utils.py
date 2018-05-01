@@ -29,7 +29,8 @@ __all__ = (
     'sorted_key_map', 'TableInfoCache',
     'crypto_config_from_kwargs', 'crypto_config_from_table_info', 'crypto_config_from_cache',
     'decrypt_get_item', 'decrypt_multi_get', 'decrypt_batch_get_item',
-    'encrypt_put_item', 'encrypt_batch_write_item'
+    'encrypt_put_item', 'encrypt_batch_write_item',
+    'validate_get_arguments'
 )
 
 

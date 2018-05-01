@@ -14,6 +14,7 @@
 from functools import partial
 
 import attr
+from boto3.dynamodb.table import BatchWriter
 from boto3.resources.base import ServiceResource
 
 from dynamodb_encryption_sdk.internal.utils import (
@@ -22,6 +23,7 @@ from dynamodb_encryption_sdk.internal.utils import (
 )
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.structures import AttributeActions, TableInfo
+from .client import EncryptedClient
 from .item import decrypt_python_item, encrypt_python_item
 
 __all__ = ('EncryptedTable',)
@@ -143,3 +145,25 @@ class EncryptedTable(object):
     def update_item(self, **kwargs):
         """Update item is not yet supported."""
         raise NotImplementedError('"update_item" is not yet implemented')
+
+    def batch_writer(self, overwrite_by_pkeys=None):
+        """Create a batch writer object.
+
+        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.batch_writer
+
+        :type overwrite_by_pkeys: list(string)
+        :param overwrite_by_pkeys: De-duplicate request items in buffer if match new request
+            item on specified primary keys. i.e ``["partition_key1", "sort_key2", "sort_key3"]``
+        """
+        encrypted_client = EncryptedClient(
+            client=self._table.meta.client,
+            materials_provider=self._materials_provider,
+            attribute_actions=self._attribute_actions,
+            auto_refresh_table_indexes=self._auto_refresh_table_indexes,
+            expect_standard_dictionaries=True
+        )
+        return BatchWriter(
+            table_name=self._table.name,
+            client=encrypted_client,
+            overwrite_by_pkeys=overwrite_by_pkeys
+        )

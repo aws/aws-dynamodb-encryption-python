@@ -15,7 +15,7 @@ import hypothesis
 import pytest
 
 from ..functional_test_utils import (
-    client_cycle_batch_items_check, client_cycle_single_item_check,
+    client_cycle_batch_items_check, client_cycle_batch_items_check_paginators, client_cycle_single_item_check,
     set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
     TEST_TABLE_NAME
 )
@@ -51,6 +51,16 @@ def _client_cycle_batch_items_check(materials_provider, initial_actions, initial
     )
 
 
+def _client_cycle_batch_items_check_paginators(materials_provider, initial_actions, initial_item):
+    return client_cycle_batch_items_check_paginators(
+        materials_provider,
+        initial_actions,
+        initial_item,
+        TEST_TABLE_NAME,
+        'us-west-2'
+    )
+
+
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     _client_cycle_single_item_check(some_cmps, parametrized_actions, parametrized_item)
@@ -59,6 +69,11 @@ def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, pa
 def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     _client_cycle_batch_items_check(some_cmps, parametrized_actions, parametrized_item)
+
+
+def test_ephemeral_batch_item_cycle_paginators(example_table, some_cmps, parametrized_actions, parametrized_item):
+    """Test a small number of curated CMPs against a small number of curated items using paginators."""
+    _client_cycle_batch_items_check_paginators(some_cmps, parametrized_actions, parametrized_item)
 
 
 @pytest.mark.slow
