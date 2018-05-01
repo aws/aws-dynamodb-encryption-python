@@ -60,28 +60,37 @@ def encrypt_dynamodb_item(item, crypto_config):
     crypto_config.materials_provider.refresh()
     encryption_materials = crypto_config.encryption_materials()
 
-    # Add the attribute encryption mode to the inner material description
-    # TODO: This is awkward...see if we can break this out any
-    encryption_mode = MaterialDescriptionValues.CBC_PKCS5_ATTRIBUTE_ENCRYPTION.value
     inner_material_description = encryption_materials.material_description.copy()
-    inner_material_description[
-        MaterialDescriptionKeys.ATTRIBUTE_ENCRYPTION_MODE.value
-    ] = encryption_mode
+    try:
+        encryption_materials.encryption_key
+    except AttributeError:
+        if crypto_config.attribute_actions.contains_action(CryptoAction.ENCRYPT_AND_SIGN):
+            raise EncryptionError(
+                'Attribute actions ask for some attributes to be encrypted but no encryption key is available'
+            )
 
-    algorithm_descriptor = encryption_materials.encryption_key.algorithm + encryption_mode
+        encrypted_item = item.copy()
+    else:
+        # Add the attribute encryption mode to the inner material description
+        # TODO: This is awkward...see if we can break this out any
+        encryption_mode = MaterialDescriptionValues.CBC_PKCS5_ATTRIBUTE_ENCRYPTION.value
+        inner_material_description[
+            MaterialDescriptionKeys.ATTRIBUTE_ENCRYPTION_MODE.value
+        ] = encryption_mode
 
-    encrypted_item = {}
-    for name, attribute in item.items():
-        if crypto_config.attribute_actions.action(name) is not CryptoAction.ENCRYPT_AND_SIGN:
-            encrypted_item[name] = attribute.copy()
-            continue
+        algorithm_descriptor = encryption_materials.encryption_key.algorithm + encryption_mode
 
-        encrypted_item[name] = encrypt_attribute(
-            attribute_name=name,
-            attribute=attribute,
-            encryption_key=encryption_materials.encryption_key,
-            algorithm=algorithm_descriptor
-        )
+        encrypted_item = {}
+        for name, attribute in item.items():
+            if crypto_config.attribute_actions.action(name) is CryptoAction.ENCRYPT_AND_SIGN:
+                encrypted_item[name] = encrypt_attribute(
+                    attribute_name=name,
+                    attribute=attribute,
+                    encryption_key=encryption_materials.encryption_key,
+                    algorithm=algorithm_descriptor
+                )
+            else:
+                encrypted_item[name] = attribute.copy()
 
     signature_attribute = sign_item(encrypted_item, encryption_materials.signing_key, crypto_config)
     encrypted_item[ReservedAttributes.SIGNATURE.value] = signature_attribute
@@ -162,26 +171,36 @@ def decrypt_dynamodb_item(item, crypto_config):
 
     decryption_materials = inner_crypto_config.decryption_materials()
 
+    verify_item_signature(signature_attribute, item, decryption_materials.verification_key, inner_crypto_config)
+
+    try:
+        decryption_key = decryption_materials.decryption_key
+    except AttributeError:
+        if inner_crypto_config.attribute_actions.contains_action(CryptoAction.ENCRYPT_AND_SIGN):
+            raise DecryptionError(
+                'Attribute actions ask for some attributes to be decrypted but no decryption key is available'
+            )
+
+        return item.copy()
+
     decryption_mode = inner_crypto_config.encryption_context.material_description.get(
         MaterialDescriptionKeys.ATTRIBUTE_ENCRYPTION_MODE.value
     )
-    algorithm_descriptor = decryption_materials.decryption_key.algorithm + decryption_mode
-
-    verify_item_signature(signature_attribute, item, decryption_materials.verification_key, inner_crypto_config)
+    algorithm_descriptor = decryption_key.algorithm + decryption_mode
 
     # Once the signature has been verified, actually decrypt the item attributes.
     decrypted_item = {}
     for name, attribute in item.items():
-        if inner_crypto_config.attribute_actions.action(name) is not CryptoAction.ENCRYPT_AND_SIGN:
+        if inner_crypto_config.attribute_actions.action(name) is CryptoAction.ENCRYPT_AND_SIGN:
+            decrypted_item[name] = decrypt_attribute(
+                attribute_name=name,
+                attribute=attribute,
+                decryption_key=decryption_key,
+                algorithm=algorithm_descriptor
+            )
+        else:
             decrypted_item[name] = attribute.copy()
-            continue
 
-        decrypted_item[name] = decrypt_attribute(
-            attribute_name=name,
-            attribute=attribute,
-            decryption_key=decryption_materials.decryption_key,
-            algorithm=algorithm_descriptor
-        )
     return decrypted_item
 
 

@@ -51,7 +51,10 @@ class RawEncryptionMaterials(EncryptionMaterials):
     """
 
     _signing_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
-    _encryption_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
+    _encryption_key = attr.ib(
+        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
+        default=None
+    )
     _material_description = attr.ib(
         validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
@@ -60,7 +63,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
 
     def __attrs_post_init__(self):
         """Verify that the encryption key is allowed be used for raw materials."""
-        if not self._encryption_key.allowed_for_raw_materials:
+        if self._encryption_key is not None and not self._encryption_key.allowed_for_raw_materials:
             raise ValueError('Encryption key type "{}" does not allow use with RawEncryptionMaterials'.format(
                 type(self._encryption_key)
             ))
@@ -93,6 +96,9 @@ class RawEncryptionMaterials(EncryptionMaterials):
         :returns: Encryption key
         :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
         """
+        if self._encryption_key is None:
+            raise AttributeError('No encryption key available')
+
         return self._encryption_key
 
 
@@ -113,7 +119,10 @@ class RawDecryptionMaterials(DecryptionMaterials):
     """
 
     _verification_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
-    _decryption_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
+    _decryption_key = attr.ib(
+        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
+        default=None
+    )
     _material_description = attr.ib(
         validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
@@ -122,7 +131,7 @@ class RawDecryptionMaterials(DecryptionMaterials):
 
     def __attrs_post_init__(self):
         """Verify that the encryption key is allowed be used for raw materials."""
-        if not self._decryption_key.allowed_for_raw_materials:
+        if self._decryption_key is not None and not self._decryption_key.allowed_for_raw_materials:
             raise ValueError('Decryption key type "{}" does not allow use with RawDecryptionMaterials'.format(
                 type(self._decryption_key)
             ))
@@ -155,4 +164,7 @@ class RawDecryptionMaterials(DecryptionMaterials):
         :returns: Decryption key
         :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
         """
+        if self._decryption_key is None:
+            raise AttributeError('No decryption key available')
+
         return self._decryption_key
