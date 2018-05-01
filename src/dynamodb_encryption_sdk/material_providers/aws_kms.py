@@ -19,8 +19,7 @@ import logging
 
 import attr
 import boto3
-import botocore.client
-import botocore.session
+import botocore
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -34,7 +33,7 @@ except ImportError:  # pragma: no cover
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnknownRegionError, UnwrappingError, WrappingError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME, USER_AGENT_SUFFIX
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys, TEXT_ENCODING
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
@@ -163,6 +162,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     def __attrs_post_init__(self):
         # type: () -> None
         """Load the content and signing key info."""
+        self._user_agent_adding_config = botocore.config.Config(  # pylint: disable=attribute-defined-outside-init
+            user_agent_extra=USER_AGENT_SUFFIX
+        )
         self._content_key_info = KeyInfo.from_material_description(  # pylint: disable=attribute-defined-outside-init
             material_description=self._material_description,
             description_key=MaterialDescriptionKeys.CONTENT_ENCRYPTION_ALGORITHM.value,
@@ -187,7 +189,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             self._regional_clients[region_name] = boto3.session.Session(
                 region_name=region_name,
                 botocore_session=self._botocore_session
-            ).client('kms')
+            ).client('kms', config=self._user_agent_adding_config)
         return self._regional_clients[region_name]
 
     def _client(self, key_id):

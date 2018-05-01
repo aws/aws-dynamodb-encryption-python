@@ -269,7 +269,10 @@ def test_add_regional_client_unknown_region(default_kms_cmp, patch_boto3_session
         region_name=sentinel.region,
         botocore_session=default_kms_cmp._botocore_session
     )
-    patch_boto3_session.return_value.client.assert_called_once_with('kms')
+    patch_boto3_session.return_value.client.assert_called_once_with(
+        'kms',
+        config=default_kms_cmp._user_agent_adding_config
+    )
     assert default_kms_cmp._regional_clients[sentinel.region] is patch_boto3_session.return_value.client.return_value
     assert test is patch_boto3_session.return_value.client.return_value
 
