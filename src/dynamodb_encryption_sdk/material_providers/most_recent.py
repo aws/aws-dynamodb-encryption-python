@@ -197,16 +197,6 @@ class MostRecentProvider(CryptographicMaterialsProvider):
 
         return TtlActions.EXPIRED
 
-    def _set_most_recent_version(self, version):
-        # type: (int) -> None
-        """Set the most recent version and update the last updated time.
-
-        :param int version: Version to set
-        """
-        with self._lock:
-            self._version = version
-            self._last_updated = time.time()
-
     def _get_max_version(self):
         # type: () -> int
         """Ask the provider store for the most recent version of this material.
@@ -235,7 +225,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             raise AttributeError('No encryption materials available')
 
     def _get_most_recent_version(self, allow_local):
-        # type: (bool) -> Tuple[int, CryptographicMaterialsProvider]
+        # type: (bool) -> CryptographicMaterialsProvider
         """Get the most recent version of the provider.
 
         If allowing local and we cannot obtain the lock, just return the most recent local
@@ -244,7 +234,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
 
         :param bool allow_local: Should we allow returning the local version if we cannot obtain the lock?
         :returns: version and corresponding cryptographic materials provider
-        :rtype: tuple containing int and CryptographicMaterialsProvider
+        :rtype: CryptographicMaterialsProvider
         """
         acquired = self._lock.acquire(blocking=not allow_local)
 
@@ -257,13 +247,20 @@ class MostRecentProvider(CryptographicMaterialsProvider):
 
         try:
             version = self._get_max_version()
-            provider = self._get_provider(version)
+            try:
+                provider = self._cache.get(version)
+            except KeyError:
+                provider = self._get_provider(version)
             actual_version = self._provider_store.version_from_material_description(provider._material_description)
             # TODO: ^ should we promote material description from hidden?
+
+            self._version = version
+            self._last_updated = time.time()
+            self._cache.put(actual_version, provider)
         finally:
             self._lock.release()
 
-        return actual_version, provider
+        return provider
 
     def encryption_materials(self, encryption_context):
         # type: (EncryptionContext) -> CryptographicMaterials
@@ -288,10 +285,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             # Block until we can acquire the lock.
             allow_local = False
 
-        actual_version, provider = self._get_most_recent_version(allow_local)
-
-        self._cache.put(actual_version, provider)
-        self._set_most_recent_version(actual_version)
+        provider = self._get_most_recent_version(allow_local)
 
         return provider.encryption_materials(encryption_context)
 
