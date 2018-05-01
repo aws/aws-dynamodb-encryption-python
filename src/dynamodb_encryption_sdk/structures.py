@@ -46,7 +46,7 @@ class EncryptionContext(object):
     :param str table_name: Table name
     :param str partition_key_name: Name of primary index partition attribute
     :param str sort_key_name: Name of primary index sort attribute
-    :param dict attributes: Plaintext item attributes
+    :param dict attributes: Plaintext item attributes as a DynamoDB JSON dictionary
     :param dict material_description: Material description to use with this request
     """
 
