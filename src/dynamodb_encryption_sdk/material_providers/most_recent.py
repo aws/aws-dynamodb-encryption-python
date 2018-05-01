@@ -197,18 +197,6 @@ class MostRecentProvider(CryptographicMaterialsProvider):
 
         return TtlActions.EXPIRED
 
-    def _can_use_current(self):
-        # type: () -> bool
-        """Determine if we can use the current known max version without asking the provider store.
-
-        :returns: decision
-        :rtype: bool
-        """
-        if self._version is None:
-            return False
-
-        return time.time() - self._last_updated < self._version_ttl
-
     def _set_most_recent_version(self, version):
         # type: (int) -> None
         """Set the most recent version and update the last updated time.
