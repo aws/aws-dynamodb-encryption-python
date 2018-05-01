@@ -29,12 +29,12 @@ from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_
 from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
-from dynamodb_encryption_sdk.internal.formatting.transform import ddb_to_dict, dict_to_ddb
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
 from dynamodb_encryption_sdk.structures import AttributeActions
+from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
 
 _DELEGATED_KEY_CACHE = defaultdict(lambda: defaultdict(dict))
 TEST_TABLE_NAME = 'my_table'
