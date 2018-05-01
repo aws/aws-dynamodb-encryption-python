@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Delegated key that JCE StandardName algorithm values to determine behavior."""
+from __future__ import division
+
 import logging
 import os
 
@@ -32,17 +34,17 @@ _LOGGER = logging.getLogger(LOGGER_NAME)
 def _generate_symmetric_key(key_length):
     """Generate a new AES key.
 
-    :param int key_length: Required key length in bytes
+    :param int key_length: Required key length in bits
     :returns: raw key, symmetric key identifier, and RAW encoding identifier
     :rtype: tuple of bytes, EncryptionKeyType, and KeyEncodingType
     """
-    return os.urandom(key_length), EncryptionKeyType.SYMMETRIC, KeyEncodingType.RAW
+    return os.urandom(key_length // 8), EncryptionKeyType.SYMMETRIC, KeyEncodingType.RAW
 
 
 def _generate_rsa_key(key_length):
     """Generate a new RSA private key.
 
-    :param int key_length: Required key length in bytes
+    :param int key_length: Required key length in bits
     :returns: DER-encoded private key, private key identifier, and DER encoding identifier
     :rtype: tuple of bytes, EncryptionKeyType, and KeyEncodingType
     """
@@ -180,7 +182,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         """Generate an instance of this DelegatedKey using the specified algorithm and key length.
 
         :param str algorithm: Text description of algorithm to be used
-        :param int key_length: Size of key to generate
+        :param int key_length: Size in bits of key to generate
         :returns: Generated delegated key
         :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
         """
