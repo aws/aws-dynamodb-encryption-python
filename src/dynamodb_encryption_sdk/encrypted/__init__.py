@@ -50,7 +50,7 @@ class CryptoConfig(object):
         # type: () -> None
         """Make sure that primary index attributes are not being encrypted."""
         if self.encryption_context.partition_key_name is not None:
-            if self.attribute_actions.action(self.encryption_context.partition_key_name) is CryptoAction.ENCRYPT_AND_SIGN:
+            if self.attribute_actions.action(self.encryption_context.partition_key_name) is CryptoAction.ENCRYPT_AND_SIGN:  # noqa pylint: disable=line-too-long
                 raise InvalidArgumentError('Cannot encrypt partition key')
 
         if self.encryption_context.sort_key_name is not None:
