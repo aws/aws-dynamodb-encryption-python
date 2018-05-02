@@ -37,6 +37,16 @@ def encrypt_dynamodb_item(item, crypto_config):
     # type: (dynamodb_types.ITEM, CryptoConfig) -> dynamodb_types.ITEM
     """Encrypt a DynamoDB item.
 
+    >>> from dynamodb_encryption_sdk.encrypted.item import encrypt_dynamodb_item
+    >>> plaintext_item = {
+    ...     'some': {'S': 'data'},
+    ...     'more': {'N': '5'}
+    ... }
+    >>> encrypted_item = encrypt_dynamodb_item(
+    ...     item=plaintext_item,
+    ...     crypto_config=my_crypto_config
+    ... )
+
     .. note::
 
         This handles DynamoDB-formatted items and is for use with the boto3 DynamoDB client.
@@ -112,6 +122,16 @@ def encrypt_python_item(item, crypto_config):
     # type: (dynamodb_types.ITEM, CryptoConfig) -> dynamodb_types.ITEM
     """Encrypt a dictionary for DynamoDB.
 
+    >>> from dynamodb_encryption_sdk.encrypted.item import encrypt_python_item
+    >>> plaintext_item = {
+    ...     'some': 'data',
+    ...     'more': 5
+    ... }
+    >>> encrypted_item = encrypt_python_item(
+    ...     item=plaintext_item,
+    ...     crypto_config=my_crypto_config
+    ... )
+
     .. note::
 
         This handles human-friendly dictionaries and is for use with the boto3 DynamoDB service or table resource.
@@ -129,6 +149,16 @@ def encrypt_python_item(item, crypto_config):
 def decrypt_dynamodb_item(item, crypto_config):
     # type: (dynamodb_types.ITEM, CryptoConfig) -> dynamodb_types.ITEM
     """Decrypt a DynamoDB item.
+
+    >>> from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item
+    >>> encrypted_item = {
+    ...     'some': {'B': b'ENCRYPTED_DATA'},
+    ...     'more': {'B': b'ENCRYPTED_DATA'}
+    ... }
+    >>> decrypted_item = decrypt_python_item(
+    ...     item=encrypted_item,
+    ...     crypto_config=my_crypto_config
+    ... )
 
     .. note::
 
@@ -203,6 +233,16 @@ def decrypt_dynamodb_item(item, crypto_config):
 def decrypt_python_item(item, crypto_config):
     # type: (dynamodb_types.ITEM, CryptoConfig) -> dynamodb_types.ITEM
     """Decrypt a dictionary for DynamoDB.
+
+    >>> from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item
+    >>> encrypted_item = {
+    ...     'some': Binary(b'ENCRYPTED_DATA'),
+    ...     'more': Binary(b'ENCRYPTED_DATA')
+    ... }
+    >>> decrypted_item = decrypt_python_item(
+    ...     item=encrypted_item,
+    ...     crypto_config=my_crypto_config
+    ... )
 
     .. note::
 
