@@ -15,7 +15,6 @@ import base64
 from mock import MagicMock, sentinel
 
 import boto3
-from boto3.dynamodb.types import Binary
 import botocore
 from moto import mock_kms
 import pytest
