@@ -19,7 +19,6 @@ import os
 import sys
 
 import boto3
-from moto import mock_dynamodb2
 import pytest
 from six.moves.urllib.parse import urlparse  # moves confuse pylint: disable=wrong-import-order
 

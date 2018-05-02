@@ -136,8 +136,8 @@ class EncryptedClient(object):
 
         We do not currently support the ``update_item`` method.
 
-    :param table: Pre-configured boto3 DynamoDB client object
-    :type table: boto3.resources.base.BaseClient
+    :param client: Pre-configured boto3 DynamoDB client object
+    :type client: boto3.resources.base.BaseClient
     :param CryptographicMaterialsProvider materials_provider: Cryptographic materials provider
         to use
     :param AttributeActions attribute_actions: Table-level configuration of how to encrypt/sign

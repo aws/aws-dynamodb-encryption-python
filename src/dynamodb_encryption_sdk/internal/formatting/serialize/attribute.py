@@ -33,11 +33,26 @@ from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
 from dynamodb_encryption_sdk.internal.formatting.serialize import encode_length, encode_value
 from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
-from dynamodb_encryption_sdk.internal.utils import sorted_key_map
 
 __all__ = ('serialize_attribute',)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 _RESERVED = b'\x00'
+
+
+def _sorted_key_map(item, transform=to_bytes):
+    """Creates a list of the item's key/value pairs as tuples, sorted by the keys transformed by transform.
+
+    :param dict item: Source dictionary
+    :param function transform: Transform function
+    :returns: List of tuples containing transformed key, original value, and original key for each entry
+    :rtype: list(tuple)
+    """
+    sorted_items = []
+    for key, value in item.items():
+        _key = transform(key)
+        sorted_items.append((_key, value, key))
+    sorted_items = sorted(sorted_items, key=lambda x: x[0])
+    return sorted_items
 
 
 def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-locals
@@ -213,7 +228,7 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
         serialized_attribute.write(Tag.MAP.tag)
         serialized_attribute.write(encode_length(_attribute))
 
-        sorted_items = sorted_key_map(
+        sorted_items = _sorted_key_map(
             item=_attribute,
             transform=_transform_string_value
         )
