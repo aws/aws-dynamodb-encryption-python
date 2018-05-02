@@ -12,6 +12,7 @@ Modules
     dynamodb_encryption_sdk.exceptions
     dynamodb_encryption_sdk.identifiers
     dynamodb_encryption_sdk.structures
+    dynamodb_encryption_sdk.transform
     dynamodb_encryption_sdk.delegated_keys
     dynamodb_encryption_sdk.delegated_keys.jce
     dynamodb_encryption_sdk.encrypted
@@ -44,7 +45,6 @@ Modules
     dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives
     dynamodb_encryption_sdk.internal.formatting
     dynamodb_encryption_sdk.internal.formatting.material_description
-    dynamodb_encryption_sdk.internal.formatting.transform
     dynamodb_encryption_sdk.internal.formatting.deserialize
     dynamodb_encryption_sdk.internal.formatting.deserialize.attribute
     dynamodb_encryption_sdk.internal.formatting.serialize

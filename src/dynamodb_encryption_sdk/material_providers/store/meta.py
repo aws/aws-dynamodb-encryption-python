@@ -68,8 +68,7 @@ class MetaStore(ProviderStore):
 
     :param table: Pre-configured boto3 DynamoDB Table object
     :type table: boto3.resources.base.ServiceResource
-    :param materials_provider: Cryptographic materials provider to use
-    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+    :param CryptographicMaterialsProvider materials_provider: Cryptographic materials provider to use
     """
 
     _table = attr.ib(validator=attr.validators.instance_of(ServiceResource))
@@ -141,7 +140,7 @@ class MetaStore(ProviderStore):
         """Load materials from table.
 
         :returns: Materials loaded into delegated keys
-        :rtype: tuple of JceNameLocalDelegatedKey
+        :rtype: tuple(JceNameLocalDelegatedKey)
         """
         key = {
             MetaStoreAttributeNames.PARTITION.value: material_name,
@@ -223,10 +222,8 @@ class MetaStore(ProviderStore):
 
         :param str material_name: Material to locate
         :param int version: Version of material to locate
-        :param encryption_key: Loaded encryption key
-        :type encryption_key: dynamodb_encryption_sdk.delegated_keys.jce.JceNameLocalDelegatedKey
-        :param signing_key: Loaded signing key
-        :type signing_key: dynamodb_encryption_sdk.delegated_keys.jce.JceNameLocalDelegatedKey
+        :param JceNameLocalDelegatedKey encryption_key: Loaded encryption key
+        :param JceNameLocalDelegatedKey signing_key: Loaded signing key
         """
         try:
             self._save_materials(material_name, version, encryption_key, signing_key)
@@ -270,7 +267,7 @@ class MetaStore(ProviderStore):
         :param str material_name: Material to locate
         :param int version: Version of material to locate
         :returns: cryptographic materials provider
-        :rtype: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+        :rtype: CryptographicMaterialsProvider
         :raises InvalidVersionError: if the requested version is not available and cannot be created
         """
         encryption_key = JceNameLocalDelegatedKey.generate(
@@ -300,7 +297,7 @@ class MetaStore(ProviderStore):
         :param str material_name: Material to locate
         :param int version: Version of material to locate (optional)
         :returns: cryptographic materials provider
-        :rtype: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
+        :rtype: CryptographicMaterialsProvider
         :raises InvalidVersionError: if the requested version is not found
         """
         if version is not None:

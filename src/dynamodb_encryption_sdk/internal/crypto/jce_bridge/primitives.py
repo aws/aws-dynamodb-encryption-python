@@ -169,6 +169,9 @@ class OaepPadding(JavaPadding):
         By default, Java incorrectly implements RSA OAEP for all hash functions besides SHA1.
         The same hashing algorithm should be used by both OAEP and the MGF, but by default
         Java always uses SHA1 for the MGF.
+
+        Because we need to match this behavior, all :class:`OaepPadding` instances should be
+        created with MGF1-SHA1.
     """
 
     java_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
@@ -314,10 +317,8 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
         """Load a key from bytes.
 
         :param bytes key: Key bytes
-        :param key_type: Type of key
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
-        :param key_encoding: Encoding used to serialize key
-        :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+        :param EncryptionKeyType key_type: Type of key
+        :param KeyEncodingType key_encoding: Encoding used to serialize key
         :returns: Loaded key
         """
         if key_type is not EncryptionKeyType.SYMMETRIC:
@@ -386,10 +387,8 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
         :param bytes key: Loaded encryption key
         :param bytes data: Data to encrypt
-        :param mode: Encryption mode to use
-        :type mode: dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives.JavaMode
-        :param padding: Padding mode to use
-        :type padding: dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives.JavaPadding
+        :param JavaMode mode: Encryption mode to use
+        :param JavaPadding padding: Padding mode to use
         :returns: IV prepended to encrypted data
         :rtype: bytes
         """
@@ -418,10 +417,8 @@ class JavaSymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
         :param bytes key: Loaded decryption key
         :param bytes data: IV prepended to encrypted data
-        :param mode: Decryption mode to use
-        :type mode: dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives.JavaMode
-        :param padding: Padding mode to use
-        :type padding: dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives.JavaPadding
+        :param JavaMode mode: Decryption mode to use
+        :param JavaPadding padding: Padding mode to use
         :returns: Decrypted data
         :rtype: bytes
         """
@@ -464,10 +461,8 @@ def load_rsa_key(key, key_type, key_encoding):
     """Load an RSA key object from the provided raw key bytes.
 
     :param bytes key: Raw key bytes to load
-    :param key_type: Type of key to load
-    :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
-    :param key_encoding: Encoding used to serialize ``key``
-    :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+    :param EncryptionKeyType key_type: Type of key to load
+    :param KeyEncodingType key_encoding: Encoding used to serialize ``key``
     :returns: Loaded key
     :rtype: TODO:
     :raises ValueError: if ``key_type`` and ``key_encoding`` are not a valid pairing
@@ -499,10 +494,8 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
         """Load a key from bytes.
 
         :param bytes key: Key bytes
-        :param key_type: Type of key
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
-        :param key_encoding: Encoding used to serialize key
-        :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+        :param EncryptionKeyType key_type: Type of key
+        :param KeyEncodingType key_encoding: Encoding used to serialize key
         :returns: Loaded key
         """
         if key_type not in (EncryptionKeyType.PRIVATE, EncryptionKeyType.PUBLIC):
@@ -525,10 +518,8 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
         :param bytes key: Loaded encryption key
         :param bytes data: Data to encrypt
-        :param mode: Encryption mode to use (not used by ``JavaAsymmetricEncryptionAlgorithm``)
-        :type mode: dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives.JavaMode
-        :param padding: Padding mode to use
-        :type padding: dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives.JavaPadding
+        :param JavaMode mode: Encryption mode to use (not used by :class:`JavaAsymmetricEncryptionAlgorithm`)
+        :param JavaPadding padding: Padding mode to use
         :returns: Encrypted data
         :rtype: bytes
         """
@@ -549,10 +540,8 @@ class JavaAsymmetricEncryptionAlgorithm(JavaEncryptionAlgorithm):
 
         :param bytes key: Loaded decryption key
         :param bytes data: IV prepended to encrypted data
-        :param mode: Decryption mode to use (not used by ``JavaAsymmetricEncryptionAlgorithm``)
-        :type mode: dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives.JavaMode
-        :param padding: Padding mode to use
-        :type padding: dynamodb_encryption_sdk.internal.crypto.jce_bridge.primitives.JavaPadding
+        :param JavaMode mode: Decryption mode to use (not used by :class:`JavaAsymmetricEncryptionAlgorithm`)
+        :param JavaPadding padding: Padding mode to use
         :returns: Decrypted data
         :rtype: bytes
         """

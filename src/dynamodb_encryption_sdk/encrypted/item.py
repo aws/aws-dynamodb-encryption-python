@@ -42,8 +42,7 @@ def encrypt_dynamodb_item(item, crypto_config):
         This handles DynamoDB-formatted items and is for use with the boto3 DynamoDB client.
 
     :param dict item: Plaintext DynamoDB item
-    :param crypto_config: Cryptographic configuration
-    :type crypto_config: dynamodb_encryption_sdk.encrypted.CryptoConfig
+    :param CryptoConfig crypto_config: Cryptographic configuration
     :returns: Encrypted and signed DynamoDB item
     :rtype: dict
     """
@@ -118,8 +117,7 @@ def encrypt_python_item(item, crypto_config):
         This handles human-friendly dictionaries and is for use with the boto3 DynamoDB service or table resource.
 
     :param dict item: Plaintext dictionary
-    :param crypto_config: Cryptographic configuration
-    :type crypto_config: dynamodb_encryption_sdk.encrypted.CryptoConfig
+    :param CryptoConfig crypto_config: Cryptographic configuration
     :returns: Encrypted and signed dictionary
     :rtype: dict
     """
@@ -137,8 +135,7 @@ def decrypt_dynamodb_item(item, crypto_config):
         This handles DynamoDB-formatted items and is for use with the boto3 DynamoDB client.
 
     :param dict item: Encrypted and signed DynamoDB item
-    :param crypto_config: Cryptographic configuration
-    :type crypto_config: dynamodb_encryption_sdk.encrypted.CryptoConfig
+    :param CryptoConfig crypto_config: Cryptographic configuration
     :returns: Plaintext DynamoDB item
     :rtype: dict
     """
@@ -212,8 +209,7 @@ def decrypt_python_item(item, crypto_config):
         This handles human-friendly dictionaries and is for use with the boto3 DynamoDB service or table resource.
 
     :param dict item: Encrypted and signed dictionary
-    :param crypto_config: Cryptographic configuration
-    :type crypto_config: dynamodb_encryption_sdk.encrypted.CryptoConfig
+    :param CryptoConfig crypto_config: Cryptographic configuration
     :returns: Plaintext dictionary
     :rtype: dict
     """

@@ -31,10 +31,8 @@ __all__ = ('StaticCryptographicMaterialsProvider',)
 class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """Manually combine encryption and decryption materials for use as a cryptographic materials provider.
 
-    :param decryption_materials: Decryption materials to provide (optional)
-    :type decryption_materials: dynamodb_encryption_sdk.materials.DecryptionMaterials
-    :param encryption_materials: Encryption materials to provide (optional)
-    :type encryption_materials: dynamodb_encryption_sdk.materials.EncryptionMaterials
+    :param DecryptionMaterials decryption_materials: Decryption materials to provide (optional)
+    :param EncryptionMaterials encryption_materials: Encryption materials to provide (optional)
     """
 
     _decryption_materials = attr.ib(
@@ -64,8 +62,8 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> CryptographicMaterials
         """Return the static decryption materials.
 
-        :param encryption_context: Encryption context for request (not used by ``StaticCryptographicMaterialsProvider``)
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request (not
+            used by :class:`StaticCryptographicMaterialsProvider`)
         :raises AttributeError: if no decryption materials are available
         """
         if self._decryption_materials is None:
@@ -77,8 +75,8 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> CryptographicMaterials
         """Return the static encryption materials.
 
-        :param encryption_context: Encryption context for request (not used by ``StaticCryptographicMaterialsProvider``)
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request (not
+            used by :class:`StaticCryptographicMaterialsProvider`)
         :raises AttributeError: if no encryption materials are available
         """
         if self._encryption_materials is None:

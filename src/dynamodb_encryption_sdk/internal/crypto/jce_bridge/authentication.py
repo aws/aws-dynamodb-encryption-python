@@ -46,10 +46,8 @@ class JavaAuthenticator(object):
         """Load a key from bytes.
 
         :param bytes key: Raw key bytes to load
-        :param key_type: Type of key to load
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
-        :param key_encoding: Encoding used to serialize ``key``
-        :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+        :param EncryptionKeyType key_type: Type of key to load
+        :param KeyEncodingType key_encoding: Encoding used to serialize ``key``
         :returns: Loaded key
         :rtype: bytes
         """
@@ -132,10 +130,8 @@ class JavaMac(JavaAuthenticator):
         """Load a raw key from bytes.
 
         :param bytes key: Raw key bytes to load
-        :param key_type: Type of key to load
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
-        :param key_encoding: Encoding used to serialize ``key``
-        :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+        :param EncryptionKeyType key_type: Type of key to load
+        :param KeyEncodingType key_encoding: Encoding used to serialize ``key``
         :returns: Loaded key
         :rtype: bytes
         :raises ValueError: if ``key_type`` is not symmetric or ``key_encoding`` is not raw
@@ -250,10 +246,8 @@ class JavaSignature(JavaAuthenticator):
         """Load a key object from the provided raw key bytes.
 
         :param bytes key: Raw key bytes to load
-        :param key_type: Type of key to load
-        :type key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
-        :param key_encoding: Encoding used to serialize ``key``
-        :type key_encoding: dynamodb_encryption_sdk.identifiers.KeyEncodingType
+        :param EncryptionKeyType key_type: Type of key to load
+        :param KeyEncodingType key_encoding: Encoding used to serialize ``key``
         :returns: Loaded key
         :rtype: TODO:
         :raises ValueError: if ``key_type`` and ``key_encoding`` are not a valid pairing

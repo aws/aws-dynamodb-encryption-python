@@ -41,6 +41,7 @@ def serialize(material_description):
     :param dict material_description: Material description dictionary
     :returns: Serialized material description as a DynamoDB binary attribute value
     :rtype: dict
+    :raises InvalidMaterialDescriptionError: if invalid name or value found in material description
     """
     material_description_bytes = bytearray(_MATERIAL_DESCRIPTION_VERSION)
 
@@ -67,7 +68,8 @@ def deserialize(serialized_material_description):
     :param dict serialized_material_description: DynamoDB attribute value containing serialized material description.
     :returns: Material description dictionary
     :rtype: dict
-    :raises InvalidMaterialDescriptionError: if material description is invalid or malformed
+    :raises InvalidMaterialDescriptionError: if malformed version
+    :raises InvalidMaterialDescriptionVersionError: if unknown version is found
     """
     try:
         _raw_material_description = serialized_material_description[Tag.BINARY.dynamodb_tag]

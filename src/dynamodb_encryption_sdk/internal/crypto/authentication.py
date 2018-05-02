@@ -36,10 +36,8 @@ def sign_item(encrypted_item, signing_key, crypto_config):
     """Generate the signature DynamoDB atttribute.
 
     :param dict encrypted_item: Encrypted DynamoDB item
-    :param signing_key: DelegatedKey to use to calculate the signature
-    :type signing_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
-    :param crypto_config: Cryptographic configuration
-    :type crypto_config: dynamodb_encryption_sdk.encrypted.CryptoConfig
+    :param DelegatedKey signing_key: DelegatedKey to use to calculate the signature
+    :param CryptoConfig crypto_config: Cryptographic configuration
     :returns: Item signature DynamoDB attribute value
     :rtype: dict
     """
@@ -60,10 +58,8 @@ def verify_item_signature(signature_attribute, encrypted_item, verification_key,
 
     :param dict signature_attribute: Item signature DynamoDB attribute value
     :param dict encrypted_item: Encrypted DynamoDB item
-    :param verification_key: DelegatedKey to use to calculate the signature
-    :type verification_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
-    :param crypto_config: Cryptographic configuration
-    :type crypto_config: dynamodb_encryption_sdk.encrypted.CryptoConfig
+    :param DelegatedKey verification_key: DelegatedKey to use to calculate the signature
+    :param CryptoConfig crypto_config: Cryptographic configuration
     """
     signature = signature_attribute[Tag.BINARY.dynamodb_tag]
     verification_key.verify(
@@ -83,7 +79,7 @@ def _string_to_sign(item, table_name, attribute_actions):
 
     :param dict item: Encrypted DynamoDB item
     :param str table_name: Table name to use when generating the string to sign
-    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param AttributeActions attribute_actions: Actions to take for item
     """
     hasher = hashes.Hash(
         hashes.SHA256(),

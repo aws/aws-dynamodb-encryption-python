@@ -111,8 +111,8 @@ class EncryptionContext(object):
 class AttributeActions(object):
     """Configuration resource used to determine what action should be taken for a specific attribute.
 
-    :param default_action: Action to take if no specific action is defined in ``attribute_actions``
-    :type default_action: dynamodb_encryption_sdk.identifiers.CryptoAction
+    :param CryptoAction default_action: Action to take if no specific action is defined in
+        ``attribute_actions``
     :param dict attribute_actions: Dictionary mapping attribute names to specific actions
     """
 
@@ -158,7 +158,11 @@ class AttributeActions(object):
 
     def action(self, attribute_name):
         # (text) -> CryptoAction
-        """Determine the correct CryptoAction to apply to a supplied attribute based on this config."""
+        """Determine the correct :class:`CryptoAction` to apply to a supplied attribute based
+        on this config.
+
+        :param str attribute_name: Attribute for which to determine action
+        """
         return self.attribute_actions.get(attribute_name, self.default_action)
 
     def copy(self):
@@ -177,9 +181,13 @@ class AttributeActions(object):
             If you have already set a custom action for any of these attributes, this will
             raise an error.
 
-        DO_NOTHING -> DO_NOTHING
-        SIGN_ONLY -> SIGN_ONLY
-        ENCRYPT_AND_SIGN -> SIGN_ONLY
+        .. code::
+
+            Default Action   -> Index Key Action
+            DO_NOTHING       -> DO_NOTHING
+            SIGN_ONLY        -> SIGN_ONLY
+            ENCRYPT_AND_SIGN -> SIGN_ONLY
+
         :param str *keys: Attribute names to treat as indexed
         :raises InvalidArgumentError: if a custom action was previously set for any specified
             attributes
@@ -198,8 +206,7 @@ class AttributeActions(object):
         # (CryptoAction) -> bool
         """Determine if the specified action is a possible action from this configuration.
 
-        :param action: Action to look for
-        :type action: dynamodb_encryption_sdk.identifiers.CryptoAction
+        :param CryptoAction action: Action to look for
         """
         return action is self.default_action or action in self.attribute_actions.values()
 
@@ -260,16 +267,18 @@ class TableIndex(object):
         # type: (Iterable[Dict[Text, Text]]) -> TableIndex
         """Build a TableIndex from the key schema returned by DescribeTable.
 
-        [
-            {
-                "KeyType": "HASH"|"RANGE",
-                "AttributeName": ""
-            },
-        ]
+        .. code::
+
+            [
+                {
+                    "KeyType": "HASH"|"RANGE",
+                    "AttributeName": ""
+                },
+            ]
 
         :param list key_schema: KeySchema from DescribeTable response
         :returns: New TableIndex that describes the provided schema
-        :rtype: dynamodb_encryption_sdk.structures.TableIndex
+        :rtype: TableIndex
         """
         index = {
             key['KeyType']: key['AttributeName']
@@ -287,10 +296,9 @@ class TableInfo(object):
 
     :param str name: Table name
     :param bool all_encrypting_secondary_indexes: Should we allow secondary index attributes to be encrypted?
-    :param primary_index: Description of primary index
-    :type primary_index: dynamodb_encryption_sdk.structures.TableIndex
+    :param TableIndex primary_index: Description of primary index
     :param secondary_indexes: Set of TableIndex objects describing any secondary indexes
-    :type secondary_indexes: set of dynamodb_encryption_sdk.structures.TableIndex
+    :type secondary_indexes: set(TableIndex)
     """
 
     name = attr.ib(validator=attr.validators.instance_of(six.string_types))

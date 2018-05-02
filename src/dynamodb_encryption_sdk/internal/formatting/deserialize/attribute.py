@@ -38,7 +38,12 @@ _LOGGER = logging.getLogger(LOGGER_NAME)
 
 def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=too-many-locals
     # type: (bytes) -> dynamodb_types.RAW_ATTRIBUTE
-    """Deserializes serialized attributes for decryption."""
+    """Deserializes serialized attributes for decryption.
+
+    :param bytes serialized_attribute: Serialized attribute bytes
+    :returns: Deserialized attribute
+    :rtype: dict
+    """
 
     def _transform_binary_value(value):
         # (bytes) -> bytes

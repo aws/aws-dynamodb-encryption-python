@@ -133,7 +133,7 @@ class KeyInfo(object):
         :param str default_algorithm: Algorithm name to use if not found in material description
         :param int default_key_length: Key length to use if not found in key info description
         :returns: Key info loaded from material description, with defaults applied if necessary
-        :rtype: dynamodb_encryption_sdk.material_providers.aws_kms.KeyInfo
+        :rtype: KeyInfo
         """
         description = material_description.get(description_key, default_algorithm)
         return cls.from_description(description, default_key_length)
@@ -270,8 +270,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             an extension point for a CMP that might select a different key id based on the
             encryption context.
 
-        :param encryption_context: Encryption context providing information about request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context providing information about request
         :returns: Key id to use
         :rtype: str
         """
@@ -288,8 +287,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             for a CMP that overrides ``_select_key_id`` or otherwise wants to validate a
             key id before it is used.
 
-        :param encryption_context: Encryption context providing information about request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context providing information about request
         """
 
     def _attribute_to_value(self, attribute):
@@ -311,8 +309,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext, Text, Text) -> Dict[Text, Text]
         """Build the KMS encryption context from the encryption context and key descriptions.
 
-        :param encryption_context: Encryption context providing information about request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context providing information about request
         :param str encryption_description: Description value from encryption KeyInfo
         :param str signing_description: Description value from signing KeyInfo
         :returns: KMS encryption context for use in request
@@ -350,8 +347,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> Tuple[bytes, bytes]
         """Generate the initial cryptographic material for use with HKDF.
 
-        :param encryption_context: Encryption context providing information about request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context providing information about request
         :returns: Plaintext and ciphertext of initial cryptographic material
         :rtype: bytes and bytes
         """
@@ -384,7 +380,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         """Decrypt an encrypted initial cryptographic material value.
 
         :param encryption_context: Encryption context providing information about request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :type encryption_context: EncryptionContext
         :returns: Plaintext of initial cryptographic material
         :rtype: bytes
         """
@@ -441,12 +437,10 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         """Derive the raw key and use it to build a JceNameLocalDelegatedKey.
 
         :param bytes initial_material: Initial material to use with KDF
-        :param key_info: Key information to use to calculate encryption key
-        :type key_info: dynamodb_encryption_sdk.material_providers.aws_kms.KeyInfo
-        :param hkdf_info: Info to use in HKDF calculation
-        :type hkdf_info: dynamodb_encryption_sdk.material_providers.aws_kms.HkdfInfo
+        :param KeyInfo key_info: Key information to use to calculate encryption key
+        :param HkdfInfo hkdf_info: Info to use in HKDF calculation
         :returns: Delegated key to use for encryption and decryption
-        :rtype: dynamodb_encryption_sdk.delegated_keys.jce.JceNameLocalDelegatedKey
+        :rtype: JceNameLocalDelegatedKey
         """
         raw_key = self._hkdf(initial_material, key_info.length // 8, hkdf_info.value)
         return JceNameLocalDelegatedKey(
@@ -461,10 +455,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         """Calculate an encryption key from ``initial_material`` using the requested key info.
 
         :param bytes initial_material: Initial material to use with KDF
-        :param key_info: Key information to use to calculate encryption key
-        :type key_info: dynamodb_encryption_sdk.material_providers.aws_kms.KeyInfo
+        :param KeyInfo key_info: Key information to use to calculate encryption key
         :returns: Delegated key to use for encryption and decryption
-        :rtype: dynamodb_encryption_sdk.delegated_keys.jce.JceNameLocalDelegatedKey
+        :rtype: JceNameLocalDelegatedKey
         """
         return self._derive_delegated_key(initial_material, key_info, HkdfInfo.ENCRYPTION)
 
@@ -473,10 +466,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         """Calculate an HMAC key from ``initial_material`` using the requested key info.
 
         :param bytes initial_material: Initial material to use with KDF
-        :param key_info: Key information to use to calculate HMAC key
-        :type key_info: dynamodb_encryption_sdk.material_providers.aws_kms.KeyInfo
+        :param KeyInfo key_info: Key information to use to calculate HMAC key
         :returns: Delegated key to use for signature calculation and verification
-        :rtype: dynamodb_encryption_sdk.delegated_keys.jce.JceNameLocalDelegatedKey
+        :rtype: JceNameLocalDelegatedKey
         """
         return self._derive_delegated_key(initial_material, key_info, HkdfInfo.SIGNING)
 
@@ -484,10 +476,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> RawDecryptionMaterials
         """Provide decryption materials.
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :returns: Encryption materials
-        :rtype: dynamodb_encryption_sdk.materials.wrapped.RawDecryptionMaterials
+        :rtype: RawDecryptionMaterials
         """
         decryption_material_description = encryption_context.material_description.copy()
         initial_material = self._decrypt_initial_material(encryption_context)
@@ -513,10 +504,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         # type: (EncryptionContext) -> RawEncryptionMaterials
         """Provide encryption materials.
 
-        :param encryption_context: Encryption context for request
-        :type encryption_context: dynamodb_encryption_sdk.structures.EncryptionContext
+        :param EncryptionContext encryption_context: Encryption context for request
         :returns: Encryption materials
-        :rtype: dynamodb_encryption_sdk.materials.wrapped.RawEncryptionMaterials
+        :rtype: RawEncryptionMaterials
         """
         initial_material, encrypted_initial_material = self._generate_initial_material(encryption_context)
         encryption_material_description = encryption_context.material_description.copy()

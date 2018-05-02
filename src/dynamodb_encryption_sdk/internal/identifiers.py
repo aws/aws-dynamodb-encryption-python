@@ -90,7 +90,7 @@ class SignatureValues(Enum):
 
     def __init__(self, raw, sha256):
         # type: (bytes, bytes) -> None
-        """Set up a new SignatureValues object.
+        """Set up a new :class:`SignatureValues` object.
 
         :param bytes raw: Raw value
         :param bytes sha256: SHA256 hash of raw value

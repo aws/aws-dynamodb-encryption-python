@@ -49,10 +49,8 @@ class RawEncryptionMaterials(EncryptionMaterials):
 
         Not all delegated keys allow use with raw cryptographic materials.
 
-    :param signing_key: Delegated key used as signing key
-    :type signing_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
-    :param encryption_key: Delegated key used as encryption key
-    :type encryption_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+    :param DelegatedKey signing_key: Delegated key used as signing key
+    :param DelegatedKey encryption_key: Delegated key used as encryption key
     :param dict material_description: Material description to use with these cryptographic materials
     """
 
@@ -110,7 +108,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
         """Delegated key used for calculating digital signatures.
 
         :returns: Signing key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         return self._signing_key
 
@@ -120,7 +118,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
         """Delegated key used for encrypting attributes.
 
         :returns: Encryption key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         if self._encryption_key is None:
             raise AttributeError('No encryption key available')
@@ -137,10 +135,8 @@ class RawDecryptionMaterials(DecryptionMaterials):
 
         Not all delegated keys allow use with raw cryptographic materials.
 
-    :param verification_key: Delegated key used as verification key
-    :type verification_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
-    :param decryption_key: Delegated key used as decryption key
-    :type decryption_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+    :param DelegatedKey verification_key: Delegated key used as verification key
+    :param DelegatedKey decryption_key: Delegated key used as decryption key
     :param dict material_description: Material description to use with these cryptographic materials
     """
 
@@ -198,7 +194,7 @@ class RawDecryptionMaterials(DecryptionMaterials):
         """Delegated key used for verifying digital signatures.
 
         :returns: Verification key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         return self._verification_key
 
@@ -208,7 +204,7 @@ class RawDecryptionMaterials(DecryptionMaterials):
         """Delegated key used for decrypting attributes.
 
         :returns: Decryption key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         if self._decryption_key is None:
             raise AttributeError('No decryption key available')

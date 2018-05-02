@@ -32,8 +32,7 @@ def encrypt_attribute(attribute_name, attribute, encryption_key, algorithm):
 
     :param str attribute_name: DynamoDB attribute name
     :param dict attribute: Plaintext DynamoDB attribute
-    :param encryption_key: DelegatedKey to use to encrypt the attribute
-    :type encryption_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+    :param DelegatedKey encryption_key: DelegatedKey to use to encrypt the attribute
     :param str algorithm: Encryption algorithm descriptor (passed to encryption_key as algorithm)
     :returns: Encrypted DynamoDB binary attribute
     :rtype: dict
@@ -53,8 +52,7 @@ def decrypt_attribute(attribute_name, attribute, decryption_key, algorithm):
 
     :param str attribute_name: DynamoDB attribute name
     :param dict attribute: Encrypted DynamoDB attribute
-    :param encryption_key: DelegatedKey to use to encrypt the attribute
-    :type encryption_key: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+    :param DelegatedKey encryption_key: DelegatedKey to use to encrypt the attribute
     :param str algorithm: Decryption algorithm descriptor (passed to encryption_key as algorithm)
     :returns: Plaintext DynamoDB attribute
     :rtype: dict

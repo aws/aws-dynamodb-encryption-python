@@ -26,7 +26,7 @@ __all__ = ('DelegatedKey',)
 
 
 def _raise_not_implemented(method_name):
-    """Raises a standardized ``NotImplementedError`` to report that the specified method
+    """Raises a standardized :class:`NotImplementedError` to report that the specified method
     is not supported.
 
     :raises NotImplementedError: when called
@@ -40,7 +40,7 @@ class DelegatedKey(object):
     and unwrap keys. Not all delegated keys implement all methods.
 
     Unless overridden by a subclass, any method that a delegated key does not implement raises
-    a ``NotImplementedError`` detailing this.
+    a :class:`NotImplementedError` detailing this.
     """
 
     @abc.abstractproperty
@@ -51,7 +51,8 @@ class DelegatedKey(object):
     @property
     def allowed_for_raw_materials(self):
         # type: () -> bool
-        """Most delegated keys should not be used with RawCryptographicMaterials.
+        """Most delegated keys should not be used with :class:`RawDecryptionMaterials` or
+        :class:`RawEncryptionMaterials`.
 
         :returns: False
         :rtype: bool
@@ -62,12 +63,12 @@ class DelegatedKey(object):
     def generate(cls, algorithm, key_length):  # type: ignore
         # type: (Text, int) -> DelegatedKey
         # pylint: disable=unused-argument,no-self-use
-        """Generate an instance of this DelegatedKey using the specified algorithm and key length.
+        """Generate an instance of this :class:`DelegatedKey` using the specified algorithm and key length.
 
         :param str algorithm: Text description of algorithm to be used
         :param int key_length: Size of key to generate
         :returns: Generated delegated key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         _raise_not_implemented('generate')
 
@@ -130,12 +131,11 @@ class DelegatedKey(object):
         :param str algorithm: Text description of algorithm to use to unwrap key
         :param bytes content_key: Raw content key to wrap
         :param str wrapped_key_algorithm: Text description of algorithm for unwrapped key to use
-        :param wrapped_key_type: Type of key to treat key as once unwrapped
-        :type wrapped_key_type: dynamodb_encryption_sdk.identifiers.EncryptionKeyType
+        :param EncryptionKeyType wrapped_key_type: Type of key to treat key as once unwrapped
         :param dict additional_associated_data: Not used by all delegated keys, but if it
             is, then if it is provided on wrap it must be required on unwrap.
         :returns: Delegated key using unwrapped key
-        :rtype: dynamodb_encryption_sdk.delegated_keys.DelegatedKey
+        :rtype: DelegatedKey
         """
         _raise_not_implemented('unwrap')
 
@@ -166,9 +166,9 @@ class DelegatedKey(object):
         # type: () -> Text
         # pylint: disable=no-self-use
         """Provide a description that can inform an appropriate cryptographic materials
-        provider about how to build a DelegatedKey for signature verification. If implemented,
-        the return value of this method is included in the material description written to
-        the encrypted item.
+        provider about how to build a :class:`DelegatedKey` for signature verification.
+        If implemented, the return value of this method is included in the material description
+        written to the encrypted item.
 
         :returns: Signing algorithm identifier
         :rtype: str

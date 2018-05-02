@@ -33,7 +33,7 @@ from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsPro
 from dynamodb_encryption_sdk.structures import AttributeActions
 from .item import decrypt_dynamodb_item, decrypt_python_item, encrypt_dynamodb_item, encrypt_python_item
 
-__all__ = ('EncryptedClient',)
+__all__ = ('EncryptedClient', 'EncryptedPaginator')
 
 
 @attr.s(init=False)
@@ -42,8 +42,8 @@ class EncryptedPaginator(object):
 
     :param paginator: Pre-configured boto3 DynamoDB paginator object
     :type paginator: botocore.paginate.Paginator
-    :param decrypt_method: Item decryptor method from ``dynamodb_encryption_sdk.encrypted.item``
-    :param callable crypto_config_method: Callable that returns a crypto config
+    :param decrypt_method: Item decryptor method from :mod:`dynamodb_encryption_sdk.encrypted.item`
+    :param callable crypto_config_method: Callable that returns a :class:`CryptoConfig`
     """
 
     _paginator = attr.ib(validator=attr.validators.instance_of(botocore.paginate.Paginator))
@@ -130,7 +130,7 @@ class EncryptedClient(object):
 
         If you want to provide per-request cryptographic details, the ``put_item``, ``get_item``,
         ``query``, ``scan``, ``batch_write_item``, and ``batch_get_item`` methods will also
-        accept a ``crypto_config`` parameter, defining a custom ``CryptoConfig`` instance
+        accept a ``crypto_config`` parameter, defining a custom :class:`CryptoConfig` instance
         for this request.
 
     .. warning::
@@ -139,10 +139,10 @@ class EncryptedClient(object):
 
     :param table: Pre-configured boto3 DynamoDB client object
     :type table: boto3.resources.base.BaseClient
-    :param materials_provider: Cryptographic materials provider to use
-    :type materials_provider: dynamodb_encryption_sdk.material_providers.CryptographicMaterialsProvider
-    :param attribute_actions: Table-level configuration of how to encrypt/sign attributes
-    :type attribute_actions: dynamodb_encryption_sdk.structures.AttributeActions
+    :param CryptographicMaterialsProvider materials_provider: Cryptographic materials provider
+        to use
+    :param AttributeActions attribute_actions: Table-level configuration of how to encrypt/sign
+        attributes
     :param bool auto_refresh_table_indexes: Should we attempt to refresh information about table indexes?
         Requires ``dynamodb:DescribeTable`` permissions on each table. (default: True)
     :param bool expect_standard_dictionaries: Should we expect items to be standard Python
@@ -259,7 +259,10 @@ class EncryptedClient(object):
         return getattr(self._client, name)
 
     def update_item(self, **kwargs):
-        """Update item is not yet supported."""
+        """Update item is not yet supported.
+
+        :raises NotImplementedError: if called
+        """
         raise NotImplementedError('"update_item" is not yet implemented')
 
     def get_paginator(self, operation_name):
@@ -268,7 +271,7 @@ class EncryptedClient(object):
 
         :param str operation_name: Name of operation for which to get paginator
         :returns: Paginator for name
-        :rtype: Paginator or EncryptedPaginator
+        :rtype: :class:`botocore.paginate.Paginator` or :class:`EncryptedPaginator`
         """
         paginator = self._client.get_paginator(operation_name)
 
