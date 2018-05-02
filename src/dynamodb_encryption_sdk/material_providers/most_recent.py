@@ -50,6 +50,7 @@ class TtlActions(Enum):
 
 
 def _min_capacity_validator(instance, attribute, value):
+    # pylint: disable=unused-argument
     """Attrs validator to require that value is at least 1."""
     if value < 1:
         raise ValueError('Cache capacity must be at least 1')
@@ -64,12 +65,11 @@ class BasicCache(object):
         _min_capacity_validator
     ))
 
-    def __init__(self, capacity):
+    def __init__(self, capacity):  # noqa=D107
         # type: (int) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.capacity = capacity
         attr.validate(self)
         self.__attrs_post_init__()
@@ -114,7 +114,7 @@ class BasicCache(object):
         # type: () -> None
         """Clear the cache."""
         with self._cache_lock:
-            self._cache = OrderedDict()  # type: OrderedDict[Any, Any]
+            self._cache = OrderedDict()  # type: OrderedDict[Any, Any] # pylint: disable=attribute-defined-outside-init
 
 
 @attr.s(init=False)
@@ -140,12 +140,11 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             provider_store,  # type: ProviderStore
             material_name,  # type: Text
             version_ttl  # type: float
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self._provider_store = provider_store
         self._material_name = material_name
         self._version_ttl = version_ttl
@@ -155,8 +154,10 @@ class MostRecentProvider(CryptographicMaterialsProvider):
     def __attrs_post_init__(self):
         # type: () -> None
         """Initialize the cache."""
-        self._lock = Lock()
-        self._cache = BasicCache(1000)
+        self._version = None  # type: int # pylint: disable=attribute-defined-outside-init
+        self._last_updated = None  # type: float # pylint: disable=attribute-defined-outside-init
+        self._lock = Lock()  # pylint: disable=attribute-defined-outside-init
+        self._cache = BasicCache(1000)  # pylint: disable=attribute-defined-outside-init
         self.refresh()
 
     def decryption_materials(self, encryption_context):
@@ -280,12 +281,9 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             except KeyError:
                 ttl_action = TtlActions.EXPIRED
 
-        if ttl_action is TtlActions.GRACE_PERIOD:
-            # Just get the latest local version if we cannot acquire the lock.
-            allow_local = True
-        else:
-            # Block until we can acquire the lock.
-            allow_local = False
+        # Just get the latest local version if we cannot acquire the lock.
+        # Otherwise, block until we can acquire the lock.
+        allow_local = bool(ttl_action is TtlActions.GRACE_PERIOD)
 
         provider = self._get_most_recent_version(allow_local)
 
@@ -296,5 +294,5 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         """Clear all local caches for this provider."""
         with self._lock:
             self._cache.clear()
-            self._version = None  # type: int
-            self._last_updated = None  # type: float
+            self._version = None  # type: int # pylint: disable=attribute-defined-outside-init
+            self._last_updated = None  # type: float # pylint: disable=attribute-defined-outside-init

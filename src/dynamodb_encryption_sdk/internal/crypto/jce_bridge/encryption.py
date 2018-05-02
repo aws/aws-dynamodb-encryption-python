@@ -41,12 +41,11 @@ class JavaCipher(object):
             cipher,  # type: JavaEncryptionAlgorithm
             mode,  # type: JavaMode
             padding  # type: JavaPadding
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.cipher = cipher
         self.mode = mode
         self.padding = padding

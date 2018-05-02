@@ -107,12 +107,11 @@ class SimplePadding(JavaPadding):
             self,
             java_name,  # type: Text
             padding  # type: Callable
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.java_name = java_name
         self.padding = padding
         attr.validate(self)
@@ -139,12 +138,11 @@ class BlockSizePadding(JavaPadding):
             self,
             java_name,  # type: Text
             padding  # type: Callable
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.java_name = java_name
         self.padding = padding
         attr.validate(self)
@@ -187,12 +185,11 @@ class OaepPadding(JavaPadding):
             digest,  # type: Callable
             mgf,  # type: Callable
             mgf_digest  # type: Callable
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.java_name = java_name
         self.padding = padding
         self.digest = digest
@@ -228,12 +225,11 @@ class JavaMode(object):
             self,
             java_name,  # type: Text
             mode  # type: Callable
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.java_name = java_name
         self.mode = mode
         attr.validate(self)
@@ -262,12 +258,11 @@ class JavaEncryptionAlgorithm(object):
             self,
             java_name,  # type: Text
             cipher  # type: Callable
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.java_name = java_name
         self.cipher = cipher
         attr.validate(self)

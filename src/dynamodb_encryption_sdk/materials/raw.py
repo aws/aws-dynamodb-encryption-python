@@ -70,12 +70,11 @@ class RawEncryptionMaterials(EncryptionMaterials):
             signing_key,  # type: DelegatedKey
             encryption_key=None,  # type: Optional[DelegatedKey]
             material_description=None  # type: Optional[Dict[Text, Text]]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         if material_description is None:
             material_description = {}
 
@@ -156,12 +155,11 @@ class RawDecryptionMaterials(DecryptionMaterials):
             verification_key,  # type: DelegatedKey
             decryption_key=None,  # type: Optional[DelegatedKey]
             material_description=None  # type: Optional[Dict[Text, Text]]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         if material_description is None:
             material_description = {}
 

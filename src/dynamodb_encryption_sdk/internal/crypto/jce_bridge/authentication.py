@@ -102,12 +102,11 @@ class JavaMac(JavaAuthenticator):
             java_name,  # type: Text
             algorithm_type,  # type: Callable
             hash_type  # type: Callable
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.java_name = java_name
         self.algorithm_type = algorithm_type
         self.hash_type = hash_type
@@ -213,12 +212,11 @@ class JavaSignature(JavaAuthenticator):
             algorithm_type,
             hash_type,  # type: Callable
             padding_type  # type: Callable
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.java_name = java_name
         self.algorithm_type = algorithm_type
         self.hash_type = hash_type

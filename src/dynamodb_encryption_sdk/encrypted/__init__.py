@@ -51,12 +51,11 @@ class CryptoConfig(object):
             materials_provider,  # type: CryptographicMaterialsProvider
             encryption_context,  # type: EncryptionContext
             attribute_actions  # type: AttributeActions
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.materials_provider = materials_provider
         self.encryption_context = encryption_context
         self.attribute_actions = attribute_actions

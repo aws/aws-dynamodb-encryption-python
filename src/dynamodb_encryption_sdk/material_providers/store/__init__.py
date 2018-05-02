@@ -57,6 +57,7 @@ class ProviderStore(object):
 
     def max_version(self, material_name):
         # (Text) -> int
+        # pylint: disable=no-self-use
         """Find the maximum known version of the specified material.
 
         .. note::

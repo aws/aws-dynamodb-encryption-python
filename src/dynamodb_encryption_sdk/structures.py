@@ -88,12 +88,11 @@ class EncryptionContext(object):
             sort_key_name=None,  # type: Optional[Text]
             attributes=None,  # type: Optional[Dict[Text, Dict]]
             material_description=None  # type: Optional[Dict[Text, Text]]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         if attributes is None:
             attributes = {}
         if material_description is None:
@@ -129,12 +128,11 @@ class AttributeActions(object):
             self,
             default_action=CryptoAction.ENCRYPT_AND_SIGN,  # type: Optional[CryptoAction]
             attribute_actions=None  # type: Optional[Dict[Text, CryptoAction]]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         if attribute_actions is None:
             attribute_actions = {}
 
@@ -245,12 +243,11 @@ class TableIndex(object):
             self,
             partition,  # type: Text
             sort=None  # type: Optional[Text]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.partition = partition
         self.sort = sort
         attr.validate(self)
@@ -316,12 +313,11 @@ class TableInfo(object):
             name,  # type: Text
             primary_index=None,  # type: Optional[TableIndex]
             secondary_indexes=None  # type: Optional[Set[TableIndex]]
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self.name = name
         self._primary_index = primary_index
         self._secondary_indexes = secondary_indexes

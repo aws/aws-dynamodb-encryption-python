@@ -68,12 +68,11 @@ class TableInfoCache(object):
             self,
             client,  # type: botocore.client.BaseClient
             auto_refresh_table_indexes  # type: bool
-    ):
+    ):  # noqa=D107
         # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
+        # Workaround pending resolution of attrs/mypy interaction.
+        # https://github.com/python/mypy/issues/2088
+        # https://github.com/python-attrs/attrs/issues/215
         self._client = client
         self._auto_refresh_table_indexes = auto_refresh_table_indexes
         attr.validate(self)
