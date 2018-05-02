@@ -301,7 +301,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         """
         attribute_type, attribute_value = list(attribute.items())[0]
         if attribute_type == 'B':
-            return base64.b64encode(attribute_value.value).decode(TEXT_ENCODING)
+            return base64.b64encode(attribute_value).decode(TEXT_ENCODING)
         if attribute_type in ('S', 'N'):
             return attribute_value
         raise ValueError('Attribute of type "{}" cannot be used in KMS encryption context.'.format(attribute_type))
