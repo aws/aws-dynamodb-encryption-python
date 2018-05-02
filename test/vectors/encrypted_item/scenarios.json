@@ -10,7 +10,8 @@
                 "verify": "hmacKey"
             },
             "plaintext": "file://plaintext.json",
-            "ciphertext": "file://ciphertext/static-aes-hmac-1.json"
+            "ciphertext": "file://ciphertext/static-aes-hmac-1.json",
+            "network": true
         },
         {
             "version": "v0",
@@ -20,7 +21,8 @@
                 "verify": "hmacKey"
             },
             "plaintext": "file://plaintext.json",
-            "ciphertext": "file://ciphertext/static-aes-hmac-2.json"
+            "ciphertext": "file://ciphertext/static-aes-hmac-2.json",
+            "network": true
         },
         {
             "version": "v1",
@@ -30,7 +32,8 @@
                 "verify": "hmacKey"
             },
             "plaintext": "file://plaintext.json",
-            "ciphertext": "file://ciphertext/static-aes-hmac-3.json"
+            "ciphertext": "file://ciphertext/static-aes-hmac-3.json",
+            "network": true
         },
         {
             "version": "v0",
@@ -40,7 +43,8 @@
                 "verify": "rsaEncPub"
             },
             "plaintext": "file://plaintext.json",
-            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-1.json"
+            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-1.json",
+            "network": true
         },
         {
             "version": "v1",
@@ -50,7 +54,8 @@
                 "verify": "rsaEncPub"
             },
             "plaintext": "file://plaintext.json",
-            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-2.json"
+            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-2.json",
+            "network": true
         },
         {
             "version": "v0",
@@ -60,7 +65,8 @@
                 "verify": "rsaEncPub"
             },
             "plaintext": "file://plaintext.json",
-            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-3.json"
+            "ciphertext": "file://ciphertext/wrapped-rsa-rsa-3.json",
+            "network": true
         },
         {
             "version": "v1",
@@ -70,7 +76,8 @@
                 "verify": "hmacKey"
             },
             "plaintext": "file://plaintext.json",
-            "ciphertext": "file://ciphertext/wrapped-aes-hmac-1.json"
+            "ciphertext": "file://ciphertext/wrapped-aes-hmac-1.json",
+            "network": true
         },
         {
             "version": "v1",
@@ -80,7 +87,25 @@
                 "verify": "awsKmsUsWest2"
             },
             "plaintext": "file://plaintext.json",
-            "ciphertext": "file://ciphertext/aws-kms-direct-1.json"
+            "ciphertext": "file://ciphertext/aws-kms-direct-1.json",
+            "network": true
+        },
+        {
+            "version": "v1",
+            "provider": "most_recent",
+            "material_name": "my material name",
+            "metastore": {
+                "table_name": "MetaTable",
+                "provider": "wrapped",
+                "keys": {
+                    "decrypt": "rsaEncPriv",
+                    "verify": "rsaEncPub"
+                },
+                "ciphertext": "file://ciphertext/metastore-rsa-rsa-1.json"
+            },
+            "plaintext": "file://plaintext.json",
+            "ciphertext": "file://ciphertext/metastore-data-tables-1.json",
+            "network": false
         }
     ]
 }

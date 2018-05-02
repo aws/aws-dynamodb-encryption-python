@@ -21,8 +21,11 @@ Modules
     dynamodb_encryption_sdk.encrypted.table
     dynamodb_encryption_sdk.material_providers
     dynamodb_encryption_sdk.material_providers.aws_kms
+    dynamodb_encryption_sdk.material_providers.most_recent
     dynamodb_encryption_sdk.material_providers.static
     dynamodb_encryption_sdk.material_providers.wrapped
+    dynamodb_encryption_sdk.material_providers.store
+    dynamodb_encryption_sdk.material_providers.store.meta
     dynamodb_encryption_sdk.materials
     dynamodb_encryption_sdk.materials.raw
     dynamodb_encryption_sdk.materials.wrapped

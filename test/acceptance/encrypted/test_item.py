@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Acceptance tests for ``dynamodb_encryption_sdk.encrypted.item``."""
+from moto import mock_dynamodb2
 import pytest
 
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
@@ -18,21 +19,20 @@ from dynamodb_encryption_sdk.encrypted.item import decrypt_dynamodb_item
 from dynamodb_encryption_sdk.structures import EncryptionContext
 from ..acceptance_test_utils import load_scenarios
 
-pytestmark = [pytest.mark.accept, pytest.mark.integ]
+pytestmark = [pytest.mark.accept]
 
 
-@pytest.mark.parametrize(
-    'materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions',
-    load_scenarios()
-)
-def test_item_encryptor(
+def _item_check(
         materials_provider,
         table_name,
         table_index,
         ciphertext_item,
         plaintext_item,
-        attribute_actions
+        attribute_actions,
+        prep
 ):
+    prep()  # Test scenario setup that needs to happen inside the test
+    cmp = materials_provider()  # Some of the materials providers need to be constructed inside the test
     encryption_context = EncryptionContext(
         table_name=table_name,
         partition_key_name=table_index['partition'],
@@ -40,7 +40,7 @@ def test_item_encryptor(
         attributes=ciphertext_item
     )
     crypto_config = CryptoConfig(
-        materials_provider=materials_provider,
+        materials_provider=cmp,
         encryption_context=encryption_context,
         attribute_actions=attribute_actions
     )
@@ -50,3 +50,54 @@ def test_item_encryptor(
         if key == 'version':
             continue
         assert decrypted_item[key] == plaintext_item[key]
+
+
+@mock_dynamodb2
+@pytest.mark.local
+@pytest.mark.parametrize(
+    'materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep',
+    load_scenarios(online=False)
+)
+def test_item_encryptor_offline(
+        materials_provider,
+        table_name,
+        table_index,
+        ciphertext_item,
+        plaintext_item,
+        attribute_actions,
+        prep
+):
+    return _item_check(
+        materials_provider,
+        table_name,
+        table_index,
+        ciphertext_item,
+        plaintext_item,
+        attribute_actions,
+        prep
+    )
+
+
+@pytest.mark.integ
+@pytest.mark.parametrize(
+    'materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep',
+    load_scenarios(online=True)
+)
+def test_item_encryptor_online(
+        materials_provider,
+        table_name,
+        table_index,
+        ciphertext_item,
+        plaintext_item,
+        attribute_actions,
+        prep
+):
+    return _item_check(
+        materials_provider,
+        table_name,
+        table_index,
+        ciphertext_item,
+        plaintext_item,
+        attribute_actions,
+        prep
+    )
