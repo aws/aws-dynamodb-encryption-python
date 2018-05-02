@@ -44,8 +44,9 @@ def test_verify_user_agent(aws_kms_cmp, caplog):
 
 def _many_items():
     values = ('a string', 1234, b'binary \x00\x88 value')
-    pairsets = [[i for i in itertools.product((key,), values)] for key in _primary_key_names]
-    for pairs in zip(*pairsets):
+    partition_keys = (('partition_key', value) for value in values)
+    sort_keys = (('sort_key', value) for value in values)
+    for pairs in itertools.product(partition_keys, sort_keys):
         item = dict(pairs)
         yield pytest.param(item, id=str(item))
 
