@@ -13,6 +13,13 @@
 """Cryptographic materials provider for use with pre-configured encryption and decryption materials."""
 import attr
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Optional  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
+from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 from . import CryptographicMaterialsProvider
@@ -54,7 +61,7 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         attr.validate(self)
 
     def decryption_materials(self, encryption_context):
-        # type: (EncryptionContext) -> DecryptionMaterials
+        # type: (EncryptionContext) -> CryptographicMaterials
         """Return the static decryption materials.
 
         :param encryption_context: Encryption context for request (not used by ``StaticCryptographicMaterialsProvider``)
@@ -67,7 +74,7 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         return self._decryption_materials
 
     def encryption_materials(self, encryption_context):
-        # type: (EncryptionContext) -> EncryptionMaterials
+        # type: (EncryptionContext) -> CryptographicMaterials
         """Return the static encryption materials.
 
         :param encryption_context: Encryption context for request (not used by ``StaticCryptographicMaterialsProvider``)

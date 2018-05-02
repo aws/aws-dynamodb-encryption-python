@@ -17,6 +17,12 @@ import attr
 from boto3.dynamodb.table import BatchWriter
 from boto3.resources.base import ServiceResource
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Optional  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.internal.utils import (
     crypto_config_from_kwargs, crypto_config_from_table_info,
     decrypt_get_item, decrypt_multi_get, encrypt_put_item

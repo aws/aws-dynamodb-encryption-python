@@ -13,7 +13,7 @@
 """Delegated keys."""
 import abc
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Text  # noqa pylint: disable=unused-import
+    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -43,17 +43,24 @@ class DelegatedKey(object):
     a ``NotImplementedError`` detailing this.
     """
 
-    #: Most delegated keys should not be used with RawCryptographicMaterials.
-    allowed_for_raw_materials = False
-
     @abc.abstractproperty
     def algorithm(self):
         # type: () -> Text
         """Text description of algorithm used by this delegated key."""
 
+    @property
+    def allowed_for_raw_materials(self):
+        # type: () -> bool
+        """Most delegated keys should not be used with RawCryptographicMaterials.
+
+        :returns: False
+        :rtype: bool
+        """
+        return False
+
     @classmethod
-    def generate(cls, algorithm, key_length):
-        # type: (Text, int) -> None
+    def generate(cls, algorithm, key_length):  # type: ignore
+        # type: (Text, int) -> DelegatedKey
         # pylint: disable=unused-argument,no-self-use
         """Generate an instance of this DelegatedKey using the specified algorithm and key length.
 
@@ -64,8 +71,8 @@ class DelegatedKey(object):
         """
         _raise_not_implemented('generate')
 
-    def encrypt(self, algorithm, name, plaintext, additional_associated_data=None):
-        # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+    def encrypt(self, algorithm, name, plaintext, additional_associated_data=None):  # type: ignore
+        # type: (Text, Text, bytes, Optional[Dict[Text, Text]]) -> bytes
         # pylint: disable=unused-argument,no-self-use
         """Encrypt data.
 
@@ -79,8 +86,8 @@ class DelegatedKey(object):
         """
         _raise_not_implemented('encrypt')
 
-    def decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):
-        # type: (Text, Text, bytes, Dict[Text, Text]) -> bytes
+    def decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):  # type: ignore
+        # type: (Text, Text, bytes, Optional[Dict[Text, Text]]) -> bytes
         # pylint: disable=unused-argument,no-self-use
         """Encrypt data.
 
@@ -94,8 +101,8 @@ class DelegatedKey(object):
         """
         _raise_not_implemented('decrypt')
 
-    def wrap(self, algorithm, content_key, additional_associated_data=None):
-        # type: (Text, bytes, Dict[Text, Text]) -> bytes
+    def wrap(self, algorithm, content_key, additional_associated_data=None):  # type: ignore
+        # type: (Text, bytes, Optional[Dict[Text, Text]]) -> bytes
         # pylint: disable=unused-argument,no-self-use
         """Wrap content key.
 
@@ -108,8 +115,15 @@ class DelegatedKey(object):
         """
         _raise_not_implemented('wrap')
 
-    def unwrap(self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None):
-        # type: (Text, bytes, Text, EncryptionKeyType, Dict[Text, Text]) -> DelegatedKey
+    def unwrap(  # type: ignore
+            self,
+            algorithm,
+            wrapped_key,
+            wrapped_key_algorithm,
+            wrapped_key_type,
+            additional_associated_data=None
+    ):
+        # type: (Text, bytes, Text, EncryptionKeyType, Optional[Dict[Text, Text]]) -> DelegatedKey
         # pylint: disable=unused-argument,no-self-use
         """Wrap content key.
 
@@ -125,7 +139,7 @@ class DelegatedKey(object):
         """
         _raise_not_implemented('unwrap')
 
-    def sign(self, algorithm, data):
+    def sign(self, algorithm, data):  # type: ignore
         # type: (Text, bytes) -> bytes
         # pylint: disable=unused-argument,no-self-use
         """Sign data.
@@ -137,7 +151,7 @@ class DelegatedKey(object):
         """
         _raise_not_implemented('sign')
 
-    def verify(self, algorithm, signature, data):
+    def verify(self, algorithm, signature, data):  # type: ignore
         # type: (Text, bytes, bytes) -> None
         # pylint: disable=unused-argument,no-self-use
         """Sign data.
@@ -148,10 +162,10 @@ class DelegatedKey(object):
         """
         _raise_not_implemented('verify')
 
-    def signing_algorithm(self):
+    def signing_algorithm(self):  # type: ignore
         # type: () -> Text
         # pylint: disable=no-self-use
-        """Provides a description that can inform an appropriate cryptographic materials
+        """Provide a description that can inform an appropriate cryptographic materials
         provider about how to build a DelegatedKey for signature verification. If implemented,
         the return value of this method is included in the material description written to
         the encrypted item.

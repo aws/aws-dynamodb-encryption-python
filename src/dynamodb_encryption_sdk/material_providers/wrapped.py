@@ -13,6 +13,12 @@
 """Cryptographic materials provider to use ephemeral content encryption keys wrapped by delegated keys."""
 import attr
 
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Optional  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
 from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMaterials

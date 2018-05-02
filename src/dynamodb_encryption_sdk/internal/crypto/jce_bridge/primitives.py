@@ -23,7 +23,7 @@ from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 import six
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Callable, Text  # noqa pylint: disable=unused-import
+    from typing import Any, Callable, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -268,8 +268,10 @@ class JavaEncryptionAlgorithm(object):
         self.java_name = java_name
         self.cipher = cipher
         attr.validate(self)
-        if hasattr(self, '__attrs_post_init__'):
-            self.__attrs_post_init__()
+        self.__attrs_post_init__()
+
+    def __attrs_post_init__(self):
+        """No-op stub to standardize API."""
 
     def validate_algorithm(self, algorithm):
         # type: (Text) -> None
