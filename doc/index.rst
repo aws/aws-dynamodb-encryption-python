@@ -7,6 +7,7 @@ API
    :maxdepth: 2
    :caption: Encryption Helpers
 
+   lib/encrypted/config.rst
    lib/encrypted/helpers
    lib/encrypted/item
 
