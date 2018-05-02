@@ -10,7 +10,12 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Custom validators for ``attrs``."""
+"""Custom validators for ``attrs``.
+
+.. warning::
+    No guarantee is provided on the modules and APIs within this
+    namespace staying consistent. Directly reference at your own risk.
+"""
 
 __all__ = ('dictionary_validator', 'iterable_validator')
 

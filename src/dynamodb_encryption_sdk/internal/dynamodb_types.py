@@ -1,4 +1,9 @@
-"""Types used with mypy for DynamoDB items and attributes."""
+"""Types used with mypy for DynamoDB items and attributes.
+
+.. warning::
+    No guarantee is provided on the modules and APIs within this
+    namespace staying consistent. Directly reference at your own risk.
+"""
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Any, AnyStr, ByteString, Dict, List, Text
 

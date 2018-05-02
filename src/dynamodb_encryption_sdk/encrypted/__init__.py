@@ -32,7 +32,8 @@ __all__ = ('CryptoConfig',)
 
 @attr.s(init=False)
 class CryptoConfig(object):
-    """Container for all configuration needed to encrypt or decrypt an item.
+    """Container for all configuration needed to encrypt or decrypt an item using the item
+    encryptor functions in :py:mod:`dynamodb_encryption_sdk.encrypted.item`.
 
     :param CryptographicMaterialsProvider materials_provider: Cryptographic materials provider
         to use

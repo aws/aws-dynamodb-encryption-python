@@ -1,4 +1,4 @@
-"""DynamoDB Encryption SDK."""
+"""DynamoDB Encryption Client for Python."""
 import io
 import os
 import re
@@ -31,12 +31,13 @@ setup(
     version=get_version(),
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    url='http://dynamodb-encryption-sdk.readthedocs.io/en/latest/',
+    url='https://github.com/awslabs/aws-dynamodb-encryption-python',
     author='Amazon Web Services',
     author_email='aws-cryptools@amazon.com',
     maintainer='Amazon Web Services',
+    description='DynamoDB Encryption Client for Python',
     long_description=read('README.rst'),
-    keywords='aws-encryption-sdk aws kms encryption dynamodb',
+    keywords='dynamodb-encryption-sdk aws kms encryption dynamodb',
     data_files=[
         'README.rst',
         'CHANGELOG.rst',

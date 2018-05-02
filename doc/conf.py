@@ -38,7 +38,7 @@ release = get_release()
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
               'sphinx.ext.intersphinx', 'sphinx.ext.todo',
               'sphinx.ext.coverage', 'sphinx.ext.autosummary',
-              'sphinx.ext.napoleon']
+              'sphinx.ext.napoleon', 'sphinx.ext.viewcode']
 napoleon_include_special_with_doc = False
 
 # Add any paths that contain templates here, relative to this directory.
