@@ -89,22 +89,6 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         self._material_description = material_description
         attr.validate(self)
 
-    def __init__(
-            self,
-            signing_key,  # type: DelegatedKey
-            wrapping_key=None,  # type: Optional[DelegatedKey]
-            unwrapping_key=None  # type: Optional[DelegatedKey]
-    ):
-        # type: (...) -> None
-        """Workaround pending resolution of attrs/mypy interaction.
-        https://github.com/python/mypy/issues/2088
-        https://github.com/python-attrs/attrs/issues/215
-        """
-        self._signing_key = signing_key
-        self._wrapping_key = wrapping_key
-        self._unwrapping_key = unwrapping_key
-        attr.validate(self)
-
     def _build_materials(self, encryption_context):
         # type: (EncryptionContext) -> WrappedCryptographicMaterials
         """Construct
