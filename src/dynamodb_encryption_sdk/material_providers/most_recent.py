@@ -246,17 +246,17 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             return version, self._cache.get(version)
 
         try:
-            version = self._get_max_version()
+            max_version = self._get_max_version()
             try:
-                provider = self._cache.get(version)
+                provider = self._cache.get(max_version)
             except KeyError:
-                provider = self._get_provider(version)
-            actual_version = self._provider_store.version_from_material_description(provider._material_description)
+                provider = self._get_provider(max_version)
+            received_version = self._provider_store.version_from_material_description(provider._material_description)
             # TODO: ^ should we promote material description from hidden?
 
-            self._version = version
+            self._version = received_version
             self._last_updated = time.time()
-            self._cache.put(actual_version, provider)
+            self._cache.put(received_version, provider)
         finally:
             self._lock.release()
 
