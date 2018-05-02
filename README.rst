@@ -2,10 +2,10 @@
 Amazon DynamoDB Encryption Client for Python
 ############################################
 
-The `Amazon DynamoDB Encryption Client for Python`_ provides client-side encryption of DynamoDB
-items to help you to protect your table data before you send it to Amazon DynamoDB. It provides
-an implementation of the `Amazon DynamoDB Encryption Client`_ that is fully compatible with the
-`Amazon DynamoDB Encryption Client for Java`_.
+The `Amazon DynamoDB Encryption Client for Python`_ provides client-side encryption of `Amazon
+DynamoDB`_ items to help you to protect your table data before you send it to DynamoDB. It
+provides an implementation of the `Amazon DynamoDB Encryption Client`_ that is fully compatible
+with the `Amazon DynamoDB Encryption Client for Java`_.
 
 You can find the latest Python documentation at `Read the Docs`_ and you can find the latest
 full documents in our `primary documents`_.
@@ -54,8 +54,8 @@ from the `boto3`_ library. For most uses, once configured, these clients can be 
 as you would a standard client from `boto3`_, and your items will be transparently encrypted
 on write and decrypted on read.
 
-What can I not do with the helper clients?
-------------------------------------------
+What can't I do with the helper clients?
+----------------------------------------
 
 For most uses, the helper clients (once configured) can be used as drop-in replacements for
 the `boto3`_ clients. However, there are a couple cases where this is not the case.
@@ -63,16 +63,16 @@ the `boto3`_ clients. However, there are a couple cases where this is not the ca
 Update Item
 ^^^^^^^^^^^
 
-Because we cannot know that a partial update you might be making to an item covers all
+Because we can't know that a partial update you might be making to an item covers all
 of the signed attributes in your item, we do not allow ``update_item`` on the helper clients.
 
-The reason for this is because if you update only some of the signed attributes, then next
-time you try to read that item the signature validation will fail.
+This is because if you update only some of the signed attributes, then next time you try
+to read that item the signature validation will fail.
 
 Attribute Filtering
 ^^^^^^^^^^^^^^^^^^^
 
-Because we cannot know what attributes in an item are signed, the helper clients do not allow
+Because we can't know what attributes in an item are signed, the helper clients do not allow
 any attribute filtering.
 
 For ``get_item``, ``batch_get_item``, and ``scan``, this includes the use of ``AttributesToGet``
@@ -81,8 +81,8 @@ and ``ProjectionExpression``.
 For ``scan``, this also includes the use of ``Select`` values ``SPECIFIC_ATTRIBUTES`` and
 ``ALL_PROJECTED_ATTRIBUTES``.
 
-The reason for this is because if you do not retrieve all signed attributes, the signature
-validation will fail.
+This is because if you do not retrieve all signed attributes, the signature validation will
+fail.
 
 Item Encryptor
 ==============
@@ -149,6 +149,7 @@ of the one that the client would normally construct for you.
 
 
 .. _Amazon DynamoDB Encryption Client: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/
+.. _Amazon DynamoDB: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
 .. _primary documents: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/
 .. _Concepts Guide: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/concepts.html
 .. _Amazon DynamoDB Encryption Client for Java: https://github.com/awslabs/aws-dynamodb-encryption-java/
