@@ -96,7 +96,7 @@ def validate_get_arguments(kwargs):
         if arg in kwargs:
             raise InvalidArgumentError('"{}" is not supported for this operation'.format(arg))
 
-    if kwargs.get('Select', None) in ('SPECIFIC_ATTRIBUTES', 'ALL_PROJECTED_ATTRIBUTES', 'SPECIFIC_ATTRIBUTES'):
+    if kwargs.get('Select', None) in ('SPECIFIC_ATTRIBUTES', 'ALL_PROJECTED_ATTRIBUTES'):
         raise InvalidArgumentError('Scan "Select" value of "{}" is not supported'.format(kwargs['Select']))
 
 
