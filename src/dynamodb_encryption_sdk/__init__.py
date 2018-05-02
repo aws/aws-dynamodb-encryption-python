@@ -18,6 +18,7 @@ from dynamodb_encryption_sdk.encrypted.item import (
 )
 from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
+from dynamodb_encryption_sdk.identifiers import __version__
 
 # TableConfiguration
 # MaterialDescription
@@ -26,5 +27,6 @@ from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 __all__ = (
     'decrypt_dynamodb_item', 'decrypt_python_item',
     'encrypt_dynamodb_item', 'encrypt_python_item',
-    'EncryptedClient', 'EncryptedResource', 'EncryptedTable'
+    'EncryptedClient', 'EncryptedResource', 'EncryptedTable',
+    '__version__'
 )
