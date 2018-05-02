@@ -20,9 +20,10 @@ import attr
 import botocore.client
 
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
+from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
-from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 from dynamodb_encryption_sdk.structures import EncryptionContext, TableInfo
+from dynamodb_encryption_sdk.transform import dict_to_ddb
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Any, Callable, Dict, Text  # noqa pylint: disable=unused-import
@@ -31,28 +32,12 @@ except ImportError:  # pragma: no cover
     pass
 
 __all__ = (
-    'sorted_key_map', 'TableInfoCache',
+    'TableInfoCache',
     'crypto_config_from_kwargs', 'crypto_config_from_table_info', 'crypto_config_from_cache',
     'decrypt_get_item', 'decrypt_multi_get', 'decrypt_batch_get_item',
     'encrypt_put_item', 'encrypt_batch_write_item',
     'validate_get_arguments'
 )
-
-
-def sorted_key_map(item, transform=to_bytes):
-    """Creates a list of the item's key/value pairs as tuples, sorted by the keys transformed by transform.
-
-    :param dict item: Source dictionary
-    :param function transform: Transform function
-    :returns: List of tuples containing transformed key, original value, and original key for each entry
-    :rtype: list(tuple)
-    """
-    sorted_items = []
-    for key, value in item.items():
-        _key = transform(key)
-        sorted_items.append((_key, value, key))
-    sorted_items = sorted(sorted_items, key=lambda x: x[0])
-    return sorted_items
 
 
 @attr.s(init=False)
@@ -142,9 +127,16 @@ def crypto_config_from_table_info(materials_provider, attribute_actions, table_i
     :returns: crypto config and updated kwargs
     :rtype: tuple(CryptoConfig, dict)
     """
+    ec_kwargs = table_info.encryption_context_values
+    if table_info.primary_index is not None:
+        ec_kwargs.update({
+            'partition_key_name': table_info.primary_index.partition,
+            'sort_key_name': table_info.primary_index.sort
+        })
+
     return CryptoConfig(
         materials_provider=materials_provider,
-        encryption_context=EncryptionContext(**table_info.encryption_context_values),
+        encryption_context=EncryptionContext(**ec_kwargs),
         attribute_actions=attribute_actions
     )
 
@@ -163,10 +155,23 @@ def crypto_config_from_cache(materials_provider, attribute_actions, table_info_c
     return crypto_config_from_table_info(materials_provider, attribute_actions, table_info)
 
 
+def _item_transformer(crypto_transformer):
+    """Supply an item transformer to go from an item that the provided ``crypto_transformer``
+    can understand to a DynamoDB JSON object.
+
+    :param crypto_transformer: An item encryptor or decryptor function
+    :returns: Item transformer function
+    """
+    if crypto_transformer in (decrypt_python_item, encrypt_python_item):
+        return dict_to_ddb
+
+    return lambda x: x
+
+
 def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwargs):
     # type: (Callable, Callable, Callable, **Any) -> Dict
     # TODO: narrow this down
-    """Transparently decrypt multiple items after getting them from the table.
+    """Transparently decrypt multiple items after getting them from the table with a scan or query method.
 
     :param callable decrypt_method: Method to use to decrypt items
     :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
@@ -181,7 +186,7 @@ def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwarg
     for pos in range(len(response['Items'])):
         response['Items'][pos] = decrypt_method(
             item=response['Items'][pos],
-            crypto_config=crypto_config
+            crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(response['Items'][pos]))
         )
     return response
 
@@ -204,7 +209,7 @@ def decrypt_get_item(decrypt_method, crypto_config_method, read_method, **kwargs
     if 'Item' in response:
         response['Item'] = decrypt_method(
             item=response['Item'],
-            crypto_config=crypto_config
+            crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(response['Item']))
         )
     return response
 
@@ -236,7 +241,7 @@ def decrypt_batch_get_item(decrypt_method, crypto_config_method, read_method, **
         for pos, value in enumerate(items):
             items[pos] = decrypt_method(
                 item=value,
-                crypto_config=crypto_config
+                crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(items[pos]))
             )
     return response
 
@@ -256,7 +261,7 @@ def encrypt_put_item(encrypt_method, crypto_config_method, write_method, **kwarg
     crypto_config, ddb_kwargs = crypto_config_method(**kwargs)
     ddb_kwargs['Item'] = encrypt_method(
         item=ddb_kwargs['Item'],
-        crypto_config=crypto_config
+        crypto_config=crypto_config.with_item(_item_transformer(encrypt_method)(ddb_kwargs['Item']))
     )
     return write_method(**ddb_kwargs)
 
@@ -287,6 +292,6 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
                 if request_type == 'PutRequest':
                     items[pos][request_type]['Item'] = encrypt_method(
                         item=item['Item'],
-                        crypto_config=crypto_config
+                        crypto_config=crypto_config.with_item(_item_transformer(encrypt_method)(item['Item']))
                     )
     return write_method(**kwargs)

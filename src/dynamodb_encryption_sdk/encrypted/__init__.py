@@ -104,3 +104,14 @@ class CryptoConfig(object):
             encryption_context=copy.copy(self.encryption_context),
             attribute_actions=self.attribute_actions
         )
+
+    def with_item(self, item):
+        """Return a copy of this instance with an encryption context that includes the provided item attributes.
+
+        :param dict item: DynamoDB item in DynamnoDB JSON format
+        :returns: New :class:`CryptoConfig` identical to this one
+        :rtype: CryptoConfig
+        """
+        new_config = self.copy()
+        new_config.encryption_context.attributes = item
+        return new_config
