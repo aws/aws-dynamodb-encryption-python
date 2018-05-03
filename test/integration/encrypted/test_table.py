@@ -16,7 +16,7 @@ import pytest
 from ..integration_test_utils import aws_kms_cmp, ddb_table_name  # noqa pylint: disable=unused-import
 from ..integration_test_utils import functional_test_utils
 
-pytestmark = pytest.mark.integ
+pytestmark = [pytest.mark.integ, pytest.mark.ddb_integ]
 
 
 def pytest_generate_tests(metafunc):
