@@ -1,5 +1,9 @@
 #!/bin/bash
 # Verify that tests can be successfully run from the source build.
+#
+#NOTE: Humans should not run this file directly. If you want to run this check, use the
+#   tox to run the "sourcebuildcheck" test environment.
+
 WORKINGDIR=$1
 DISTDIR=$2
 
