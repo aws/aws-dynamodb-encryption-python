@@ -2,6 +2,10 @@
 Changelog
 *********
 
+1.0.3 -- 2018-05-03
+===================
+* Finish fixing ``MANIFEST.in``.
+
 1.0.2 -- 2018-05-03
 ===================
 * Fill out ``MANIFEST.in`` to correctly include necessary files in source build.
