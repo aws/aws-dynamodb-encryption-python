@@ -14,6 +14,7 @@
 import logging
 import itertools
 
+from boto3.dynamodb.types import Binary
 import hypothesis
 import pytest
 
@@ -43,7 +44,7 @@ def test_verify_user_agent(aws_kms_cmp, caplog):
 
 
 def _many_items():
-    values = ('a string', 1234, b'binary \x00\x88 value')
+    values = ('a string', 1234, Binary(b'binary \x00\x88 value'))
     partition_keys = (('partition_key', value) for value in values)
     sort_keys = (('sort_key', value) for value in values)
     for pairs in itertools.product(partition_keys, sort_keys):
