@@ -38,5 +38,5 @@ matrix:
 #      env: TOXENV=flake8-tests
 #    - python: 3.6
 #      env: TOXENV=pylint-tests
-install: pip install tox
-script: tox
+install: pip install tox -- -vv
+script: travis_wait 40 tox
