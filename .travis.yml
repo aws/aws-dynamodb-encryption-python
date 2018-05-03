@@ -1,0 +1,42 @@
+sudo: false
+language: python
+matrix:
+  include:
+    - python: 2.7
+      env: TOXENV=py27-local-slow
+#    - python: 2.7
+#      env: TOXENV=py27-integ-slow
+    - python: 3.4
+      env: TOXENV=py34-local-slow
+#    - python: 3.4
+#      env: TOXENV=py34-integ-slow
+    - python: 3.5
+      env: TOXENV=py35-local-slow
+#    - python: 3.5
+#      env: TOXENV=py35-integ-slow
+    - python: 3.6
+      env: TOXENV=py36-local-slow
+#    - python: 3.6
+#      env: TOXENV=py36-integ-slow
+#    - python: 3.6
+#      env: TOXENV=mypy-py2
+#    - python: 3.6
+#      env: TOXENV=mypy-py3
+    - python: 3.6
+      env: TOXENV=bandit
+    - python: 3.6
+      env: TOXENV=doc8
+    - python: 3.6
+      env: TOXENV=readme
+    - python: 3.6
+      env: TOXENV=docs
+#    - python: 3.6
+#      env: TOXENV=flake8
+#    - python: 3.6
+#      env: TOXENV=pylint
+#    - python: 3.6
+#      env: TOXENV=flake8-tests
+#    - python: 3.6
+#      env: TOXENV=pylint-tests
+install: pip install tox
+script: tox
