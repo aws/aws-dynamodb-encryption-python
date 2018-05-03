@@ -4,4 +4,9 @@ include LICENSE
 include requirements.txt
 
 recursive-include doc *
-recursive-include test *.py
+recursive-exclude doc .DS_Store *.pyc
+prune doc/build
+prune doc/lib/generated
+
+recursive-include test *
+recursive-exclude test .DS_Store *.pyc
