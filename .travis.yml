@@ -2,22 +2,23 @@ sudo: false
 language: python
 matrix:
   include:
+    # Temporarily only using fast suite with 2.7 due to issue with hypothesis number generation.
     - python: 2.7
-      env: TOXENV=py27-local-slow
-#    - python: 2.7
-#      env: TOXENV=py27-integ-slow
+      env: TOXENV=py27-local-fast
+    - python: 2.7
+      env: TOXENV=py27-integ-fast
     - python: 3.4
       env: TOXENV=py34-local-slow
-#    - python: 3.4
-#      env: TOXENV=py34-integ-slow
+    - python: 3.4
+      env: TOXENV=py34-integ-slow
     - python: 3.5
       env: TOXENV=py35-local-slow
-#    - python: 3.5
-#      env: TOXENV=py35-integ-slow
+    - python: 3.5
+      env: TOXENV=py35-integ-slow
     - python: 3.6
       env: TOXENV=py36-local-slow
-#    - python: 3.6
-#      env: TOXENV=py36-integ-slow
+    - python: 3.6
+      env: TOXENV=py36-integ-slow
 #    - python: 3.6
 #      env: TOXENV=mypy-py2
 #    - python: 3.6
