@@ -7,15 +7,14 @@ environment:
     # analysis, etc are only run on Linux (via Travis CI).
 
     # Python 2.7
-    # Temporarily only using fast suite with 2.7 due to issue with hypothesis number generation.
     - PYTHON: "C:\\Python27"
-      TOXENV: "py27-local-fast"
+      TOXENV: "py27-local-slow"
     - PYTHON: "C:\\Python27"
-      TOXENV: "py27-integ-fast"
+      TOXENV: "py27-integ-slow"
     - PYTHON: "C:\\Python27-x64"
-      TOXENV: "py27-local-fast"
+      TOXENV: "py27-local-slow"
     - PYTHON: "C:\\Python27-x64"
-      TOXENV: "py27-integ-fast"
+      TOXENV: "py27-integ-slow"
 
     # Python 3.4
     - PYTHON: "C:\\Python34"
