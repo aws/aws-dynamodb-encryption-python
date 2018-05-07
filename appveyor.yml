@@ -53,7 +53,7 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   # Check the Python version to verify the correct version was installed
   - "python --version"
-  - "python -m pip install wheel tox"
+  - "python -m pip install --upgrade setuptools wheel tox"
 
 build: off
 
