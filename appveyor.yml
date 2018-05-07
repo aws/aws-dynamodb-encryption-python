@@ -1,0 +1,61 @@
+# https://packaging.python.org/guides/supporting-windows-using-appveyor/
+
+environment:
+
+  matrix:
+    # The only test we perform on Windows are our actual code tests. All linting, static
+    # analysis, etc are only run on Linux (via Travis CI).
+
+    # Python 2.7
+    - PYTHON: "C:\\Python27"
+      TOXENV: "py27-local-slow"
+    - PYTHON: "C:\\Python27"
+      TOXENV: "py27-integ-slow"
+    - PYTHON: "C:\\Python27-x64"
+      TOXENV: "py27-local-slow"
+    - PYTHON: "C:\\Python27-x64"
+      TOXENV: "py27-integ-slow"
+
+    # Python 3.4
+    - PYTHON: "C:\\Python34"
+      TOXENV: "py34-local-slow"
+    - PYTHON: "C:\\Python34"
+      TOXENV: "py34-integ-slow"
+    - PYTHON: "C:\\Python34-x64"
+      DISTUTILS_USE_SDK: "1"
+      TOXENV: "py34-local-slow"
+    - PYTHON: "C:\\Python34-x64"
+      DISTUTILS_USE_SDK: "1"
+      TOXENV: "py34-integ-slow"
+
+    # Python 3.5
+    - PYTHON: "C:\\Python35"
+      TOXENV: "py35-local-slow"
+    - PYTHON: "C:\\Python35"
+      TOXENV: "py35-integ-slow"
+    - PYTHON: "C:\\Python35-x64"
+      TOXENV: "py35-local-slow"
+    - PYTHON: "C:\\Python35-x64"
+      TOXENV: "py35-integ-slow"
+
+    # Python 3.6
+    - PYTHON: "C:\\Python36"
+      TOXENV: "py36-local-slow"
+    - PYTHON: "C:\\Python36"
+      TOXENV: "py36-integ-slow"
+    - PYTHON: "C:\\Python36-x64"
+      TOXENV: "py36-local-slow"
+    - PYTHON: "C:\\Python36-x64"
+      TOXENV: "py36-integ-slow"
+
+install:
+  # Prepend newly installed Python to the PATH of this build
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  # Check the Python version to verify the correct version was installed
+  - "python --version"
+  - "python -m pip install --upgrade setuptools wheel tox"
+
+build: off
+
+test_script:
+  - "tox -- -vv"
