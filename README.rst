@@ -10,8 +10,8 @@ Amazon DynamoDB Encryption Client for Python
    :target: https://pypi.org/project/dynamodb-encryption-sdk
    :alt: Supported Python Versions
 
-.. image:: https://readthedocs.org/projects/aws-dynamodb-encryption-python/badge/
-   :target: https://aws-dynamodb-encryption-python.readthedocs.io/en/stable/
+.. image:: https://readthedocs.org/projects/aws-dynamodb-encryption-python/badge/?version=latest
+   :target: http://aws-dynamodb-encryption-python.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
 .. image:: https://travis-ci.org/awslabs/aws-dynamodb-encryption-python.svg?branch=master
