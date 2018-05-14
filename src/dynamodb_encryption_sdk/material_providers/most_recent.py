@@ -182,7 +182,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         return provider.decryption_materials(encryption_context)
 
     def _ttl_action(self):
-        # type: () -> bool
+        # type: () -> TtlActions
         """Determine the correct action to take based on the local resources and TTL.
 
         :returns: decision
