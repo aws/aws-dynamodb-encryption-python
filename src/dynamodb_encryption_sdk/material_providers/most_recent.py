@@ -247,7 +247,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             # If blocking, we will never reach this point.
             # If not blocking, we want whatever the latest local version is.
             version = self._version
-            return version, self._cache.get(version)
+            return self._cache.get(version)
 
         try:
             max_version = self._get_max_version()
