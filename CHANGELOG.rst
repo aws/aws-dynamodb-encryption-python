@@ -10,7 +10,7 @@ Bugfixes
 * Fix :class:`MostRecentProvider` behavior when lock cannot be acquired.
   `#72 <https://github.com/awslabs/aws-dynamodb-encryption-python/issues/72>`_
 * Fix :class:`MostRecentProvider` lock acquisition for Python 2.7.
-  `#73 <https://github.com/awslabs/aws-dynamodb-encryption-python/issues/73>`_
+  `#74 <https://github.com/awslabs/aws-dynamodb-encryption-python/issues/74>`_
 
 1.0.3 -- 2018-05-03
 ===================
