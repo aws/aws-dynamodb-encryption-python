@@ -240,7 +240,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :returns: version and corresponding cryptographic materials provider
         :rtype: CryptographicMaterialsProvider
         """
-        acquired = self._lock.acquire(blocking=not allow_local)
+        acquired = self._lock.acquire(not allow_local)
 
         if not acquired:
             # We failed to acquire the lock.
