@@ -17,7 +17,7 @@ import attr
 import six
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Iterable, Optional, Set, Text  # noqa pylint: disable=unused-import
+    from typing import Dict, Iterable, List, Optional, Set, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -295,7 +295,7 @@ class TableInfo(object):
     :param bool all_encrypting_secondary_indexes: Should we allow secondary index attributes to be encrypted?
     :param TableIndex primary_index: Description of primary index
     :param secondary_indexes: Set of TableIndex objects describing any secondary indexes
-    :type secondary_indexes: set(TableIndex)
+    :type secondary_indexes: list(TableIndex)
     """
 
     name = attr.ib(validator=attr.validators.instance_of(six.string_types))
@@ -312,7 +312,7 @@ class TableInfo(object):
             self,
             name,  # type: Text
             primary_index=None,  # type: Optional[TableIndex]
-            secondary_indexes=None  # type: Optional[Set[TableIndex]]
+            secondary_indexes=None  # type: Optional[List[TableIndex]]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -338,7 +338,7 @@ class TableInfo(object):
 
     @property
     def secondary_indexes(self):
-        # type: () -> Set[TableIndex]
+        # type: () -> List[TableIndex]
         """Return the primary TableIndex.
 
         :returns: secondary index descriptions
