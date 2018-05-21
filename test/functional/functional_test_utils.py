@@ -48,6 +48,16 @@ TEST_INDEX = {
         'value': Decimal('99.233')
     }
 }
+SECONARY_INDEX = {
+    'secondary_index_1': {
+        'type': 'B',
+        'value': Binary(b'\x00\x01\x02')
+    },
+    'secondary_index_1': {
+        'type': 'S',
+        'value': 'another_value'
+    }
+}
 TEST_KEY = {name: value['value'] for name, value in TEST_INDEX.items()}
 TEST_BATCH_INDEXES = [
     {
@@ -119,6 +129,132 @@ def example_table():
                 'AttributeType': value['type']
             }
             for name, value in TEST_INDEX.items()
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 100,
+            'WriteCapacityUnits': 100
+        }
+    )
+    yield
+    ddb.delete_table(TableName=TEST_TABLE_NAME)
+    mock_dynamodb2().stop()
+
+
+@pytest.fixture
+def table_with_local_seconary_indexes():
+    mock_dynamodb2().start()
+    ddb = boto3.client('dynamodb', region_name='us-west-2')
+    ddb.create_table(
+        TableName=TEST_TABLE_NAME,
+        KeySchema=[
+            {
+                'AttributeName': 'partition_attribute',
+                'KeyType': 'HASH'
+            },
+            {
+                'AttributeName': 'sort_attribute',
+                'KeyType': 'RANGE'
+            }
+        ],
+        LocalSecondaryIndexes=[
+            {
+                'IndexName': 'lsi-1',
+                'KeySchema': [
+                    {
+                        'AttributeName': 'secondary_index_1',
+                        'KeyType': 'HASH'
+                    }
+                ],
+                'Projection': {
+                    'ProjectionType': 'ALL'
+                }
+            },
+            {
+                'IndexName': 'lsi-2',
+                'KeySchema': [
+                    {
+                        'AttributeName': 'secondary_index_2',
+                        'KeyType': 'HASH'
+                    }
+                ],
+                'Projection': {
+                    'ProjectionType': 'ALL'
+                }
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': name,
+                'AttributeType': value['type']
+            }
+            for name, value in list(TEST_INDEX.items()) + list(SECONARY_INDEX.items())
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 100,
+            'WriteCapacityUnits': 100
+        }
+    )
+    yield
+    ddb.delete_table(TableName=TEST_TABLE_NAME)
+    mock_dynamodb2().stop()
+
+
+@pytest.fixture
+def table_with_global_seconary_indexes():
+    mock_dynamodb2().start()
+    ddb = boto3.client('dynamodb', region_name='us-west-2')
+    ddb.create_table(
+        TableName=TEST_TABLE_NAME,
+        KeySchema=[
+            {
+                'AttributeName': 'partition_attribute',
+                'KeyType': 'HASH'
+            },
+            {
+                'AttributeName': 'sort_attribute',
+                'KeyType': 'RANGE'
+            }
+        ],
+        GlobalSecondaryIndexes=[
+            {
+                'IndexName': 'gsi-1',
+                'KeySchema': [
+                    {
+                        'AttributeName': 'secondary_index_1',
+                        'KeyType': 'HASH'
+                    }
+                ],
+                'Projection': {
+                    'ProjectionType': 'ALL'
+                },
+                'ProvisionedThroughput': {
+                    'ReadCapacityUnits': 100,
+                    'WriteCapacityUnits': 100
+                }
+            },
+            {
+                'IndexName': 'gsi-2',
+                'KeySchema': [
+                    {
+                        'AttributeName': 'secondary_index_2',
+                        'KeyType': 'HASH'
+                    }
+                ],
+                'Projection': {
+                    'ProjectionType': 'ALL'
+                },
+                'ProvisionedThroughput': {
+                    'ReadCapacityUnits': 100,
+                    'WriteCapacityUnits': 100
+                }
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': name,
+                'AttributeType': value['type']
+            }
+            for name, value in list(TEST_INDEX.items()) + list(SECONARY_INDEX.items())
         ],
         ProvisionedThroughput={
             'ReadCapacityUnits': 100,

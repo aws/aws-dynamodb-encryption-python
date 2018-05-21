@@ -304,7 +304,7 @@ class TableInfo(object):
         default=None
     )
     _secondary_indexes = attr.ib(
-        validator=attr.validators.optional(iterable_validator(set, TableIndex)),
+        validator=attr.validators.optional(iterable_validator(list, TableIndex)),
         default=None
     )
 
@@ -378,10 +378,10 @@ class TableInfo(object):
         table = client.describe_table(TableName=self.name)['Table']
         self._primary_index = TableIndex.from_key_schema(table['KeySchema'])
 
-        self._secondary_indexes = set()
+        self._secondary_indexes = []
         for group in ('LocalSecondaryIndexes', 'GlobalSecondaryIndexes'):
             try:
                 for index in table[group]:
-                    self._secondary_indexes.add(TableIndex.from_key_schema(index['KeySchema']))
+                    self._secondary_indexes.append(TableIndex.from_key_schema(index['KeySchema']))
             except KeyError:
                 pass  # Not all tables will have secondary indexes.

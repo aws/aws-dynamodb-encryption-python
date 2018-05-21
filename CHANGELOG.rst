@@ -2,7 +2,7 @@
 Changelog
 *********
 
-1.0.4 -- 2018-05-16
+1.0.4 -- 2018-05-xx
 ===================
 
 Bugfixes
@@ -11,6 +11,8 @@ Bugfixes
   `#72 <https://github.com/awslabs/aws-dynamodb-encryption-python/issues/72>`_
 * Fix :class:`MostRecentProvider` lock acquisition for Python 2.7.
   `#74 <https://github.com/awslabs/aws-dynamodb-encryption-python/issues/74>`_
+* Fix :class:`TableInfo` secondary index storage.
+  `#75 <https://github.com/awslabs/aws-dynamodb-encryption-python/issues/75>`_
 
 1.0.3 -- 2018-05-03
 ===================
