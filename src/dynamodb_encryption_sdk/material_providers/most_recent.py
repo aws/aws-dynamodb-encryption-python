@@ -182,7 +182,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         return provider.decryption_materials(encryption_context)
 
     def _ttl_action(self):
-        # type: () -> bool
+        # type: () -> TtlActions
         """Determine the correct action to take based on the local resources and TTL.
 
         :returns: decision
@@ -240,14 +240,14 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :returns: version and corresponding cryptographic materials provider
         :rtype: CryptographicMaterialsProvider
         """
-        acquired = self._lock.acquire(blocking=not allow_local)
+        acquired = self._lock.acquire(not allow_local)
 
         if not acquired:
             # We failed to acquire the lock.
             # If blocking, we will never reach this point.
             # If not blocking, we want whatever the latest local version is.
             version = self._version
-            return version, self._cache.get(version)
+            return self._cache.get(version)
 
         try:
             max_version = self._get_max_version()

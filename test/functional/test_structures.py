@@ -11,13 +11,40 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Functional tests for ``dynamodb_encryption_sdk.structures``."""
+import boto3
 import pytest
 
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.identifiers import CryptoAction
-from dynamodb_encryption_sdk.structures import AttributeActions, TableIndex
+from dynamodb_encryption_sdk.structures import AttributeActions, TableIndex, TableInfo
+from .functional_test_utils import (
+    example_table, table_with_global_seconary_indexes, table_with_local_seconary_indexes, TEST_TABLE_NAME
+)
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
+
+
+# TODO: There is a way to parameterize fixtures, but the existing docs on that are very unclear.
+# This will get us what we need for now, but we should come back to this to clean this up later.
+def test_tableinfo_refresh_indexes_no_secondary_indexes(example_table):
+    client = boto3.client('dynamodb', region_name='us-west-2')
+    table = TableInfo(name=TEST_TABLE_NAME)
+
+    table.refresh_indexed_attributes(client)
+
+
+def test_tableinfo_refresh_indexes_with_gsis(table_with_global_seconary_indexes):
+    client = boto3.client('dynamodb', region_name='us-west-2')
+    table = TableInfo(name=TEST_TABLE_NAME)
+
+    table.refresh_indexed_attributes(client)
+
+
+def test_tableinfo_refresh_indexes_with_lsis(table_with_local_seconary_indexes):
+    client = boto3.client('dynamodb', region_name='us-west-2')
+    table = TableInfo(name=TEST_TABLE_NAME)
+
+    table.refresh_indexed_attributes(client)
 
 
 @pytest.mark.parametrize('kwargs, expected_attributes', (
