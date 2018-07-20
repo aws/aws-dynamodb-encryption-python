@@ -178,9 +178,9 @@ of the one that the client would normally construct for you.
 .. _cryptography: https://cryptography.io/en/latest/
 .. _cryptography installation guide: https://cryptography.io/en/latest/installation/
 .. _boto3: https://boto3.readthedocs.io/en/latest/
-.. _EncryptedClient: lib/encrypted/client.html
-.. _EncryptedResource: lib/encrypted/resource.html
-.. _EncryptedTable: lib/encrypted/table.html
-.. _CryptoConfig: lib/encrypted/config.html
-.. _decrypt_dynamodb_item: lib/encrypted/item.html#dynamodb_encryption_sdk.encrypted.item.decrypt_dynamodb_item
-.. _transformation functions: lib/tools/transform.html
+.. _EncryptedClient: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/client.html
+.. _EncryptedResource: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/resource.html
+.. _EncryptedTable: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/table.html
+.. _CryptoConfig: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/config.html
+.. _decrypt_dynamodb_item: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/item.html#dynamodb_encryption_sdk.encrypted.item.decrypt_dynamodb_item
+.. _transformation functions: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/tools/transform.html
