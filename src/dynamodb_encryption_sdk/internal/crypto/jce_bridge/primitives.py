@@ -35,6 +35,7 @@ from dynamodb_encryption_sdk.exceptions import (
     WrappingError,
 )
 from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, KeyEncodingType
+from dynamodb_encryption_sdk.internal.identifiers import MinimumKeySizes
 from dynamodb_encryption_sdk.internal.validators import callable_validator
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
@@ -451,7 +452,12 @@ def load_rsa_key(key, key_type, key_encoding):
     if key_type is EncryptionKeyType.PRIVATE:
         kwargs["password"] = None
 
-    return loader(**kwargs)
+    loaded_key = loader(**kwargs)
+
+    if loaded_key.key_size < MinimumKeySizes.RSA.value:
+        _LOGGER.warning("RSA keys smaller than %d bits are unsafe" % MinimumKeySizes.RSA.value)
+
+    return loaded_key
 
 
 _KEY_LOADERS = {rsa: load_rsa_key}

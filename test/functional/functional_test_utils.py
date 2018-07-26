@@ -15,11 +15,13 @@ from __future__ import division
 
 import copy
 import itertools
+import logging
 from collections import defaultdict
 from decimal import Decimal
 
 import boto3
 import pytest
+import six
 from boto3.dynamodb.types import Binary
 from moto import mock_dynamodb2
 
@@ -641,3 +643,13 @@ def client_cycle_batch_items_check_paginators(
     e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
     assert not raw_scan_result["Items"]
     assert not e_scan_result["Items"]
+
+
+@pytest.fixture
+def capturing_logger():
+    output_stream = six.StringIO()
+    handler = logging.StreamHandler(stream=output_stream)
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    return output_stream
