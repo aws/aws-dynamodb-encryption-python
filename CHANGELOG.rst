@@ -2,6 +2,10 @@
 Changelog
 *********
 
+1.0.5 -- 2018-08-01
+===================
+* Move the ``aws-dynamodb-encryption-python`` repository from ``awslabs`` to ``aws``.
+
 1.0.4 -- 2018-05-22
 ===================
 
