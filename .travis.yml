@@ -19,7 +19,7 @@ matrix:
     - python: 3.6
       env: TOXENV=py36-integ-slow
 # Disabled pending completion of integration
-# https://github.com/awslabs/aws-dynamodb-encryption-python/issues/66
+# https://github.com/aws/aws-dynamodb-encryption-python/issues/66
 #    - python: 3.6
 #      env: TOXENV=mypy-py2
 #    - python: 3.6
@@ -33,7 +33,7 @@ matrix:
     - python: 3.6
       env: TOXENV=docs
 # Disabled pending completion of cleanup
-# https://github.com/awslabs/aws-dynamodb-encryption-python/issues/67
+# https://github.com/aws/aws-dynamodb-encryption-python/issues/67
 #    - python: 3.6
 #      env: TOXENV=flake8
 #    - python: 3.6

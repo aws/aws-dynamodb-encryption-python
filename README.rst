@@ -14,8 +14,8 @@ Amazon DynamoDB Encryption Client for Python
    :target: http://aws-dynamodb-encryption-python.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://travis-ci.org/awslabs/aws-dynamodb-encryption-python.svg?branch=master
-   :target: https://travis-ci.org/awslabs/aws-dynamodb-encryption-python
+.. image:: https://travis-ci.org/aws/aws-dynamodb-encryption-python.svg?branch=master
+   :target: https://travis-ci.org/aws/aws-dynamodb-encryption-python
 
 .. image:: https://ci.appveyor.com/api/projects/status/6mh2v0nusujldu72/branch/master?svg=true
    :target: https://ci.appveyor.com/project/mattsb42-aws/aws-dynamodb-encryption-python-v5ycc
@@ -170,11 +170,11 @@ of the one that the client would normally construct for you.
 .. _Amazon DynamoDB: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
 .. _primary documents: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/
 .. _Concepts Guide: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/concepts.html
-.. _Amazon DynamoDB Encryption Client for Java: https://github.com/awslabs/aws-dynamodb-encryption-java/
-.. _Amazon DynamoDB Encryption Client for Python: https://github.com/awslabs/aws-dynamodb-encryption-python/
+.. _Amazon DynamoDB Encryption Client for Java: https://github.com/aws/aws-dynamodb-encryption-java/
+.. _Amazon DynamoDB Encryption Client for Python: https://github.com/aws/aws-dynamodb-encryption-python/
 .. _DynamoDB Stream: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html
 .. _Read the Docs: http://aws-dynamodb-encryption-python.readthedocs.io/en/latest/
-.. _GitHub: https://github.com/awslabs/aws-dynamodb-encryption-python/
+.. _GitHub: https://github.com/aws/aws-dynamodb-encryption-python/
 .. _cryptography: https://cryptography.io/en/latest/
 .. _cryptography installation guide: https://cryptography.io/en/latest/installation/
 .. _boto3: https://boto3.readthedocs.io/en/latest/

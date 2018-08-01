@@ -31,7 +31,7 @@ setup(
     version=get_version(),
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    url='https://github.com/awslabs/aws-dynamodb-encryption-python',
+    url='https://github.com/aws/aws-dynamodb-encryption-python',
     author='Amazon Web Services',
     author_email='aws-cryptools@amazon.com',
     maintainer='Amazon Web Services',
