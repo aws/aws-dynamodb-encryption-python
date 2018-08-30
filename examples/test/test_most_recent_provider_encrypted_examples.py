@@ -13,10 +13,13 @@
 """Test most recent provider examples."""
 import os
 import sys
-sys.path.extend([  # noqa
-    os.sep.join([os.path.dirname(__file__), '..', '..', 'test', 'integration']),
-    os.sep.join([os.path.dirname(__file__), '..', 'src'])
-])
+
+sys.path.extend(
+    [  # noqa
+        os.sep.join([os.path.dirname(__file__), "..", "..", "test", "integration"]),
+        os.sep.join([os.path.dirname(__file__), "..", "src"]),
+    ]
+)
 import uuid
 
 import boto3
@@ -31,13 +34,13 @@ pytestmark = [pytest.mark.examples]
 
 def test_most_recent_encrypted_table(ddb_table_name, cmk_arn):
     # define random new names for material and metastore table
-    meta_table_name = 'meta-table-{}'.format(uuid.uuid4())
-    material_name = 'material-{}'.format(uuid.uuid4())
+    meta_table_name = "meta-table-{}".format(uuid.uuid4())
+    material_name = "material-{}".format(uuid.uuid4())
 
     # create the metastore table
-    client = boto3.client('dynamodb')
+    client = boto3.client("dynamodb")
     MetaStore.create_table(client, meta_table_name, 10, 10)
-    waiter = client.get_waiter('table_exists')
+    waiter = client.get_waiter("table_exists")
     waiter.wait(TableName=meta_table_name)
 
     # run the actual test
@@ -45,5 +48,5 @@ def test_most_recent_encrypted_table(ddb_table_name, cmk_arn):
 
     # clean up the meta store table
     client.delete_table(TableName=meta_table_name)
-    waiter = client.get_waiter('table_not_exists')
+    waiter = client.get_waiter("table_not_exists")
     waiter.wait(TableName=meta_table_name)

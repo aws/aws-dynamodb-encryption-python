@@ -15,8 +15,8 @@ import base64
 import os
 
 import boto3
-from moto import mock_dynamodb2
 import pytest
+from moto import mock_dynamodb2
 
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 
@@ -25,13 +25,13 @@ pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 @mock_dynamodb2
 def test_create_table():
-    client = boto3.client('dynamodb', region_name='us-west-2')
-    table_name = base64.b64encode(os.urandom(32)).decode('utf-8')
+    client = boto3.client("dynamodb", region_name="us-west-2")
+    table_name = base64.b64encode(os.urandom(32)).decode("utf-8")
 
     MetaStore.create_table(client, table_name, 1, 1)
-    waiter = client.get_waiter('table_exists')
+    waiter = client.get_waiter("table_exists")
     waiter.wait(TableName=table_name)
 
     client.delete_table(TableName=table_name)
-    waiter = client.get_waiter('table_not_exists')
+    waiter = client.get_waiter("table_not_exists")
     waiter.wait(TableName=table_name)

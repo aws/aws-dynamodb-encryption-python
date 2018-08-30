@@ -32,11 +32,16 @@ except ImportError:  # pragma: no cover
     pass
 
 __all__ = (
-    'TableInfoCache',
-    'crypto_config_from_kwargs', 'crypto_config_from_table_info', 'crypto_config_from_cache',
-    'decrypt_get_item', 'decrypt_multi_get', 'decrypt_batch_get_item',
-    'encrypt_put_item', 'encrypt_batch_write_item',
-    'validate_get_arguments'
+    "TableInfoCache",
+    "crypto_config_from_kwargs",
+    "crypto_config_from_table_info",
+    "crypto_config_from_cache",
+    "decrypt_get_item",
+    "decrypt_multi_get",
+    "decrypt_batch_get_item",
+    "encrypt_put_item",
+    "encrypt_batch_write_item",
+    "validate_get_arguments",
 )
 
 
@@ -55,9 +60,7 @@ class TableInfoCache(object):
     _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool))
 
     def __init__(
-            self,
-            client,  # type: botocore.client.BaseClient
-            auto_refresh_table_indexes  # type: bool
+        self, client, auto_refresh_table_indexes  # type: botocore.client.BaseClient  # type: bool
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -96,12 +99,12 @@ def validate_get_arguments(kwargs):
 
     :raises InvalidArgumentError: if banned parameters are found
     """
-    for arg in ('AttributesToGet', 'ProjectionExpression'):
+    for arg in ("AttributesToGet", "ProjectionExpression"):
         if arg in kwargs:
             raise InvalidArgumentError('"{}" is not supported for this operation'.format(arg))
 
-    if kwargs.get('Select', None) in ('SPECIFIC_ATTRIBUTES', 'ALL_PROJECTED_ATTRIBUTES'):
-        raise InvalidArgumentError('Scan "Select" value of "{}" is not supported'.format(kwargs['Select']))
+    if kwargs.get("Select", None) in ("SPECIFIC_ATTRIBUTES", "ALL_PROJECTED_ATTRIBUTES"):
+        raise InvalidArgumentError('Scan "Select" value of "{}" is not supported'.format(kwargs["Select"]))
 
 
 def crypto_config_from_kwargs(fallback, **kwargs):
@@ -111,10 +114,10 @@ def crypto_config_from_kwargs(fallback, **kwargs):
     :rtype: dynamodb_encryption_sdk.encrypted.CryptoConfig and dict
     """
     try:
-        crypto_config = kwargs.pop('crypto_config')
+        crypto_config = kwargs.pop("crypto_config")
     except KeyError:
         try:
-            fallback_kwargs = {'table_name': kwargs['TableName']}
+            fallback_kwargs = {"table_name": kwargs["TableName"]}
         except KeyError:
             fallback_kwargs = {}
         crypto_config = fallback(**fallback_kwargs)
@@ -129,15 +132,14 @@ def crypto_config_from_table_info(materials_provider, attribute_actions, table_i
     """
     ec_kwargs = table_info.encryption_context_values
     if table_info.primary_index is not None:
-        ec_kwargs.update({
-            'partition_key_name': table_info.primary_index.partition,
-            'sort_key_name': table_info.primary_index.sort
-        })
+        ec_kwargs.update(
+            {"partition_key_name": table_info.primary_index.partition, "sort_key_name": table_info.primary_index.sort}
+        )
 
     return CryptoConfig(
         materials_provider=materials_provider,
         encryption_context=EncryptionContext(**ec_kwargs),
-        attribute_actions=attribute_actions
+        attribute_actions=attribute_actions,
     )
 
 
@@ -183,10 +185,10 @@ def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwarg
     validate_get_arguments(kwargs)
     crypto_config, ddb_kwargs = crypto_config_method(**kwargs)
     response = read_method(**ddb_kwargs)
-    for pos in range(len(response['Items'])):
-        response['Items'][pos] = decrypt_method(
-            item=response['Items'][pos],
-            crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(response['Items'][pos]))
+    for pos in range(len(response["Items"])):
+        response["Items"][pos] = decrypt_method(
+            item=response["Items"][pos],
+            crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(response["Items"][pos])),
         )
     return response
 
@@ -206,10 +208,10 @@ def decrypt_get_item(decrypt_method, crypto_config_method, read_method, **kwargs
     validate_get_arguments(kwargs)
     crypto_config, ddb_kwargs = crypto_config_method(**kwargs)
     response = read_method(**ddb_kwargs)
-    if 'Item' in response:
-        response['Item'] = decrypt_method(
-            item=response['Item'],
-            crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(response['Item']))
+    if "Item" in response:
+        response["Item"] = decrypt_method(
+            item=response["Item"],
+            crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(response["Item"])),
         )
     return response
 
@@ -226,13 +228,13 @@ def decrypt_batch_get_item(decrypt_method, crypto_config_method, read_method, **
     :return: DynamoDB response
     :rtype: dict
     """
-    request_crypto_config = kwargs.pop('crypto_config', None)
+    request_crypto_config = kwargs.pop("crypto_config", None)
 
-    for _table_name, table_kwargs in kwargs['RequestItems'].items():
+    for _table_name, table_kwargs in kwargs["RequestItems"].items():
         validate_get_arguments(table_kwargs)
 
     response = read_method(**kwargs)
-    for table_name, items in response['Responses'].items():
+    for table_name, items in response["Responses"].items():
         if request_crypto_config is not None:
             crypto_config = request_crypto_config
         else:
@@ -240,8 +242,7 @@ def decrypt_batch_get_item(decrypt_method, crypto_config_method, read_method, **
 
         for pos, value in enumerate(items):
             items[pos] = decrypt_method(
-                item=value,
-                crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(items[pos]))
+                item=value, crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(items[pos]))
             )
     return response
 
@@ -259,9 +260,9 @@ def encrypt_put_item(encrypt_method, crypto_config_method, write_method, **kwarg
     :rtype: dict
     """
     crypto_config, ddb_kwargs = crypto_config_method(**kwargs)
-    ddb_kwargs['Item'] = encrypt_method(
-        item=ddb_kwargs['Item'],
-        crypto_config=crypto_config.with_item(_item_transformer(encrypt_method)(ddb_kwargs['Item']))
+    ddb_kwargs["Item"] = encrypt_method(
+        item=ddb_kwargs["Item"],
+        crypto_config=crypto_config.with_item(_item_transformer(encrypt_method)(ddb_kwargs["Item"])),
     )
     return write_method(**ddb_kwargs)
 
@@ -278,9 +279,9 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
     :return: DynamoDB response
     :rtype: dict
     """
-    request_crypto_config = kwargs.pop('crypto_config', None)
+    request_crypto_config = kwargs.pop("crypto_config", None)
 
-    for table_name, items in kwargs['RequestItems'].items():
+    for table_name, items in kwargs["RequestItems"].items():
         if request_crypto_config is not None:
             crypto_config = request_crypto_config
         else:
@@ -289,9 +290,9 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
         for pos, value in enumerate(items):
             for request_type, item in value.items():
                 # We don't encrypt primary indexes, so we can ignore DeleteItem requests
-                if request_type == 'PutRequest':
-                    items[pos][request_type]['Item'] = encrypt_method(
-                        item=item['Item'],
-                        crypto_config=crypto_config.with_item(_item_transformer(encrypt_method)(item['Item']))
+                if request_type == "PutRequest":
+                    items[pos][request_type]["Item"] = encrypt_method(
+                        item=item["Item"],
+                        crypto_config=crypto_config.with_item(_item_transformer(encrypt_method)(item["Item"])),
                     )
     return write_method(**kwargs)

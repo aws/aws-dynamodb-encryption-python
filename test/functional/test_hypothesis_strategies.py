@@ -11,14 +11,15 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Tests to verify that our advanced hypothesis strategies are behaving as expected."""
-from boto3.dynamodb.types import DYNAMODB_CONTEXT
 import hypothesis
 import pytest
+from boto3.dynamodb.types import DYNAMODB_CONTEXT
 
 from dynamodb_encryption_sdk.internal.formatting.deserialize.attribute import deserialize_attribute
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
-from dynamodb_encryption_sdk.transform import dict_to_ddb, ddb_to_dict
-from .hypothesis_strategies import ddb_items, ddb_negative_numbers, ddb_number, ddb_positive_numbers, VERY_SLOW_SETTINGS
+from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
+
+from .hypothesis_strategies import VERY_SLOW_SETTINGS, ddb_items, ddb_negative_numbers, ddb_number, ddb_positive_numbers
 
 pytestmark = [pytest.mark.functional, pytest.mark.slow, pytest.mark.local, pytest.mark.hypothesis_strategy]
 

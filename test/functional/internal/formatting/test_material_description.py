@@ -16,24 +16,29 @@ import pytest
 
 from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
 from dynamodb_encryption_sdk.internal.formatting.material_description import (
-    deserialize as deserialize_material_description, serialize as serialize_material_description
+    deserialize as deserialize_material_description,
+    serialize as serialize_material_description,
 )
+
 from ...functional_test_vector_generators import material_description_test_vectors
-from ...hypothesis_strategies import material_descriptions, SLOW_SETTINGS, VERY_SLOW_SETTINGS
+from ...hypothesis_strategies import SLOW_SETTINGS, VERY_SLOW_SETTINGS, material_descriptions
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 
-@pytest.mark.parametrize('material_description, serialized', material_description_test_vectors())
+@pytest.mark.parametrize("material_description, serialized", material_description_test_vectors())
 def test_serialize_material_description(material_description, serialized):
     serialized_material_description = serialize_material_description(material_description)
     assert serialized_material_description == serialized
 
 
-@pytest.mark.parametrize('data, expected_type, expected_message', (
-    ({'test': 5}, InvalidMaterialDescriptionError, 'Invalid name or value in material description: *'),
-    ({5: 'test'}, InvalidMaterialDescriptionError, 'Invalid name or value in material description: *'),
-))
+@pytest.mark.parametrize(
+    "data, expected_type, expected_message",
+    (
+        ({"test": 5}, InvalidMaterialDescriptionError, "Invalid name or value in material description: *"),
+        ({5: "test"}, InvalidMaterialDescriptionError, "Invalid name or value in material description: *"),
+    ),
+)
 def test_serialize_material_description_errors(data, expected_type, expected_message):
     with pytest.raises(expected_type) as exc_info:
         serialize_material_description(data)
@@ -41,28 +46,35 @@ def test_serialize_material_description_errors(data, expected_type, expected_mes
     exc_info.match(expected_message)
 
 
-@pytest.mark.parametrize('material_description, serialized', material_description_test_vectors())
+@pytest.mark.parametrize("material_description, serialized", material_description_test_vectors())
 def test_deserialize_material_description(material_description, serialized):
     deserialized_material_description = deserialize_material_description(serialized)
     assert deserialized_material_description == material_description
 
 
-@pytest.mark.parametrize('data, expected_type, expected_message', (
-    # Invalid version
-    ({'B': b'\x00\x00\x00\x01'}, InvalidMaterialDescriptionVersionError, r'Invalid material description version: *'),
-    # Malformed version
-    ({'B': b'\x00\x00\x00'}, InvalidMaterialDescriptionError, r'Malformed material description version'),
-    # Invalid attribute type
-    ({'S': 'not bytes'}, InvalidMaterialDescriptionError, r'Invalid material description'),
-    # Invalid data: not a DDB attribute
-    (b'bare bytes', InvalidMaterialDescriptionError, r'Invalid material description'),
-    # Partial entry
+@pytest.mark.parametrize(
+    "data, expected_type, expected_message",
     (
-        {'B': b'\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01A\x00\x00\x00\x01'},
-        InvalidMaterialDescriptionError,
-        r'Invalid material description'
-    )
-))
+        # Invalid version
+        (
+            {"B": b"\x00\x00\x00\x01"},
+            InvalidMaterialDescriptionVersionError,
+            r"Invalid material description version: *",
+        ),
+        # Malformed version
+        ({"B": b"\x00\x00\x00"}, InvalidMaterialDescriptionError, r"Malformed material description version"),
+        # Invalid attribute type
+        ({"S": "not bytes"}, InvalidMaterialDescriptionError, r"Invalid material description"),
+        # Invalid data: not a DDB attribute
+        (b"bare bytes", InvalidMaterialDescriptionError, r"Invalid material description"),
+        # Partial entry
+        (
+            {"B": b"\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01A\x00\x00\x00\x01"},
+            InvalidMaterialDescriptionError,
+            r"Invalid material description",
+        ),
+    ),
+)
 def test_deserialize_material_description_errors(data, expected_type, expected_message):
     with pytest.raises(expected_type) as exc_info:
         deserialize_material_description(data)

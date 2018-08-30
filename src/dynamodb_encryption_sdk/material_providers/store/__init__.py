@@ -15,16 +15,19 @@ import abc
 
 import six
 
+from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
+from dynamodb_encryption_sdk.material_providers import (  # noqa pylint: disable=unused-import
+    CryptographicMaterialsProvider,
+)
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Text, Optional  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
-from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider  # noqa pylint: disable=unused-import
 
-__all__ = ('ProviderStore',)
+__all__ = ("ProviderStore",)
 
 
 @six.add_metaclass(abc.ABCMeta)

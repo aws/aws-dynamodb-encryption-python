@@ -13,18 +13,20 @@
 """Cryptographic materials provider for use with pre-configured encryption and decryption materials."""
 import attr
 
+from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
+from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
+
+from . import CryptographicMaterialsProvider
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Optional  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
-from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
-from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
-from . import CryptographicMaterialsProvider
 
-__all__ = ('StaticCryptographicMaterialsProvider',)
+__all__ = ("StaticCryptographicMaterialsProvider",)
 
 
 @attr.s(init=False)
@@ -36,18 +38,16 @@ class StaticCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """
 
     _decryption_materials = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(DecryptionMaterials)),
-        default=None
+        validator=attr.validators.optional(attr.validators.instance_of(DecryptionMaterials)), default=None
     )
     _encryption_materials = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(EncryptionMaterials)),
-        default=None
+        validator=attr.validators.optional(attr.validators.instance_of(EncryptionMaterials)), default=None
     )
 
     def __init__(
-            self,
-            decryption_materials=None,  # type: Optional[DecryptionMaterials]
-            encryption_materials=None  # type: Optional[EncryptionMaterials]
+        self,
+        decryption_materials=None,  # type: Optional[DecryptionMaterials]
+        encryption_materials=None,  # type: Optional[EncryptionMaterials]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.

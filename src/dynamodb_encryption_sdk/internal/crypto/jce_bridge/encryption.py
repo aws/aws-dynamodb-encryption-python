@@ -19,11 +19,17 @@
 import attr
 
 from dynamodb_encryption_sdk.exceptions import JceTransformationError
+
 from .primitives import (
-    JAVA_ENCRYPTION_ALGORITHM, JAVA_MODE, JAVA_PADDING, JavaEncryptionAlgorithm, JavaMode, JavaPadding
+    JAVA_ENCRYPTION_ALGORITHM,
+    JAVA_MODE,
+    JAVA_PADDING,
+    JavaEncryptionAlgorithm,
+    JavaMode,
+    JavaPadding,
 )
 
-__all__ = ('JavaCipher',)
+__all__ = ("JavaCipher",)
 
 
 @attr.s(init=False)
@@ -42,10 +48,7 @@ class JavaCipher(object):
     padding = attr.ib(validator=attr.validators.instance_of(JavaPadding))
 
     def __init__(
-            self,
-            cipher,  # type: JavaEncryptionAlgorithm
-            mode,  # type: JavaMode
-            padding  # type: JavaPadding
+        self, cipher, mode, padding  # type: JavaEncryptionAlgorithm  # type: JavaMode  # type: JavaPadding
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -84,14 +87,9 @@ class JavaCipher(object):
         :returns: Wrapped key
         :rtype: bytes
         """
-        if hasattr(self.cipher, 'wrap'):
+        if hasattr(self.cipher, "wrap"):
             return self.cipher.wrap(wrapping_key, key_to_wrap)
-        return self.cipher.encrypt(
-            key=wrapping_key,
-            data=key_to_wrap,
-            mode=self.mode,
-            padding=self.padding
-        )
+        return self.cipher.encrypt(key=wrapping_key, data=key_to_wrap, mode=self.mode, padding=self.padding)
 
     def unwrap(self, wrapping_key, wrapped_key):
         """Wrap key using loaded key.
@@ -101,14 +99,9 @@ class JavaCipher(object):
         :returns: Unwrapped key
         :rtype: bytes
         """
-        if hasattr(self.cipher, 'unwrap'):
+        if hasattr(self.cipher, "unwrap"):
             return self.cipher.unwrap(wrapping_key, wrapped_key)
-        return self.cipher.decrypt(
-            key=wrapping_key,
-            data=wrapped_key,
-            mode=self.mode,
-            padding=self.padding
-        )
+        return self.cipher.decrypt(key=wrapping_key, data=wrapped_key, mode=self.mode, padding=self.padding)
 
     @property
     def transformation(self):
@@ -119,10 +112,8 @@ class JavaCipher(object):
         :returns: Formatted transformation
         :rtype: str
         """
-        return '{cipher}/{mode}/{padding}'.format(
-            cipher=self.cipher.java_name,
-            mode=self.mode.java_name,
-            padding=self.padding.java_name
+        return "{cipher}/{mode}/{padding}".format(
+            cipher=self.cipher.java_name, mode=self.mode.java_name, padding=self.padding.java_name
         )
 
     @staticmethod
@@ -136,10 +127,7 @@ class JavaCipher(object):
         try:
             return mappings[name]
         except KeyError:
-            raise JceTransformationError('Invalid {type} name: "{name}"'.format(
-                type=name_type,
-                name=name
-            ))
+            raise JceTransformationError('Invalid {type} name: "{name}"'.format(type=name_type, name=name))
 
     @classmethod
     def from_transformation(cls, cipher_transformation):
@@ -151,16 +139,16 @@ class JavaCipher(object):
         :returns: JavaCipher instance
         :rtype: JavaCipher
         """
-        if cipher_transformation == 'AESWrap':
+        if cipher_transformation == "AESWrap":
             # AESWrap does not support encrypt or decrypt, so mode and padding are never
             # used, but we use ECB and NoPadding as placeholders to simplify handling.
-            return cls.from_transformation('AESWrap/ECB/NoPadding')
+            return cls.from_transformation("AESWrap/ECB/NoPadding")
 
-        if cipher_transformation == 'RSA':
+        if cipher_transformation == "RSA":
             # RSA does not use mode, but as with JCE, we use ECB as a placeholder to simplify handling.
-            return cls.from_transformation('RSA/ECB/PKCS1Padding')
+            return cls.from_transformation("RSA/ECB/PKCS1Padding")
 
-        cipher_transformation_parts = cipher_transformation.split('/')
+        cipher_transformation_parts = cipher_transformation.split("/")
         if len(cipher_transformation_parts) != 3:
             raise JceTransformationError(
                 'Invalid transformation: "{}": must be three parts ALGORITHM/MODE/PADDING, "RSA", or "AESWrap"'.format(
@@ -168,8 +156,8 @@ class JavaCipher(object):
                 )
             )
 
-        cipher = cls._map_load_or_error('algorithm', cipher_transformation_parts[0], JAVA_ENCRYPTION_ALGORITHM)
-        mode = cls._map_load_or_error('mode', cipher_transformation_parts[1], JAVA_MODE)
-        padding = cls._map_load_or_error('padding', cipher_transformation_parts[2], JAVA_PADDING)
+        cipher = cls._map_load_or_error("algorithm", cipher_transformation_parts[0], JAVA_ENCRYPTION_ALGORITHM)
+        mode = cls._map_load_or_error("mode", cipher_transformation_parts[1], JAVA_MODE)
+        padding = cls._map_load_or_error("padding", cipher_transformation_parts[2], JAVA_PADDING)
 
         return cls(cipher, mode, padding)

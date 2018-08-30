@@ -16,24 +16,31 @@ from functools import partial
 import attr
 import botocore
 
+from dynamodb_encryption_sdk.internal.utils import (
+    TableInfoCache,
+    crypto_config_from_cache,
+    crypto_config_from_kwargs,
+    decrypt_batch_get_item,
+    decrypt_get_item,
+    decrypt_multi_get,
+    encrypt_batch_write_item,
+    encrypt_put_item,
+    validate_get_arguments,
+)
+from dynamodb_encryption_sdk.internal.validators import callable_validator
+from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
+from dynamodb_encryption_sdk.structures import AttributeActions
+
+from .item import decrypt_dynamodb_item, decrypt_python_item, encrypt_dynamodb_item, encrypt_python_item
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Any, Callable, Dict, Iterator, Optional  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.internal.utils import (
-    crypto_config_from_cache, crypto_config_from_kwargs,
-    decrypt_batch_get_item, decrypt_get_item, decrypt_multi_get,
-    encrypt_batch_write_item, encrypt_put_item, TableInfoCache,
-    validate_get_arguments
-)
-from dynamodb_encryption_sdk.internal.validators import callable_validator
-from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.structures import AttributeActions
-from .item import decrypt_dynamodb_item, decrypt_python_item, encrypt_dynamodb_item, encrypt_python_item
 
-__all__ = ('EncryptedClient', 'EncryptedPaginator')
+__all__ = ("EncryptedClient", "EncryptedPaginator")
 
 
 @attr.s(init=False)
@@ -51,10 +58,10 @@ class EncryptedPaginator(object):
     _crypto_config_method = attr.ib(validator=callable_validator)
 
     def __init__(
-            self,
-            paginator,  # type: botocore.paginate.Paginator
-            decrypt_method,  # type: Callable
-            crypto_config_method  # type: Callable
+        self,
+        paginator,  # type: botocore.paginate.Paginator
+        decrypt_method,  # type: Callable
+        crypto_config_method,  # type: Callable
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -97,11 +104,8 @@ class EncryptedPaginator(object):
         crypto_config, ddb_kwargs = self._crypto_config_method(**kwargs)
 
         for page in self._paginator.paginate(**ddb_kwargs):
-            for pos, value in enumerate(page['Items']):
-                page['Items'][pos] = self._decrypt_method(
-                    item=value,
-                    crypto_config=crypto_config
-                )
+            for pos, value in enumerate(page["Items"]):
+                page["Items"][pos] = self._decrypt_method(item=value, crypto_config=crypto_config)
             yield page
 
 
@@ -152,25 +156,18 @@ class EncryptedClient(object):
     _client = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(
-        validator=attr.validators.instance_of(AttributeActions),
-        default=attr.Factory(AttributeActions)
+        validator=attr.validators.instance_of(AttributeActions), default=attr.Factory(AttributeActions)
     )
-    _auto_refresh_table_indexes = attr.ib(
-        validator=attr.validators.instance_of(bool),
-        default=True
-    )
-    _expect_standard_dictionaries = attr.ib(
-        validator=attr.validators.instance_of(bool),
-        default=False
-    )
+    _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool), default=True)
+    _expect_standard_dictionaries = attr.ib(validator=attr.validators.instance_of(bool), default=False)
 
     def __init__(
-            self,
-            client,  # type: botocore.client.BaseClient
-            materials_provider,  # type: CryptographicMaterialsProvider
-            attribute_actions=None,  # type: Optional[AttributeActions]
-            auto_refresh_table_indexes=True,  # type: Optional[bool]
-            expect_standard_dictionaries=False  # type: Optional[bool]
+        self,
+        client,  # type: botocore.client.BaseClient
+        materials_provider,  # type: CryptographicMaterialsProvider
+        attribute_actions=None,  # type: Optional[AttributeActions]
+        auto_refresh_table_indexes=True,  # type: Optional[bool]
+        expect_standard_dictionaries=False,  # type: Optional[bool]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -196,54 +193,31 @@ class EncryptedClient(object):
             self._encrypt_item = encrypt_dynamodb_item  # attrs confuses pylint: disable=attribute-defined-outside-init
             self._decrypt_item = decrypt_dynamodb_item  # attrs confuses pylint: disable=attribute-defined-outside-init
         self._table_info_cache = TableInfoCache(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            client=self._client,
-            auto_refresh_table_indexes=self._auto_refresh_table_indexes
+            client=self._client, auto_refresh_table_indexes=self._auto_refresh_table_indexes
         )
         self._table_crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            crypto_config_from_cache,
-            self._materials_provider,
-            self._attribute_actions,
-            self._table_info_cache
+            crypto_config_from_cache, self._materials_provider, self._attribute_actions, self._table_info_cache
         )
         self._item_crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            crypto_config_from_kwargs,
-            self._table_crypto_config
+            crypto_config_from_kwargs, self._table_crypto_config
         )
         self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            decrypt_get_item,
-            self._decrypt_item,
-            self._item_crypto_config,
-            self._client.get_item
+            decrypt_get_item, self._decrypt_item, self._item_crypto_config, self._client.get_item
         )
         self.put_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            encrypt_put_item,
-            self._encrypt_item,
-            self._item_crypto_config,
-            self._client.put_item
+            encrypt_put_item, self._encrypt_item, self._item_crypto_config, self._client.put_item
         )
         self.query = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            decrypt_multi_get,
-            self._decrypt_item,
-            self._item_crypto_config,
-            self._client.query
+            decrypt_multi_get, self._decrypt_item, self._item_crypto_config, self._client.query
         )
         self.scan = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            decrypt_multi_get,
-            self._decrypt_item,
-            self._item_crypto_config,
-            self._client.scan
+            decrypt_multi_get, self._decrypt_item, self._item_crypto_config, self._client.scan
         )
         self.batch_get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            decrypt_batch_get_item,
-            self._decrypt_item,
-            self._table_crypto_config,
-            self._client.batch_get_item
+            decrypt_batch_get_item, self._decrypt_item, self._table_crypto_config, self._client.batch_get_item
         )
         self.batch_write_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            encrypt_batch_write_item,
-            self._encrypt_item,
-            self._table_crypto_config,
-            self._client.batch_write_item
+            encrypt_batch_write_item, self._encrypt_item, self._table_crypto_config, self._client.batch_write_item
         )
 
     def __getattr__(self, name):
@@ -273,11 +247,9 @@ class EncryptedClient(object):
         """
         paginator = self._client.get_paginator(operation_name)
 
-        if operation_name in ('scan', 'query'):
+        if operation_name in ("scan", "query"):
             return EncryptedPaginator(
-                paginator=paginator,
-                decrypt_method=self._decrypt_item,
-                crypto_config_method=self._item_crypto_config
+                paginator=paginator, decrypt_method=self._decrypt_item, crypto_config_method=self._item_crypto_config
             )
 
         return paginator

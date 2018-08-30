@@ -19,7 +19,7 @@ except ImportError:  # pragma: no cover
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
-__all__ = ('dict_to_ddb', 'ddb_to_dict')
+__all__ = ("dict_to_ddb", "ddb_to_dict")
 
 
 def dict_to_ddb(item):
@@ -32,11 +32,7 @@ def dict_to_ddb(item):
     :rtype: dict
     """
     serializer = TypeSerializer()
-    return {
-        key: serializer.serialize(value)
-        for key, value
-        in item.items()
-    }
+    return {key: serializer.serialize(value) for key, value in item.items()}
 
 
 def ddb_to_dict(item):
@@ -49,8 +45,4 @@ def ddb_to_dict(item):
     :rtype: dict
     """
     deserializer = TypeDeserializer()
-    return {
-        key: deserializer.deserialize(value)
-        for key, value
-        in item.items()
-    }
+    return {key: deserializer.deserialize(value) for key, value in item.items()}

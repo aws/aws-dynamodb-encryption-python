@@ -20,49 +20,58 @@ from dynamodb_encryption_sdk.identifiers import CryptoAction
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 
-@pytest.mark.parametrize('left, right, expected', (
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN),
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY, CryptoAction.ENCRYPT_AND_SIGN),
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN),
-    (CryptoAction.SIGN_ONLY, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN),
-    (CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY),
-    (CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING, CryptoAction.SIGN_ONLY),
-    (CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN),
-    (CryptoAction.DO_NOTHING, CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY),
-    (CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING),
-))
+@pytest.mark.parametrize(
+    "left, right, expected",
+    (
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN),
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY, CryptoAction.ENCRYPT_AND_SIGN),
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN),
+        (CryptoAction.SIGN_ONLY, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN),
+        (CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY),
+        (CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING, CryptoAction.SIGN_ONLY),
+        (CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN),
+        (CryptoAction.DO_NOTHING, CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY),
+        (CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING),
+    ),
+)
 def test_item_action_max(left, right, expected):
     assert max(left, right) == expected
 
 
-@pytest.mark.parametrize('left, right, expected', (
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN),
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY),
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING),
-    (CryptoAction.SIGN_ONLY, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY),
-    (CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY),
-    (CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING),
-    (CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.DO_NOTHING),
-    (CryptoAction.DO_NOTHING, CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING),
-    (CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING),
-))
+@pytest.mark.parametrize(
+    "left, right, expected",
+    (
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN),
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY),
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING),
+        (CryptoAction.SIGN_ONLY, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY),
+        (CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY),
+        (CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING),
+        (CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.DO_NOTHING),
+        (CryptoAction.DO_NOTHING, CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING),
+        (CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING),
+    ),
+)
 def test_item_action_min(left, right, expected):
     assert min(left, right) == expected
 
 
-@pytest.mark.parametrize('left, right, expected_comparison', (
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN, operator.eq),
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY, operator.ne),
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY, operator.gt),
-    (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.DO_NOTHING, operator.gt),
-    (CryptoAction.SIGN_ONLY, CryptoAction.ENCRYPT_AND_SIGN, operator.lt),
-    (CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY, operator.eq),
-    (CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING, operator.ne),
-    (CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING, operator.gt),
-    (CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN, operator.lt),
-    (CryptoAction.DO_NOTHING, CryptoAction.SIGN_ONLY, operator.lt),
-    (CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING, operator.eq),
-    (CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN, operator.ne)
-))
+@pytest.mark.parametrize(
+    "left, right, expected_comparison",
+    (
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.ENCRYPT_AND_SIGN, operator.eq),
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY, operator.ne),
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.SIGN_ONLY, operator.gt),
+        (CryptoAction.ENCRYPT_AND_SIGN, CryptoAction.DO_NOTHING, operator.gt),
+        (CryptoAction.SIGN_ONLY, CryptoAction.ENCRYPT_AND_SIGN, operator.lt),
+        (CryptoAction.SIGN_ONLY, CryptoAction.SIGN_ONLY, operator.eq),
+        (CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING, operator.ne),
+        (CryptoAction.SIGN_ONLY, CryptoAction.DO_NOTHING, operator.gt),
+        (CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN, operator.lt),
+        (CryptoAction.DO_NOTHING, CryptoAction.SIGN_ONLY, operator.lt),
+        (CryptoAction.DO_NOTHING, CryptoAction.DO_NOTHING, operator.eq),
+        (CryptoAction.DO_NOTHING, CryptoAction.ENCRYPT_AND_SIGN, operator.ne),
+    ),
+)
 def test_item_action_comp(left, right, expected_comparison):
     assert expected_comparison(left, right)

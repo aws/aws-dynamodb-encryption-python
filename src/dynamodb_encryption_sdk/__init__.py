@@ -13,20 +13,22 @@
 """DynamoDB Encryption Client."""
 from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
 from dynamodb_encryption_sdk.encrypted.item import (
-    decrypt_dynamodb_item, decrypt_python_item,
-    encrypt_dynamodb_item, encrypt_python_item
+    decrypt_dynamodb_item,
+    decrypt_python_item,
+    encrypt_dynamodb_item,
+    encrypt_python_item,
 )
 from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import __version__
 
-# TableConfiguration
-# MaterialDescription
-# ItemConfiguration
-
 __all__ = (
-    'decrypt_dynamodb_item', 'decrypt_python_item',
-    'encrypt_dynamodb_item', 'encrypt_python_item',
-    'EncryptedClient', 'EncryptedResource', 'EncryptedTable',
-    '__version__'
+    "decrypt_dynamodb_item",
+    "decrypt_python_item",
+    "encrypt_dynamodb_item",
+    "encrypt_python_item",
+    "EncryptedClient",
+    "EncryptedResource",
+    "EncryptedTable",
+    "__version__",
 )

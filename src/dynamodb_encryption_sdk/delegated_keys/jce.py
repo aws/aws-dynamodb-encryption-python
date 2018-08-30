@@ -17,10 +17,16 @@ import logging
 import os
 
 import attr
+import six
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-import six
+
+from dynamodb_encryption_sdk.exceptions import JceTransformationError, UnwrappingError
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, KeyEncodingType
+from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
+
+from . import DelegatedKey
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
@@ -28,12 +34,8 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.exceptions import JceTransformationError, UnwrappingError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
-from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
-from . import DelegatedKey
 
-__all__ = ('JceNameLocalDelegatedKey',)
+__all__ = ("JceNameLocalDelegatedKey",)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 
@@ -54,23 +56,16 @@ def _generate_rsa_key(key_length):
     :returns: DER-encoded private key, private key identifier, and DER encoding identifier
     :rtype: tuple(bytes, :class:`EncryptionKeyType`, :class:`KeyEncodingType`)
     """
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=key_length,
-        backend=default_backend()
-    )
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=key_length, backend=default_backend())
     key_bytes = private_key.private_bytes(
         encoding=serialization.Encoding.DER,
         format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption()
+        encryption_algorithm=serialization.NoEncryption(),
     )
     return key_bytes, EncryptionKeyType.PRIVATE, KeyEncodingType.DER
 
 
-_ALGORITHM_GENERATE_MAP = {
-    'SYMMETRIC': _generate_symmetric_key,
-    'RSA': _generate_rsa_key
-}
+_ALGORITHM_GENERATE_MAP = {"SYMMETRIC": _generate_symmetric_key, "RSA": _generate_rsa_key}
 
 
 @attr.s(init=False)
@@ -119,11 +114,11 @@ class JceNameLocalDelegatedKey(DelegatedKey):
     _key_encoding = attr.ib(validator=attr.validators.instance_of(KeyEncodingType))
 
     def __init__(
-            self,
-            key,  # type: bytes
-            algorithm,  # type: Text
-            key_type,  # type: EncryptionKeyType
-            key_encoding,  # type: KeyEncodingType
+        self,
+        key,  # type: bytes
+        algorithm,  # type: Text
+        key_type,  # type: EncryptionKeyType
+        key_encoding,  # type: KeyEncodingType
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -172,9 +167,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
             pass
         else:
             self.__key = key_transformer.load_key(  # attrs confuses pylint: disable=attribute-defined-outside-init
-                self.key,
-                self._key_type,
-                self._key_encoding
+                self.key, self._key_type, self._key_encoding
             )
             self._enable_encryption()
             self._enable_wrap()
@@ -189,9 +182,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
             pass
         else:
             self.__key = key_transformer.load_key(  # attrs confuses pylint: disable=attribute-defined-outside-init
-                self.key,
-                self._key_type,
-                self._key_encoding
+                self.key, self._key_type, self._key_encoding
             )
             self._enable_authentication()
             return
@@ -211,15 +202,15 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         """
         # Normalize to allow generating both encryption and signing keys
         algorithm_lookup = algorithm.upper()
-        if 'HMAC' in algorithm_lookup or algorithm_lookup in ('AES', 'AESWRAP'):
-            algorithm_lookup = 'SYMMETRIC'
-        elif 'RSA' in algorithm_lookup:
-            algorithm_lookup = 'RSA'
+        if "HMAC" in algorithm_lookup or algorithm_lookup in ("AES", "AESWRAP"):
+            algorithm_lookup = "SYMMETRIC"
+        elif "RSA" in algorithm_lookup:
+            algorithm_lookup = "RSA"
 
         try:
             key_generator = _ALGORITHM_GENERATE_MAP[algorithm_lookup]
         except KeyError:
-            raise ValueError('Unknown algorithm: {}'.format(algorithm))
+            raise ValueError("Unknown algorithm: {}".format(algorithm))
 
         key, key_type, key_encoding = key_generator(key_length)
         return cls(key=key, algorithm=algorithm, key_type=key_type, key_encoding=key_encoding)
@@ -233,7 +224,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         :returns: decision
         :rtype: bool
         """
-        return self.algorithm == 'AES'
+        return self.algorithm == "AES"
 
     def _encrypt(self, algorithm, name, plaintext, additional_associated_data=None):
         # type: (Text, Text, bytes, Optional[Dict[Text, Text]]) -> bytes
@@ -281,10 +272,7 @@ class JceNameLocalDelegatedKey(DelegatedKey):
         :rtype: bytes
         """
         wrapper = encryption.JavaCipher.from_transformation(algorithm)
-        return wrapper.wrap(
-            wrapping_key=self.__key,
-            key_to_wrap=content_key
-        )
+        return wrapper.wrap(wrapping_key=self.__key, key_to_wrap=content_key)
 
     def _unwrap(self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None):
         # type: (Text, bytes, Text, EncryptionKeyType, Optional[Dict[Text, Text]]) -> DelegatedKey
@@ -303,15 +291,12 @@ class JceNameLocalDelegatedKey(DelegatedKey):
             raise UnwrappingError('Unsupported wrapped key type: "{}"'.format(wrapped_key_type))
 
         unwrapper = encryption.JavaCipher.from_transformation(algorithm)
-        unwrapped_key = unwrapper.unwrap(
-            wrapping_key=self.__key,
-            wrapped_key=wrapped_key
-        )
+        unwrapped_key = unwrapper.unwrap(wrapping_key=self.__key, wrapped_key=wrapped_key)
         return JceNameLocalDelegatedKey(
             key=unwrapped_key,
             algorithm=wrapped_key_algorithm,
             key_type=wrapped_key_type,
-            key_encoding=KeyEncodingType.RAW
+            key_encoding=KeyEncodingType.RAW,
         )
 
     def _sign(self, algorithm, data):

@@ -11,14 +11,22 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider that uses a provider store to obtain cryptographic materials."""
+import logging
+import time
 from collections import OrderedDict
 from enum import Enum
-import logging
 from threading import Lock, RLock
-import time
 
 import attr
 import six
+
+from dynamodb_encryption_sdk.exceptions import InvalidVersionError, NoKnownVersionError
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
+from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
+
+from . import CryptographicMaterialsProvider
+from .store import ProviderStore
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Any, Text  # noqa pylint: disable=unused-import
@@ -26,14 +34,8 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.exceptions import InvalidVersionError, NoKnownVersionError
-from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
-from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
-from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
-from . import CryptographicMaterialsProvider
-from .store import ProviderStore
 
-__all__ = ('MostRecentProvider',)
+__all__ = ("MostRecentProvider",)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 #: Grace period during which we will return the latest local materials. This allows multiple
 #: threads to be using this same provider without risking lock contention or many threads
@@ -53,17 +55,14 @@ def _min_capacity_validator(instance, attribute, value):
     # pylint: disable=unused-argument
     """Attrs validator to require that value is at least 1."""
     if value < 1:
-        raise ValueError('Cache capacity must be at least 1')
+        raise ValueError("Cache capacity must be at least 1")
 
 
 @attr.s(init=False)
 class BasicCache(object):
     """Most basic LRU cache."""
 
-    capacity = attr.ib(validator=(
-        attr.validators.instance_of(int),
-        _min_capacity_validator
-    ))
+    capacity = attr.ib(validator=(attr.validators.instance_of(int), _min_capacity_validator))
 
     def __init__(self, capacity):  # noqa=D107
         # type: (int) -> None
@@ -136,10 +135,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
     _version_ttl = attr.ib(validator=attr.validators.instance_of(float))
 
     def __init__(
-            self,
-            provider_store,  # type: ProviderStore
-            material_name,  # type: Text
-            version_ttl  # type: float
+        self, provider_store, material_name, version_ttl  # type: ProviderStore  # type: Text  # type: float
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -174,8 +170,8 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             try:
                 provider = self._provider_store.provider(self._material_name, version)
             except InvalidVersionError:
-                _LOGGER.exception('Unable to get decryption materials from provider store.')
-                raise AttributeError('No decryption materials available')
+                _LOGGER.exception("Unable to get decryption materials from provider store.")
+                raise AttributeError("No decryption materials available")
 
         self._cache.put(version, provider)
 
@@ -225,8 +221,8 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         try:
             return self._provider_store.get_or_create_provider(self._material_name, version)
         except InvalidVersionError:
-            _LOGGER.exception('Unable to get encryption materials from provider store.')
-            raise AttributeError('No encryption materials available')
+            _LOGGER.exception("Unable to get encryption materials from provider store.")
+            raise AttributeError("No encryption materials available")
 
     def _get_most_recent_version(self, allow_local):
         # type: (bool) -> CryptographicMaterialsProvider

@@ -21,24 +21,30 @@ from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 
-@pytest.mark.parametrize('data, expected_output', (
-    ('asdf', 'asdf'),
-    (b'asdf', 'asdf'),
-    (codecs.encode(u'Предисловие', 'utf-8'), u'Предисловие'),
-    (u'Предисловие', u'Предисловие')
-))
+@pytest.mark.parametrize(
+    "data, expected_output",
+    (
+        ("asdf", "asdf"),
+        (b"asdf", "asdf"),
+        (codecs.encode(u"Предисловие", "utf-8"), u"Предисловие"),
+        (u"Предисловие", u"Предисловие"),
+    ),
+)
 def test_to_str(data, expected_output):
     test = to_str(data)
     assert test == expected_output
 
 
-@pytest.mark.parametrize('data, expected_output', (
-    ('asdf', b'asdf'),
-    (b'asdf', b'asdf'),
-    (b'\x3a\x00\x99', b'\x3a\x00\x99'),
-    (u'Предисловие', codecs.encode(u'Предисловие', 'utf-8')),
-    (codecs.encode(u'Предисловие', 'utf-8'), codecs.encode(u'Предисловие', 'utf-8'))
-))
+@pytest.mark.parametrize(
+    "data, expected_output",
+    (
+        ("asdf", b"asdf"),
+        (b"asdf", b"asdf"),
+        (b"\x3a\x00\x99", b"\x3a\x00\x99"),
+        (u"Предисловие", codecs.encode(u"Предисловие", "utf-8")),
+        (codecs.encode(u"Предисловие", "utf-8"), codecs.encode(u"Предисловие", "utf-8")),
+    ),
+)
 def test_to_bytes(data, expected_output):
     test = to_bytes(data)
     assert test == expected_output

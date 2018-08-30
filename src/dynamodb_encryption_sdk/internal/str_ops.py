@@ -22,7 +22,7 @@ import six
 
 from dynamodb_encryption_sdk.internal.identifiers import TEXT_ENCODING
 
-__all__ = ('to_str', 'to_bytes')
+__all__ = ("to_str", "to_bytes")
 
 
 def to_str(data):

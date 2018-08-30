@@ -13,8 +13,11 @@
 """Integration tests for ``dynamodb_encryption_sdk.encrypted.client``."""
 import pytest
 
-from ..integration_test_utils import aws_kms_cmp, ddb_table_name  # noqa pylint: disable=unused-import
-from ..integration_test_utils import functional_test_utils
+from ..integration_test_utils import (  # noqa pylint: disable=unused-import
+    aws_kms_cmp,
+    ddb_table_name,
+    functional_test_utils,
+)
 
 pytestmark = [pytest.mark.integ, pytest.mark.ddb_integ]
 
@@ -28,38 +31,26 @@ def pytest_generate_tests(metafunc):
 def test_ephemeral_item_cycle(ddb_table_name, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     functional_test_utils.client_cycle_single_item_check(
-        some_cmps,
-        parametrized_actions,
-        parametrized_item,
-        ddb_table_name
+        some_cmps, parametrized_actions, parametrized_item, ddb_table_name
     )
 
 
 def test_ephemeral_item_cycle_kms(ddb_table_name, aws_kms_cmp, parametrized_actions, parametrized_item):
     """Test the AWS KMS CMP against a small number of curated items."""
     functional_test_utils.client_cycle_single_item_check(
-        aws_kms_cmp,
-        parametrized_actions,
-        parametrized_item,
-        ddb_table_name
+        aws_kms_cmp, parametrized_actions, parametrized_item, ddb_table_name
     )
 
 
 def test_ephemeral_batch_item_cycle(ddb_table_name, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     functional_test_utils.client_cycle_batch_items_check(
-        some_cmps,
-        parametrized_actions,
-        parametrized_item,
-        ddb_table_name
+        some_cmps, parametrized_actions, parametrized_item, ddb_table_name
     )
 
 
 def test_ephemeral_batch_item_cycle_kms(ddb_table_name, aws_kms_cmp, parametrized_actions, parametrized_item):
     """Test the AWS KMS CMP against a small number of curated items."""
     functional_test_utils.client_cycle_batch_items_check(
-        aws_kms_cmp,
-        parametrized_actions,
-        parametrized_item,
-        ddb_table_name
+        aws_kms_cmp, parametrized_actions, parametrized_item, ddb_table_name
     )

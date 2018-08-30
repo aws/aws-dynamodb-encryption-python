@@ -11,8 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Functional tests for ``dynamodb_encryption_sdk.material_providers.most_recent``."""
-from mock import MagicMock, sentinel
 import pytest
+from mock import MagicMock, sentinel
 
 from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentProvider
 from dynamodb_encryption_sdk.material_providers.store import ProviderStore
@@ -22,11 +22,7 @@ pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 def test_failed_lock_acquisition():
     store = MagicMock(__class__=ProviderStore)
-    provider = MostRecentProvider(
-        provider_store=store,
-        material_name='my material',
-        version_ttl=10.0
-    )
+    provider = MostRecentProvider(provider_store=store, material_name="my material", version_ttl=10.0)
     provider._version = 9
     provider._cache.put(provider._version, sentinel.nine)
 

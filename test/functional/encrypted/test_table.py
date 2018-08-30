@@ -14,12 +14,16 @@
 import hypothesis
 import pytest
 
-from ..functional_test_utils import (
-    set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
-    table_cycle_batch_writer_check, table_cycle_check, TEST_TABLE_NAME
-)
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
-from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
+from ..functional_test_utils import (
+    TEST_TABLE_NAME,
+    set_parametrized_actions,
+    set_parametrized_cmp,
+    set_parametrized_item,
+    table_cycle_batch_writer_check,
+    table_cycle_check,
+)
+from ..hypothesis_strategies import SLOW_SETTINGS, VERY_SLOW_SETTINGS, ddb_items
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
@@ -31,7 +35,7 @@ def pytest_generate_tests(metafunc):
 
 
 def _table_cycle_check(materials_provider, initial_actions, initial_item):
-    return table_cycle_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, 'us-west-2')
+    return table_cycle_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2")
 
 
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
@@ -41,7 +45,7 @@ def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, pa
 
 def test_ephemeral_item_cycle_batch_writer(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
-    table_cycle_batch_writer_check(some_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, 'us-west-2')
+    table_cycle_batch_writer_check(some_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, "us-west-2")
 
 
 @pytest.mark.slow
@@ -53,7 +57,7 @@ def test_ephemeral_item_cycle_slow(example_table, all_the_cmps, parametrized_act
 @pytest.mark.slow
 def test_ephemeral_item_cycle_batch_writer_slow(example_table, all_the_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
-    table_cycle_batch_writer_check(all_the_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, 'us-west-2')
+    table_cycle_batch_writer_check(all_the_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, "us-west-2")
 
 
 @pytest.mark.slow

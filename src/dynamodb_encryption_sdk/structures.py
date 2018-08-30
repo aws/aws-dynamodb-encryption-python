@@ -16,18 +16,20 @@ import copy
 import attr
 import six
 
+from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
+from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
+
+from .identifiers import CryptoAction
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Iterable, List, Optional, Set, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
-from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
-from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
-from .identifiers import CryptoAction
 
-__all__ = ('EncryptionContext', 'AttributeActions', 'TableIndex', 'TableInfo')
+__all__ = ("EncryptionContext", "AttributeActions", "TableIndex", "TableInfo")
 
 
 def _validate_attribute_values_are_ddb_items(instance, attribute, value):  # pylint: disable=unused-argument
@@ -57,37 +59,31 @@ class EncryptionContext(object):
     """
 
     table_name = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
-        default=None
+        validator=attr.validators.optional(attr.validators.instance_of(six.string_types)), default=None
     )
     partition_key_name = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
-        default=None
+        validator=attr.validators.optional(attr.validators.instance_of(six.string_types)), default=None
     )
     sort_key_name = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
-        default=None
+        validator=attr.validators.optional(attr.validators.instance_of(six.string_types)), default=None
     )
     attributes = attr.ib(
-        validator=(
-            dictionary_validator(six.string_types, dict),
-            _validate_attribute_values_are_ddb_items
-        ),
-        default=attr.Factory(dict)
+        validator=(dictionary_validator(six.string_types, dict), _validate_attribute_values_are_ddb_items),
+        default=attr.Factory(dict),
     )
     material_description = attr.ib(
         validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
-        default=attr.Factory(dict)
+        default=attr.Factory(dict),
     )
 
     def __init__(
-            self,
-            table_name=None,  # type: Optional[Text]
-            partition_key_name=None,  # type: Optional[Text]
-            sort_key_name=None,  # type: Optional[Text]
-            attributes=None,  # type: Optional[Dict[Text, Dict]]
-            material_description=None  # type: Optional[Dict[Text, Text]]
+        self,
+        table_name=None,  # type: Optional[Text]
+        partition_key_name=None,  # type: Optional[Text]
+        sort_key_name=None,  # type: Optional[Text]
+        attributes=None,  # type: Optional[Dict[Text, Dict]]
+        material_description=None,  # type: Optional[Dict[Text, Text]]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -115,19 +111,15 @@ class AttributeActions(object):
     :param dict attribute_actions: Dictionary mapping attribute names to specific actions
     """
 
-    default_action = attr.ib(
-        validator=attr.validators.instance_of(CryptoAction),
-        default=CryptoAction.ENCRYPT_AND_SIGN
-    )
+    default_action = attr.ib(validator=attr.validators.instance_of(CryptoAction), default=CryptoAction.ENCRYPT_AND_SIGN)
     attribute_actions = attr.ib(
-        validator=dictionary_validator(six.string_types, CryptoAction),
-        default=attr.Factory(dict)
+        validator=dictionary_validator(six.string_types, CryptoAction), default=attr.Factory(dict)
     )
 
     def __init__(
-            self,
-            default_action=CryptoAction.ENCRYPT_AND_SIGN,  # type: Optional[CryptoAction]
-            attribute_actions=None  # type: Optional[Dict[Text, CryptoAction]]
+        self,
+        default_action=CryptoAction.ENCRYPT_AND_SIGN,  # type: Optional[CryptoAction]
+        attribute_actions=None,  # type: Optional[Dict[Text, CryptoAction]]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -166,10 +158,7 @@ class AttributeActions(object):
     def copy(self):
         # () -> AttributeActions
         """Return a new copy of this object."""
-        return AttributeActions(
-            default_action=self.default_action,
-            attribute_actions=self.attribute_actions.copy()
-        )
+        return AttributeActions(default_action=self.default_action, attribute_actions=self.attribute_actions.copy())
 
     def set_index_keys(self, *keys):
         """Set the appropriate action for the specified indexed attribute names.
@@ -218,10 +207,7 @@ class AttributeActions(object):
         attribute_actions = {}
         for attribute in all_attributes:
             attribute_actions[attribute] = max(self.action(attribute), other.action(attribute))
-        return AttributeActions(
-            default_action=default_action,
-            attribute_actions=attribute_actions
-        )
+        return AttributeActions(default_action=default_action, attribute_actions=attribute_actions)
 
 
 @attr.s(init=False)
@@ -234,16 +220,9 @@ class TableIndex(object):
     """
 
     partition = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    sort = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(six.string_types)),
-        default=None
-    )
+    sort = attr.ib(validator=attr.validators.optional(attr.validators.instance_of(six.string_types)), default=None)
 
-    def __init__(
-            self,
-            partition,  # type: Text
-            sort=None  # type: Optional[Text]
-    ):  # noqa=D107
+    def __init__(self, partition, sort=None):  # type: Text  # type: Optional[Text]  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
@@ -277,14 +256,8 @@ class TableIndex(object):
         :returns: New TableIndex that describes the provided schema
         :rtype: TableIndex
         """
-        index = {
-            key['KeyType']: key['AttributeName']
-            for key in key_schema
-        }
-        return cls(
-            partition=index['HASH'],
-            sort=index.get('RANGE', None)
-        )
+        index = {key["KeyType"]: key["AttributeName"] for key in key_schema}
+        return cls(partition=index["HASH"], sort=index.get("RANGE", None))
 
 
 @attr.s(init=False)
@@ -299,20 +272,14 @@ class TableInfo(object):
     """
 
     name = attr.ib(validator=attr.validators.instance_of(six.string_types))
-    _primary_index = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(TableIndex)),
-        default=None
-    )
-    _secondary_indexes = attr.ib(
-        validator=attr.validators.optional(iterable_validator(list, TableIndex)),
-        default=None
-    )
+    _primary_index = attr.ib(validator=attr.validators.optional(attr.validators.instance_of(TableIndex)), default=None)
+    _secondary_indexes = attr.ib(validator=attr.validators.optional(iterable_validator(list, TableIndex)), default=None)
 
     def __init__(
-            self,
-            name,  # type: Text
-            primary_index=None,  # type: Optional[TableIndex]
-            secondary_indexes=None  # type: Optional[List[TableIndex]]
+        self,
+        name,  # type: Text
+        primary_index=None,  # type: Optional[TableIndex]
+        secondary_indexes=None,  # type: Optional[List[TableIndex]]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -333,7 +300,7 @@ class TableInfo(object):
         :raises AttributeError: if primary index is unknown
         """
         if self._primary_index is None:
-            raise AttributeError('Indexes unknown. Run refresh_indexed_attributes')
+            raise AttributeError("Indexes unknown. Run refresh_indexed_attributes")
         return self._primary_index
 
     @property
@@ -346,7 +313,7 @@ class TableInfo(object):
         :raises AttributeError: if secondary indexes are unknown
         """
         if self._secondary_indexes is None:
-            raise AttributeError('Indexes unknown. Run refresh_indexed_attributes')
+            raise AttributeError("Indexes unknown. Run refresh_indexed_attributes")
         return self._secondary_indexes
 
     def protected_index_keys(self):
@@ -361,12 +328,11 @@ class TableInfo(object):
 
         :rtype: dict
         """
-        values = {'table_name': self.name}
+        values = {"table_name": self.name}
         if self.primary_index is not None:
-            values.update({
-                'partition_key_name': self.primary_index.partition,
-                'sort_key_name': self.primary_index.sort
-            })
+            values.update(
+                {"partition_key_name": self.primary_index.partition, "sort_key_name": self.primary_index.sort}
+            )
         return values
 
     def refresh_indexed_attributes(self, client):
@@ -375,13 +341,13 @@ class TableInfo(object):
         :param client: Pre-configured boto3 DynamoDB client
         :type client: botocore.client.BaseClient
         """
-        table = client.describe_table(TableName=self.name)['Table']
-        self._primary_index = TableIndex.from_key_schema(table['KeySchema'])
+        table = client.describe_table(TableName=self.name)["Table"]
+        self._primary_index = TableIndex.from_key_schema(table["KeySchema"])
 
         self._secondary_indexes = []
-        for group in ('LocalSecondaryIndexes', 'GlobalSecondaryIndexes'):
+        for group in ("LocalSecondaryIndexes", "GlobalSecondaryIndexes"):
             try:
                 for index in table[group]:
-                    self._secondary_indexes.append(TableIndex.from_key_schema(index['KeySchema']))
+                    self._secondary_indexes.append(TableIndex.from_key_schema(index["KeySchema"]))
             except KeyError:
                 pass  # Not all tables will have secondary indexes.

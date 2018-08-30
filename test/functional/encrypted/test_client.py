@@ -14,13 +14,17 @@
 import hypothesis
 import pytest
 
-from ..functional_test_utils import (
-    client_cycle_batch_items_check, client_cycle_batch_items_check_paginators, client_cycle_single_item_check,
-    set_parametrized_actions, set_parametrized_cmp, set_parametrized_item,
-    TEST_TABLE_NAME
-)
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
-from ..hypothesis_strategies import ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
+from ..functional_test_utils import (
+    TEST_TABLE_NAME,
+    client_cycle_batch_items_check,
+    client_cycle_batch_items_check_paginators,
+    client_cycle_single_item_check,
+    set_parametrized_actions,
+    set_parametrized_cmp,
+    set_parametrized_item,
+)
+from ..hypothesis_strategies import SLOW_SETTINGS, VERY_SLOW_SETTINGS, ddb_items
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
@@ -33,31 +37,19 @@ def pytest_generate_tests(metafunc):
 
 def _client_cycle_single_item_check(materials_provider, initial_actions, initial_item):
     return client_cycle_single_item_check(
-        materials_provider,
-        initial_actions,
-        initial_item,
-        TEST_TABLE_NAME,
-        'us-west-2'
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
     )
 
 
 def _client_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
     return client_cycle_batch_items_check(
-        materials_provider,
-        initial_actions,
-        initial_item,
-        TEST_TABLE_NAME,
-        'us-west-2'
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
     )
 
 
 def _client_cycle_batch_items_check_paginators(materials_provider, initial_actions, initial_item):
     return client_cycle_batch_items_check_paginators(
-        materials_provider,
-        initial_actions,
-        initial_item,
-        TEST_TABLE_NAME,
-        'us-west-2'
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
     )
 
 

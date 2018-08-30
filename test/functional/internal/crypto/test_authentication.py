@@ -14,12 +14,13 @@
 import pytest
 
 from dynamodb_encryption_sdk.internal.crypto.authentication import _string_to_sign
+
 from ...functional_test_vector_generators import string_to_sign_test_vectors
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 
-@pytest.mark.parametrize('item, table_name, attribute_actions, expected_result', string_to_sign_test_vectors())
+@pytest.mark.parametrize("item, table_name, attribute_actions, expected_result", string_to_sign_test_vectors())
 def test_string_to_sign(item, table_name, attribute_actions, expected_result):
     generated_string = _string_to_sign(item, table_name, attribute_actions)
     assert generated_string == expected_result

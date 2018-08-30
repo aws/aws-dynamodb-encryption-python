@@ -20,20 +20,20 @@ pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 
 def test_no_encryption_key():
-    signing_key = JceNameLocalDelegatedKey.generate('HmacSHA512', 256)
+    signing_key = JceNameLocalDelegatedKey.generate("HmacSHA512", 256)
     encryption_materials = RawEncryptionMaterials(signing_key=signing_key)
 
     with pytest.raises(AttributeError) as excinfo:
         encryption_materials.encryption_key
 
-    excinfo.match('No encryption key available')
+    excinfo.match("No encryption key available")
 
 
 def test_no_decryption_key():
-    verification_key = JceNameLocalDelegatedKey.generate('HmacSHA512', 256)
+    verification_key = JceNameLocalDelegatedKey.generate("HmacSHA512", 256)
     decryption_materials = RawDecryptionMaterials(verification_key=verification_key)
 
     with pytest.raises(AttributeError) as excinfo:
         decryption_materials.decryption_key
 
-    excinfo.match('No decryption key available')
+    excinfo.match("No decryption key available")

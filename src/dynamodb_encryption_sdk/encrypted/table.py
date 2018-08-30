@@ -17,22 +17,27 @@ import attr
 from boto3.dynamodb.table import BatchWriter
 from boto3.resources.base import ServiceResource
 
+from dynamodb_encryption_sdk.internal.utils import (
+    crypto_config_from_kwargs,
+    crypto_config_from_table_info,
+    decrypt_get_item,
+    decrypt_multi_get,
+    encrypt_put_item,
+)
+from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
+from dynamodb_encryption_sdk.structures import AttributeActions, TableInfo
+
+from .client import EncryptedClient
+from .item import decrypt_python_item, encrypt_python_item
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Optional  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.internal.utils import (
-    crypto_config_from_kwargs, crypto_config_from_table_info,
-    decrypt_get_item, decrypt_multi_get, encrypt_put_item
-)
-from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.structures import AttributeActions, TableInfo
-from .client import EncryptedClient
-from .item import decrypt_python_item, encrypt_python_item
 
-__all__ = ('EncryptedTable',)
+__all__ = ("EncryptedTable",)
 
 
 @attr.s(init=False)
@@ -78,26 +83,19 @@ class EncryptedTable(object):
 
     _table = attr.ib(validator=attr.validators.instance_of(ServiceResource))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
-    _table_info = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(TableInfo)),
-        default=None
-    )
+    _table_info = attr.ib(validator=attr.validators.optional(attr.validators.instance_of(TableInfo)), default=None)
     _attribute_actions = attr.ib(
-        validator=attr.validators.instance_of(AttributeActions),
-        default=attr.Factory(AttributeActions)
+        validator=attr.validators.instance_of(AttributeActions), default=attr.Factory(AttributeActions)
     )
-    _auto_refresh_table_indexes = attr.ib(
-        validator=attr.validators.instance_of(bool),
-        default=True
-    )
+    _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool), default=True)
 
     def __init__(
-            self,
-            table,  # type: ServiceResource
-            materials_provider,  # type: CryptographicMaterialsProvider
-            table_info=None,  # type: Optional[TableInfo]
-            attribute_actions=None,  # type: Optional[AttributeActions]
-            auto_refresh_table_indexes=True  # type: Optional[bool]
+        self,
+        table,  # type: ServiceResource
+        materials_provider,  # type: CryptographicMaterialsProvider
+        table_info=None,  # type: Optional[TableInfo]
+        attribute_actions=None,  # type: Optional[AttributeActions]
+        auto_refresh_table_indexes=True,  # type: Optional[bool]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -128,36 +126,19 @@ class EncryptedTable(object):
 
         self._crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
             crypto_config_from_kwargs,
-            partial(
-                crypto_config_from_table_info,
-                self._materials_provider,
-                self._attribute_actions,
-                self._table_info
-            )
+            partial(crypto_config_from_table_info, self._materials_provider, self._attribute_actions, self._table_info),
         )
         self.get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            decrypt_get_item,
-            decrypt_python_item,
-            self._crypto_config,
-            self._table.get_item
+            decrypt_get_item, decrypt_python_item, self._crypto_config, self._table.get_item
         )
         self.put_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            encrypt_put_item,
-            encrypt_python_item,
-            self._crypto_config,
-            self._table.put_item
+            encrypt_put_item, encrypt_python_item, self._crypto_config, self._table.put_item
         )
         self.query = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            decrypt_multi_get,
-            decrypt_python_item,
-            self._crypto_config,
-            self._table.query
+            decrypt_multi_get, decrypt_python_item, self._crypto_config, self._table.query
         )
         self.scan = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            decrypt_multi_get,
-            decrypt_python_item,
-            self._crypto_config,
-            self._table.scan
+            decrypt_multi_get, decrypt_python_item, self._crypto_config, self._table.scan
         )
 
     def __getattr__(self, name):
@@ -188,10 +169,6 @@ class EncryptedTable(object):
             materials_provider=self._materials_provider,
             attribute_actions=self._attribute_actions,
             auto_refresh_table_indexes=self._auto_refresh_table_indexes,
-            expect_standard_dictionaries=True
+            expect_standard_dictionaries=True,
         )
-        return BatchWriter(
-            table_name=self._table.name,
-            client=encrypted_client,
-            overwrite_by_pkeys=overwrite_by_pkeys
-        )
+        return BatchWriter(table_name=self._table.name, client=encrypted_client, overwrite_by_pkeys=overwrite_by_pkeys)

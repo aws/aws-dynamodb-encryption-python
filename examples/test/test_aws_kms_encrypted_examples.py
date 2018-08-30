@@ -13,10 +13,13 @@
 """Test ``aws_kms_encrypted_*`` examples."""
 import os
 import sys
-sys.path.extend([  # noqa
-    os.sep.join([os.path.dirname(__file__), '..', '..', 'test', 'integration']),
-    os.sep.join([os.path.dirname(__file__), '..', 'src'])
-])
+
+sys.path.extend(
+    [  # noqa
+        os.sep.join([os.path.dirname(__file__), "..", "..", "test", "integration"]),
+        os.sep.join([os.path.dirname(__file__), "..", "src"]),
+    ]
+)
 
 import pytest
 

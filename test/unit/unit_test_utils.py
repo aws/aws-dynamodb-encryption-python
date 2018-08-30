@@ -19,11 +19,9 @@ from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptograp
 
 @pytest.fixture
 def wrapped_cmp():
-    wrapping_key = JceNameLocalDelegatedKey.generate('AES', 256)
-    signing_key = JceNameLocalDelegatedKey.generate('HmacSHA512', 256)
+    wrapping_key = JceNameLocalDelegatedKey.generate("AES", 256)
+    signing_key = JceNameLocalDelegatedKey.generate("HmacSHA512", 256)
     cmp = WrappedCryptographicMaterialsProvider(
-        signing_key=signing_key,
-        wrapping_key=wrapping_key,
-        unwrapping_key=wrapping_key
+        signing_key=signing_key, wrapping_key=wrapping_key, unwrapping_key=wrapping_key
     )
     return cmp

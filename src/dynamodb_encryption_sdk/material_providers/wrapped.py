@@ -14,6 +14,14 @@
 import attr
 import six
 
+from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
+from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator
+from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMaterials
+from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
+
+from . import CryptographicMaterialsProvider
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
@@ -26,14 +34,8 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
-from dynamodb_encryption_sdk.exceptions import UnwrappingError, WrappingError
-from dynamodb_encryption_sdk.internal.validators import dictionary_validator
-from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMaterials
-from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
-from . import CryptographicMaterialsProvider
 
-__all__ = ('WrappedCryptographicMaterialsProvider',)
+__all__ = ("WrappedCryptographicMaterialsProvider",)
 
 
 @attr.s(init=False)
@@ -56,25 +58,21 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     """
 
     _signing_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
-    _wrapping_key = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
-        default=None
-    )
+    _wrapping_key = attr.ib(validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)), default=None)
     _unwrapping_key = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
-        default=None
+        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)), default=None
     )
     _material_description = attr.ib(
         validator=attr.validators.optional(dictionary_validator(six.string_types, six.string_types)),
-        default=attr.Factory(dict)
+        default=attr.Factory(dict),
     )
 
     def __init__(
-            self,
-            signing_key,  # type: DelegatedKey
-            wrapping_key=None,  # type: Optional[DelegatedKey]
-            unwrapping_key=None,  # type: Optional[DelegatedKey]
-            material_description=None  # type: Optional[Dict[Text, Text]]
+        self,
+        signing_key,  # type: DelegatedKey
+        wrapping_key=None,  # type: Optional[DelegatedKey]
+        unwrapping_key=None,  # type: Optional[DelegatedKey]
+        material_description=None,  # type: Optional[Dict[Text, Text]]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -103,7 +101,7 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             wrapping_key=self._wrapping_key,
             unwrapping_key=self._unwrapping_key,
             signing_key=self._signing_key,
-            material_description=material_description
+            material_description=material_description,
         )
 
     def encryption_materials(self, encryption_context):
@@ -116,7 +114,7 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         :raises WrappingError: if no wrapping key is available
         """
         if self._wrapping_key is None:
-            raise WrappingError('Encryption materials cannot be provided: no wrapping key')
+            raise WrappingError("Encryption materials cannot be provided: no wrapping key")
 
         return self._build_materials(encryption_context)
 
@@ -130,6 +128,6 @@ class WrappedCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         :raises UnwrappingError: if no unwrapping key is available
         """
         if self._unwrapping_key is None:
-            raise UnwrappingError('Decryption materials cannot be provided: no unwrapping key')
+            raise UnwrappingError("Decryption materials cannot be provided: no unwrapping key")
 
         return self._build_materials(encryption_context)

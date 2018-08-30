@@ -13,6 +13,7 @@
 """Example showing use of a RSA wrapped CMP with EncryptedTable."""
 import boto3
 from boto3.dynamodb.types import Binary
+
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction, EncryptionKeyType, KeyEncodingType
@@ -22,69 +23,57 @@ from dynamodb_encryption_sdk.structures import AttributeActions
 
 def encrypt_item(table_name, rsa_wrapping_private_key_bytes, rsa_signing_private_key_bytes):
     """Demonstrate use of EncryptedTable to transparently encrypt an item."""
-    index_key = {
-        'partition_attribute': 'is this',
-        'sort_attribute': 55
-    }
+    index_key = {"partition_attribute": "is this", "sort_attribute": 55}
     plaintext_item = {
-        'example': 'data',
-        'some numbers': 99,
-        'and some binary': Binary(b'\x00\x01\x02'),
-        'leave me': 'alone'  # We want to ignore this attribute
+        "example": "data",
+        "some numbers": 99,
+        "and some binary": Binary(b"\x00\x01\x02"),
+        "leave me": "alone",  # We want to ignore this attribute
     }
     # Collect all of the attributes that will be encrypted (used later).
     encrypted_attributes = set(plaintext_item.keys())
-    encrypted_attributes.remove('leave me')
+    encrypted_attributes.remove("leave me")
     # Collect all of the attributes that will not be encrypted (used later).
     unencrypted_attributes = set(index_key.keys())
-    unencrypted_attributes.add('leave me')
+    unencrypted_attributes.add("leave me")
     # Add the index pairs to the item.
     plaintext_item.update(index_key)
 
     # Create a normal table resource.
-    table = boto3.resource('dynamodb').Table(table_name)
+    table = boto3.resource("dynamodb").Table(table_name)
     # Create a crypto materials provider using the provided wrapping and signing keys.
     # We show private keys used here, but public keys could be used as well, allowing
     # only wrapping or signature verification.
     wrapping_key = JceNameLocalDelegatedKey(
         key=rsa_wrapping_private_key_bytes,
-        algorithm='RSA',
+        algorithm="RSA",
         key_type=EncryptionKeyType.PRIVATE,
-        key_encoding=KeyEncodingType.DER
+        key_encoding=KeyEncodingType.DER,
     )
     signing_key = JceNameLocalDelegatedKey(
         key=rsa_signing_private_key_bytes,
-        algorithm='SHA512withRSA',
+        algorithm="SHA512withRSA",
         key_type=EncryptionKeyType.PRIVATE,
-        key_encoding=KeyEncodingType.DER
+        key_encoding=KeyEncodingType.DER,
     )
     wrapped_cmp = WrappedCryptographicMaterialsProvider(
-        wrapping_key=wrapping_key,
-        unwrapping_key=wrapping_key,
-        signing_key=signing_key
+        wrapping_key=wrapping_key, unwrapping_key=wrapping_key, signing_key=signing_key
     )
     # Create attribute actions that tells the encrypted table to encrypt all attributes except one.
     actions = AttributeActions(
-        default_action=CryptoAction.ENCRYPT_AND_SIGN,
-        attribute_actions={
-            'leave me': CryptoAction.DO_NOTHING
-        }
+        default_action=CryptoAction.ENCRYPT_AND_SIGN, attribute_actions={"leave me": CryptoAction.DO_NOTHING}
     )
     # Use these objects to create an encrypted table resource.
-    encrypted_table = EncryptedTable(
-        table=table,
-        materials_provider=wrapped_cmp,
-        attribute_actions=actions
-    )
+    encrypted_table = EncryptedTable(table=table, materials_provider=wrapped_cmp, attribute_actions=actions)
 
     # Put the item to the table, using the encrypted table resource to transparently encrypt it.
     encrypted_table.put_item(Item=plaintext_item)
 
     # Get the encrypted item using the standard table resource.
-    encrypted_item = table.get_item(Key=index_key)['Item']
+    encrypted_item = table.get_item(Key=index_key)["Item"]
 
     # Get the item using the encrypted table resource, transparently decyrpting it.
-    decrypted_item = encrypted_table.get_item(Key=index_key)['Item']
+    decrypted_item = encrypted_table.get_item(Key=index_key)["Item"]
 
     # Verify that all of the attributes are different in the encrypted item
     for name in encrypted_attributes:

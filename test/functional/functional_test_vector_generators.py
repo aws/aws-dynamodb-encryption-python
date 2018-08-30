@@ -13,9 +13,9 @@
 """Helper tools for collecting test vectors for use in functional tests."""
 import base64
 import codecs
-from decimal import Decimal
 import json
 import os
+from decimal import Decimal
 
 from boto3.dynamodb.types import Binary
 
@@ -23,22 +23,13 @@ from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.structures import AttributeActions
 
 _ATTRIBUTE_TEST_VECTOR_FILE_TEMPLATE = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)),
-    '..',
-    'vectors',
-    '{mode}_attribute.json'
+    os.path.abspath(os.path.dirname(__file__)), "..", "vectors", "{mode}_attribute.json"
 )
 _MATERIAL_DESCRIPTION_TEST_VECTORS_FILE = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)),
-    '..',
-    'vectors',
-    'material_description.json'
+    os.path.abspath(os.path.dirname(__file__)), "..", "vectors", "material_description.json"
 )
 _STRING_TO_SIGN_TEST_VECTORS_FILE = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)),
-    '..',
-    'vectors',
-    'string_to_sign.json'
+    os.path.abspath(os.path.dirname(__file__)), "..", "vectors", "string_to_sign.json"
 )
 
 
@@ -47,7 +38,7 @@ def decode_value(value, transform_binary=False):  # noqa: C901
         return _value
 
     def _decode_number(_value):
-        return '{0:f}'.format(Decimal(_value))
+        return "{0:f}".format(Decimal(_value))
 
     def _decode_binary(_value):
         raw = base64.b64decode(_value)
@@ -91,14 +82,14 @@ def decode_value(value, transform_binary=False):  # noqa: C901
         return decoded_value
 
     _decode_mapping = {
-        'S': _decode_string,
-        'B': _decode_binary,
-        'SS': _decode_string_set,
-        'BS': _decode_binary_set,
-        'L': _decode_list,
-        'M': _decode_map,
-        'N': _decode_number,
-        'NS': _decode_number_set
+        "S": _decode_string,
+        "B": _decode_binary,
+        "SS": _decode_string_set,
+        "BS": _decode_binary_set,
+        "L": _decode_list,
+        "M": _decode_map,
+        "N": _decode_number,
+        "NS": _decode_number_set,
     }
 
     def _decode_complex_value(_value):
@@ -116,26 +107,20 @@ def attribute_test_vectors(mode):
     with open(filepath) as f:
         vectors = json.load(f)
     for vector in vectors:
-        yield (
-            decode_value(vector['attribute']),
-            base64.b64decode(codecs.encode(vector['serialized'], 'utf-8'))
-        )
+        yield (decode_value(vector["attribute"]), base64.b64decode(codecs.encode(vector["serialized"], "utf-8")))
 
 
 def material_description_test_vectors():
     with open(_MATERIAL_DESCRIPTION_TEST_VECTORS_FILE) as f:
         vectors = json.load(f)
     for vector in vectors:
-        yield (
-            vector['material_description'],
-            decode_value({'B': codecs.encode(vector['serialized'], 'utf-8')})
-        )
+        yield (vector["material_description"], decode_value({"B": codecs.encode(vector["serialized"], "utf-8")}))
 
 
 ACTION_MAP = {
-    'encrypt': CryptoAction.ENCRYPT_AND_SIGN,
-    'sign': CryptoAction.SIGN_ONLY,
-    'nothing': CryptoAction.DO_NOTHING
+    "encrypt": CryptoAction.ENCRYPT_AND_SIGN,
+    "sign": CryptoAction.SIGN_ONLY,
+    "nothing": CryptoAction.DO_NOTHING,
 }
 
 
@@ -143,18 +128,12 @@ def string_to_sign_test_vectors():
     with open(_STRING_TO_SIGN_TEST_VECTORS_FILE) as f:
         vectors = json.load(f)
     for vector in vectors:
-        item = {
-            key: decode_value(value['value'])
-            for key, value in vector['item'].items()
-        }
-        bare_actions = {key: ACTION_MAP[value['action']] for key, value in vector['item'].items()}
-        attribute_actions = AttributeActions(
-            default_action=CryptoAction.DO_NOTHING,
-            attribute_actions=bare_actions
-        )
+        item = {key: decode_value(value["value"]) for key, value in vector["item"].items()}
+        bare_actions = {key: ACTION_MAP[value["action"]] for key, value in vector["item"].items()}
+        attribute_actions = AttributeActions(default_action=CryptoAction.DO_NOTHING, attribute_actions=bare_actions)
         yield (
             item,
-            vector['table'],
+            vector["table"],
             attribute_actions,
-            base64.b64decode(codecs.encode(vector['string_to_sign'], 'utf-8'))
+            base64.b64decode(codecs.encode(vector["string_to_sign"], "utf-8")),
         )

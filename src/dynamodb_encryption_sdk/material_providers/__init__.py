@@ -14,7 +14,7 @@
 from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 
-__all__ = ('CryptographicMaterialsProvider',)
+__all__ = ("CryptographicMaterialsProvider",)
 
 
 class CryptographicMaterialsProvider(object):
@@ -28,7 +28,7 @@ class CryptographicMaterialsProvider(object):
         :param EncryptionContext encryption_context: Encryption context for request
         :raises AttributeError: if no decryption materials are available
         """
-        raise AttributeError('No decryption materials available')
+        raise AttributeError("No decryption materials available")
 
     def encryption_materials(self, encryption_context):
         # type: (EncryptionContext) -> CryptographicMaterials
@@ -38,7 +38,7 @@ class CryptographicMaterialsProvider(object):
         :param EncryptionContext encryption_context: Encryption context for request
         :raises AttributeError: if no encryption materials are available
         """
-        raise AttributeError('No encryption materials available')
+        raise AttributeError("No encryption materials available")
 
     def refresh(self):
         # type: () -> None

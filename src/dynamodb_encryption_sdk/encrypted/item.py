@@ -22,15 +22,19 @@ from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.crypto.authentication import sign_item, verify_item_signature
 from dynamodb_encryption_sdk.internal.crypto.encryption import decrypt_attribute, encrypt_attribute
 from dynamodb_encryption_sdk.internal.formatting.material_description import (
-    deserialize as deserialize_material_description, serialize as serialize_material_description
+    deserialize as deserialize_material_description,
+    serialize as serialize_material_description,
 )
 from dynamodb_encryption_sdk.internal.identifiers import (
-    MaterialDescriptionKeys, MaterialDescriptionValues, ReservedAttributes
+    MaterialDescriptionKeys,
+    MaterialDescriptionValues,
+    ReservedAttributes,
 )
 from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
+
 from . import CryptoConfig  # noqa pylint: disable=unused-import
 
-__all__ = ('encrypt_dynamodb_item', 'encrypt_python_item', 'decrypt_dynamodb_item', 'decrypt_python_item')
+__all__ = ("encrypt_dynamodb_item", "encrypt_python_item", "decrypt_dynamodb_item", "decrypt_python_item")
 
 
 def encrypt_dynamodb_item(item, crypto_config):
@@ -62,9 +66,9 @@ def encrypt_dynamodb_item(item, crypto_config):
 
     for reserved_name in ReservedAttributes:
         if reserved_name.value in item:
-            raise EncryptionError('Reserved attribute name "{}" is not allowed in plaintext item.'.format(
-                reserved_name.value
-            ))
+            raise EncryptionError(
+                'Reserved attribute name "{}" is not allowed in plaintext item.'.format(reserved_name.value)
+            )
 
     crypto_config.materials_provider.refresh()
     encryption_materials = crypto_config.encryption_materials()
@@ -75,16 +79,14 @@ def encrypt_dynamodb_item(item, crypto_config):
     except AttributeError:
         if crypto_config.attribute_actions.contains_action(CryptoAction.ENCRYPT_AND_SIGN):
             raise EncryptionError(
-                'Attribute actions ask for some attributes to be encrypted but no encryption key is available'
+                "Attribute actions ask for some attributes to be encrypted but no encryption key is available"
             )
 
         encrypted_item = item.copy()
     else:
         # Add the attribute encryption mode to the inner material description
         encryption_mode = MaterialDescriptionValues.CBC_PKCS5_ATTRIBUTE_ENCRYPTION.value
-        inner_material_description[
-            MaterialDescriptionKeys.ATTRIBUTE_ENCRYPTION_MODE.value
-        ] = encryption_mode
+        inner_material_description[MaterialDescriptionKeys.ATTRIBUTE_ENCRYPTION_MODE.value] = encryption_mode
 
         algorithm_descriptor = encryption_materials.encryption_key.algorithm + encryption_mode
 
@@ -95,7 +97,7 @@ def encrypt_dynamodb_item(item, crypto_config):
                     attribute_name=name,
                     attribute=attribute,
                     encryption_key=encryption_materials.encryption_key,
-                    algorithm=algorithm_descriptor
+                    algorithm=algorithm_descriptor,
                 )
             else:
                 encrypted_item[name] = attribute.copy()
@@ -181,7 +183,7 @@ def decrypt_dynamodb_item(item, crypto_config):
     except KeyError:
         # The signature is always written, so if no signature is found then the item was not
         # encrypted or signed.
-        raise DecryptionError('No signature attribute found in item')
+        raise DecryptionError("No signature attribute found in item")
 
     inner_crypto_config = crypto_config.copy()
     # Retrieve the material description from the item if found.
@@ -204,7 +206,7 @@ def decrypt_dynamodb_item(item, crypto_config):
     except AttributeError:
         if inner_crypto_config.attribute_actions.contains_action(CryptoAction.ENCRYPT_AND_SIGN):
             raise DecryptionError(
-                'Attribute actions ask for some attributes to be decrypted but no decryption key is available'
+                "Attribute actions ask for some attributes to be decrypted but no decryption key is available"
             )
 
         return item.copy()
@@ -219,10 +221,7 @@ def decrypt_dynamodb_item(item, crypto_config):
     for name, attribute in item.items():
         if inner_crypto_config.attribute_actions.action(name) is CryptoAction.ENCRYPT_AND_SIGN:
             decrypted_item[name] = decrypt_attribute(
-                attribute_name=name,
-                attribute=attribute,
-                decryption_key=decryption_key,
-                algorithm=algorithm_descriptor
+                attribute_name=name, attribute=attribute, decryption_key=decryption_key, algorithm=algorithm_descriptor
             )
         else:
             decrypted_item[name] = attribute.copy()

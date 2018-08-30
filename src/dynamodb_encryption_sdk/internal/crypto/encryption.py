@@ -28,7 +28,7 @@ from dynamodb_encryption_sdk.internal.formatting.deserialize.attribute import de
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.internal.identifiers import Tag
 
-__all__ = ('encrypt_attribute', 'decrypt_attribute')
+__all__ = ("encrypt_attribute", "decrypt_attribute")
 
 
 def encrypt_attribute(attribute_name, attribute, encryption_key, algorithm):
@@ -44,9 +44,7 @@ def encrypt_attribute(attribute_name, attribute, encryption_key, algorithm):
     """
     serialized_attribute = serialize_attribute(attribute)
     encrypted_attribute = encryption_key.encrypt(
-        algorithm=algorithm,
-        name=attribute_name,
-        plaintext=serialized_attribute
+        algorithm=algorithm, name=attribute_name, plaintext=serialized_attribute
     )
     return {Tag.BINARY.dynamodb_tag: encrypted_attribute}
 
@@ -64,8 +62,6 @@ def decrypt_attribute(attribute_name, attribute, decryption_key, algorithm):
     """
     encrypted_attribute = attribute[Tag.BINARY.dynamodb_tag]
     decrypted_attribute = decryption_key.decrypt(
-        algorithm=algorithm,
-        name=attribute_name,
-        ciphertext=encrypted_attribute
+        algorithm=algorithm, name=attribute_name, ciphertext=encrypted_attribute
     )
     return deserialize_attribute(decrypted_attribute)

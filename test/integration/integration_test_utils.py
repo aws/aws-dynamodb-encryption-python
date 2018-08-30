@@ -14,22 +14,18 @@
 import os
 import sys
 
+# Convenience imports
+import functional_test_utils  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
+import hypothesis_strategies  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
 import pytest
 
 from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
 
-sys.path.append(os.path.join(
-    os.path.abspath(os.path.dirname(__file__)),
-    '..',
-    'functional'
-))
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "functional"))
 
-# Convenience imports
-import functional_test_utils  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
-import hypothesis_strategies  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
 
-AWS_KMS_KEY_ID = 'AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID'
-DDB_TABLE_NAME = 'DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME'
+AWS_KMS_KEY_ID = "AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID"
+DDB_TABLE_NAME = "DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME"
 
 
 @pytest.fixture
@@ -42,9 +38,9 @@ def cmk_arn():
                 AWS_KMS_KEY_ID
             )
         )
-    if arn.startswith('arn:') and ':alias/' not in arn:
+    if arn.startswith("arn:") and ":alias/" not in arn:
         return arn
-    raise ValueError('KMS CMK ARN provided for integration tests must be a key not an alias')
+    raise ValueError("KMS CMK ARN provided for integration tests must be a key not an alias")
 
 
 @pytest.fixture
@@ -61,8 +57,6 @@ def ddb_table_name():
         raise ValueError(
             (
                 'Environment variable "{}" must be set to the correct DynamoDB table name'
-                ' for integration tests to run'
-            ).format(
-                AWS_KMS_KEY_ID
-            )
+                " for integration tests to run"
+            ).format(AWS_KMS_KEY_ID)
         )

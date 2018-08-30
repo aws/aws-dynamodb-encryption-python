@@ -20,7 +20,7 @@ import struct
 
 from dynamodb_encryption_sdk.exceptions import DeserializationError
 
-__all__ = ('unpack_value', 'decode_length', 'decode_value', 'decode_tag')
+__all__ = ("unpack_value", "decode_length", "decode_value", "decode_tag")
 
 
 def unpack_value(format_string, stream):
@@ -44,7 +44,7 @@ def decode_length(stream):
     :returns: Decoded length
     :rtype: int
     """
-    (value,) = unpack_value('>I', stream)
+    (value,) = unpack_value(">I", stream)
     return value
 
 
@@ -57,7 +57,7 @@ def decode_value(stream):
     :rtype: bytes
     """
     length = decode_length(stream)
-    (value,) = unpack_value('>{:d}s'.format(length), stream)
+    (value,) = unpack_value(">{:d}s".format(length), stream)
     return value
 
 
@@ -69,7 +69,7 @@ def decode_byte(stream):
     :returns: Decoded value
     :rtype: bytes
     """
-    (value,) = unpack_value('>1s', stream)
+    (value,) = unpack_value(">1s", stream)
     return value
 
 
@@ -81,9 +81,9 @@ def decode_tag(stream):
     :returns: Decoded tag
     :rtype: bytes
     """
-    (reserved, tag) = unpack_value('>cc', stream)
+    (reserved, tag) = unpack_value(">cc", stream)
 
-    if reserved != b'\x00':
-        raise DeserializationError('Invalid tag: reserved byte is not null')
+    if reserved != b"\x00":
+        raise DeserializationError("Invalid tag: reserved byte is not null")
 
     return tag

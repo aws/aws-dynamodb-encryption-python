@@ -19,5 +19,3 @@ import pytest
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 
 pytestmark = [pytest.mark.integ]
-
-

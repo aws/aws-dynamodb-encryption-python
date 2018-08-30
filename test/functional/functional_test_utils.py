@@ -13,15 +13,15 @@
 """Helper tools for use in tests."""
 from __future__ import division
 
-from collections import defaultdict
 import copy
-from decimal import Decimal
 import itertools
+from collections import defaultdict
+from decimal import Decimal
 
 import boto3
+import pytest
 from boto3.dynamodb.types import Binary
 from moto import mock_dynamodb2
-import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
@@ -37,103 +37,51 @@ from dynamodb_encryption_sdk.structures import AttributeActions
 from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
 
 _DELEGATED_KEY_CACHE = defaultdict(lambda: defaultdict(dict))
-TEST_TABLE_NAME = 'my_table'
+TEST_TABLE_NAME = "my_table"
 TEST_INDEX = {
-    'partition_attribute': {
-        'type': 'S',
-        'value': 'test_value'
-    },
-    'sort_attribute': {
-        'type': 'N',
-        'value': Decimal('99.233')
-    }
+    "partition_attribute": {"type": "S", "value": "test_value"},
+    "sort_attribute": {"type": "N", "value": Decimal("99.233")},
 }
 SECONARY_INDEX = {
-    'secondary_index_1': {
-        'type': 'B',
-        'value': Binary(b'\x00\x01\x02')
-    },
-    'secondary_index_1': {
-        'type': 'S',
-        'value': 'another_value'
-    }
+    "secondary_index_1": {"type": "B", "value": Binary(b"\x00\x01\x02")},
+    "secondary_index_1": {"type": "S", "value": "another_value"},
 }
-TEST_KEY = {name: value['value'] for name, value in TEST_INDEX.items()}
+TEST_KEY = {name: value["value"] for name, value in TEST_INDEX.items()}
 TEST_BATCH_INDEXES = [
     {
-        'partition_attribute': {
-            'type': 'S',
-            'value': 'test_value'
-        },
-        'sort_attribute': {
-            'type': 'N',
-            'value': Decimal('99.233')
-        }
+        "partition_attribute": {"type": "S", "value": "test_value"},
+        "sort_attribute": {"type": "N", "value": Decimal("99.233")},
     },
     {
-        'partition_attribute': {
-            'type': 'S',
-            'value': 'test_value'
-        },
-        'sort_attribute': {
-            'type': 'N',
-            'value': Decimal('92986745')
-        }
+        "partition_attribute": {"type": "S", "value": "test_value"},
+        "sort_attribute": {"type": "N", "value": Decimal("92986745")},
     },
     {
-        'partition_attribute': {
-            'type': 'S',
-            'value': 'test_value'
-        },
-        'sort_attribute': {
-            'type': 'N',
-            'value': Decimal('2231.0001')
-        }
+        "partition_attribute": {"type": "S", "value": "test_value"},
+        "sort_attribute": {"type": "N", "value": Decimal("2231.0001")},
     },
     {
-        'partition_attribute': {
-            'type': 'S',
-            'value': 'another_test_value'
-        },
-        'sort_attribute': {
-            'type': 'N',
-            'value': Decimal('732342')
-        }
-    }
+        "partition_attribute": {"type": "S", "value": "another_test_value"},
+        "sort_attribute": {"type": "N", "value": Decimal("732342")},
+    },
 ]
-TEST_BATCH_KEYS = [
-    {name: value['value'] for name, value in key.items()}
-    for key in TEST_BATCH_INDEXES
-]
+TEST_BATCH_KEYS = [{name: value["value"] for name, value in key.items()} for key in TEST_BATCH_INDEXES]
 
 
 @pytest.fixture
 def example_table():
     mock_dynamodb2().start()
-    ddb = boto3.client('dynamodb', region_name='us-west-2')
+    ddb = boto3.client("dynamodb", region_name="us-west-2")
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
-            {
-                'AttributeName': 'partition_attribute',
-                'KeyType': 'HASH'
-            },
-            {
-                'AttributeName': 'sort_attribute',
-                'KeyType': 'RANGE'
-            }
+            {"AttributeName": "partition_attribute", "KeyType": "HASH"},
+            {"AttributeName": "sort_attribute", "KeyType": "RANGE"},
         ],
         AttributeDefinitions=[
-            {
-                'AttributeName': name,
-                'AttributeType': value['type']
-            }
-            for name, value in TEST_INDEX.items()
+            {"AttributeName": name, "AttributeType": value["type"]} for name, value in TEST_INDEX.items()
         ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 100,
-            'WriteCapacityUnits': 100
-        }
+        ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
     yield
     ddb.delete_table(TableName=TEST_TABLE_NAME)
@@ -143,56 +91,30 @@ def example_table():
 @pytest.fixture
 def table_with_local_seconary_indexes():
     mock_dynamodb2().start()
-    ddb = boto3.client('dynamodb', region_name='us-west-2')
+    ddb = boto3.client("dynamodb", region_name="us-west-2")
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
-            {
-                'AttributeName': 'partition_attribute',
-                'KeyType': 'HASH'
-            },
-            {
-                'AttributeName': 'sort_attribute',
-                'KeyType': 'RANGE'
-            }
+            {"AttributeName": "partition_attribute", "KeyType": "HASH"},
+            {"AttributeName": "sort_attribute", "KeyType": "RANGE"},
         ],
         LocalSecondaryIndexes=[
             {
-                'IndexName': 'lsi-1',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'secondary_index_1',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                }
+                "IndexName": "lsi-1",
+                "KeySchema": [{"AttributeName": "secondary_index_1", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
             },
             {
-                'IndexName': 'lsi-2',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'secondary_index_2',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                }
-            }
+                "IndexName": "lsi-2",
+                "KeySchema": [{"AttributeName": "secondary_index_2", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+            },
         ],
         AttributeDefinitions=[
-            {
-                'AttributeName': name,
-                'AttributeType': value['type']
-            }
+            {"AttributeName": name, "AttributeType": value["type"]}
             for name, value in list(TEST_INDEX.items()) + list(SECONARY_INDEX.items())
         ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 100,
-            'WriteCapacityUnits': 100
-        }
+        ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
     yield
     ddb.delete_table(TableName=TEST_TABLE_NAME)
@@ -202,64 +124,32 @@ def table_with_local_seconary_indexes():
 @pytest.fixture
 def table_with_global_seconary_indexes():
     mock_dynamodb2().start()
-    ddb = boto3.client('dynamodb', region_name='us-west-2')
+    ddb = boto3.client("dynamodb", region_name="us-west-2")
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
-            {
-                'AttributeName': 'partition_attribute',
-                'KeyType': 'HASH'
-            },
-            {
-                'AttributeName': 'sort_attribute',
-                'KeyType': 'RANGE'
-            }
+            {"AttributeName": "partition_attribute", "KeyType": "HASH"},
+            {"AttributeName": "sort_attribute", "KeyType": "RANGE"},
         ],
         GlobalSecondaryIndexes=[
             {
-                'IndexName': 'gsi-1',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'secondary_index_1',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 100,
-                    'WriteCapacityUnits': 100
-                }
+                "IndexName": "gsi-1",
+                "KeySchema": [{"AttributeName": "secondary_index_1", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
             },
             {
-                'IndexName': 'gsi-2',
-                'KeySchema': [
-                    {
-                        'AttributeName': 'secondary_index_2',
-                        'KeyType': 'HASH'
-                    }
-                ],
-                'Projection': {
-                    'ProjectionType': 'ALL'
-                },
-                'ProvisionedThroughput': {
-                    'ReadCapacityUnits': 100,
-                    'WriteCapacityUnits': 100
-                }
-            }
+                "IndexName": "gsi-2",
+                "KeySchema": [{"AttributeName": "secondary_index_2", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
+            },
         ],
         AttributeDefinitions=[
-            {
-                'AttributeName': name,
-                'AttributeType': value['type']
-            }
+            {"AttributeName": name, "AttributeType": value["type"]}
             for name, value in list(TEST_INDEX.items()) + list(SECONARY_INDEX.items())
         ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 100,
-            'WriteCapacityUnits': 100
-        }
+        ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
     yield
     ddb.delete_table(TableName=TEST_TABLE_NAME)
@@ -280,17 +170,10 @@ def build_static_jce_cmp(encryption_algorithm, encryption_key_length, signing_al
     """Build a StaticCryptographicMaterialsProvider using ephemeral JceNameLocalDelegatedKeys as specified."""
     encryption_key = _get_from_cache(JceNameLocalDelegatedKey, encryption_algorithm, encryption_key_length)
     authentication_key = _get_from_cache(JceNameLocalDelegatedKey, signing_algorithm, signing_key_length)
-    encryption_materials = RawEncryptionMaterials(
-        signing_key=authentication_key,
-        encryption_key=encryption_key
-    )
-    decryption_materials = RawDecryptionMaterials(
-        verification_key=authentication_key,
-        decryption_key=encryption_key
-    )
+    encryption_materials = RawEncryptionMaterials(signing_key=authentication_key, encryption_key=encryption_key)
+    decryption_materials = RawDecryptionMaterials(verification_key=authentication_key, decryption_key=encryption_key)
     return StaticCryptographicMaterialsProvider(
-        encryption_materials=encryption_materials,
-        decryption_materials=decryption_materials
+        encryption_materials=encryption_materials, decryption_materials=decryption_materials
     )
 
 
@@ -299,31 +182,20 @@ def _build_wrapped_jce_cmp(wrapping_algorithm, wrapping_key_length, signing_algo
     wrapping_key = _get_from_cache(JceNameLocalDelegatedKey, wrapping_algorithm, wrapping_key_length)
     signing_key = _get_from_cache(JceNameLocalDelegatedKey, signing_algorithm, signing_key_length)
     return WrappedCryptographicMaterialsProvider(
-        wrapping_key=wrapping_key,
-        unwrapping_key=wrapping_key,
-        signing_key=signing_key
+        wrapping_key=wrapping_key, unwrapping_key=wrapping_key, signing_key=signing_key
     )
 
 
 def _all_encryption():
     """All encryption configurations to test in slow tests."""
-    return itertools.chain(
-        itertools.product(('AES',), (128, 256)),
-        itertools.product(('RSA',), (1024, 2048, 4096))
-    )
+    return itertools.chain(itertools.product(("AES",), (128, 256)), itertools.product(("RSA",), (1024, 2048, 4096)))
 
 
 def _all_authentication():
     """All authentication configurations to test in slow tests."""
     return itertools.chain(
-        itertools.product(
-            ('HmacSHA224', 'HmacSHA256', 'HmacSHA384', 'HmacSHA512'),
-            (128, 256)
-        ),
-        itertools.product(
-            ('SHA224withRSA', 'SHA256withRSA', 'SHA384withRSA', 'SHA512withRSA'),
-            (1024, 2048, 4096)
-        )
+        itertools.product(("HmacSHA224", "HmacSHA256", "HmacSHA384", "HmacSHA512"), (128, 256)),
+        itertools.product(("SHA224withRSA", "SHA256withRSA", "SHA384withRSA", "SHA512withRSA"), (1024, 2048, 4096)),
     )
 
 
@@ -335,107 +207,94 @@ def _all_algorithm_pairs():
 
 def _some_algorithm_pairs():
     """Cherry-picked set of algorithm pairs (encryption + authentication) to test in fast tests."""
-    return (
-        ('AES', 256, 'HmacSHA256', 256),
-        ('AES', 256, 'SHA256withRSA', 4096),
-        ('RSA', 4096, 'SHA256withRSA', 4096)
-    )
+    return (("AES", 256, "HmacSHA256", 256), ("AES", 256, "SHA256withRSA", 4096), ("RSA", 4096, "SHA256withRSA", 4096))
 
 
-_cmp_builders = {
-    'static': build_static_jce_cmp,
-    'wrapped': _build_wrapped_jce_cmp
-}
+_cmp_builders = {"static": build_static_jce_cmp, "wrapped": _build_wrapped_jce_cmp}
 
 
 def _all_possible_cmps(algorithm_generator):
     """Generate all possible cryptographic materials providers based on the supplied generator."""
     # The AES combinations do the same thing, but this makes sure that the AESWrap name works as expected.
-    yield _build_wrapped_jce_cmp('AESWrap', 256, 'HmacSHA256', 256)
+    yield _build_wrapped_jce_cmp("AESWrap", 256, "HmacSHA256", 256)
 
     for builder_info, args in itertools.product(_cmp_builders.items(), algorithm_generator()):
         builder_type, builder_func = builder_info
         encryption_algorithm, encryption_key_length, signing_algorithm, signing_key_length = args
 
-        if builder_type == 'static' and encryption_algorithm != 'AES':
+        if builder_type == "static" and encryption_algorithm != "AES":
             # Only AES keys are allowed to be used with static materials
             continue
 
-        id_string = '{enc_algorithm}/{enc_key_length} {builder_type} {sig_algorithm}/{sig_key_length}'.format(
+        id_string = "{enc_algorithm}/{enc_key_length} {builder_type} {sig_algorithm}/{sig_key_length}".format(
             enc_algorithm=encryption_algorithm,
             enc_key_length=encryption_key_length,
             builder_type=builder_type,
             sig_algorithm=signing_algorithm,
-            sig_key_length=signing_key_length
+            sig_key_length=signing_key_length,
         )
 
         yield pytest.param(
-            builder_func(
-                encryption_algorithm,
-                encryption_key_length,
-                signing_algorithm,
-                signing_key_length
-            ),
-            id=id_string
+            builder_func(encryption_algorithm, encryption_key_length, signing_algorithm, signing_key_length),
+            id=id_string,
         )
 
 
 def set_parametrized_cmp(metafunc):
     """Set paramatrized values for cryptographic materials providers."""
-    for name, algorithm_generator in (('all_the_cmps', _all_algorithm_pairs), ('some_cmps', _some_algorithm_pairs)):
+    for name, algorithm_generator in (("all_the_cmps", _all_algorithm_pairs), ("some_cmps", _some_algorithm_pairs)):
         if name in metafunc.fixturenames:
             metafunc.parametrize(name, _all_possible_cmps(algorithm_generator))
 
 
 _ACTIONS = {
-    'hypothesis_actions': (
-        pytest.param(AttributeActions(default_action=CryptoAction.ENCRYPT_AND_SIGN), id='encrypt all'),
-        pytest.param(AttributeActions(default_action=CryptoAction.SIGN_ONLY), id='sign only all'),
-        pytest.param(AttributeActions(default_action=CryptoAction.DO_NOTHING), id='do nothing'),
+    "hypothesis_actions": (
+        pytest.param(AttributeActions(default_action=CryptoAction.ENCRYPT_AND_SIGN), id="encrypt all"),
+        pytest.param(AttributeActions(default_action=CryptoAction.SIGN_ONLY), id="sign only all"),
+        pytest.param(AttributeActions(default_action=CryptoAction.DO_NOTHING), id="do nothing"),
     )
 }
-_ACTIONS['parametrized_actions'] = _ACTIONS['hypothesis_actions'] + (
+_ACTIONS["parametrized_actions"] = _ACTIONS["hypothesis_actions"] + (
     pytest.param(
         AttributeActions(
             default_action=CryptoAction.ENCRYPT_AND_SIGN,
             attribute_actions={
-                'number_set': CryptoAction.SIGN_ONLY,
-                'string_set': CryptoAction.SIGN_ONLY,
-                'binary_set': CryptoAction.SIGN_ONLY
-            }
+                "number_set": CryptoAction.SIGN_ONLY,
+                "string_set": CryptoAction.SIGN_ONLY,
+                "binary_set": CryptoAction.SIGN_ONLY,
+            },
         ),
-        id='sign sets, encrypt everything else'
+        id="sign sets, encrypt everything else",
     ),
     pytest.param(
         AttributeActions(
             default_action=CryptoAction.ENCRYPT_AND_SIGN,
             attribute_actions={
-                'number_set': CryptoAction.DO_NOTHING,
-                'string_set': CryptoAction.DO_NOTHING,
-                'binary_set': CryptoAction.DO_NOTHING
-            }
+                "number_set": CryptoAction.DO_NOTHING,
+                "string_set": CryptoAction.DO_NOTHING,
+                "binary_set": CryptoAction.DO_NOTHING,
+            },
         ),
-        id='ignore sets, encrypt everything else'
+        id="ignore sets, encrypt everything else",
     ),
     pytest.param(
         AttributeActions(
-            default_action=CryptoAction.DO_NOTHING,
-            attribute_actions={'map': CryptoAction.ENCRYPT_AND_SIGN}
+            default_action=CryptoAction.DO_NOTHING, attribute_actions={"map": CryptoAction.ENCRYPT_AND_SIGN}
         ),
-        id='encrypt map, ignore everything else'
+        id="encrypt map, ignore everything else",
     ),
     pytest.param(
         AttributeActions(
             default_action=CryptoAction.SIGN_ONLY,
             attribute_actions={
-                'number_set': CryptoAction.DO_NOTHING,
-                'string_set': CryptoAction.DO_NOTHING,
-                'binary_set': CryptoAction.DO_NOTHING,
-                'map': CryptoAction.ENCRYPT_AND_SIGN
-            }
+                "number_set": CryptoAction.DO_NOTHING,
+                "string_set": CryptoAction.DO_NOTHING,
+                "binary_set": CryptoAction.DO_NOTHING,
+                "map": CryptoAction.ENCRYPT_AND_SIGN,
+            },
         ),
-        id='ignore sets, encrypt map, sign everything else'
-    )
+        id="ignore sets, encrypt map, sign everything else",
+    ),
 )
 
 
@@ -448,27 +307,22 @@ def set_parametrized_actions(metafunc):
 
 def set_parametrized_item(metafunc):
     """Set parametrized values for items to cycle."""
-    if 'parametrized_item' in metafunc.fixturenames:
-        metafunc.parametrize(
-            'parametrized_item',
-            (
-                pytest.param(diverse_item(), id='diverse item'),
-            )
-        )
+    if "parametrized_item" in metafunc.fixturenames:
+        metafunc.parametrize("parametrized_item", (pytest.param(diverse_item(), id="diverse item"),))
 
 
 def diverse_item():
     base_item = {
-        'int': 5,
-        'decimal': Decimal('123.456'),
-        'string': 'this is a string',
-        'binary': b'this is a bytestring! \x01',
-        'number_set': set([5, 4, 3]),
-        'string_set': set(['abc', 'def', 'geh']),
-        'binary_set': set([b'\x00\x00\x00', b'\x00\x01\x00', b'\x00\x00\x02'])
+        "int": 5,
+        "decimal": Decimal("123.456"),
+        "string": "this is a string",
+        "binary": b"this is a bytestring! \x01",
+        "number_set": set([5, 4, 3]),
+        "string_set": set(["abc", "def", "geh"]),
+        "binary_set": set([b"\x00\x00\x00", b"\x00\x01\x00", b"\x00\x00\x02"]),
     }
-    base_item['list'] = [copy.copy(i) for i in base_item.values()]
-    base_item['map'] = copy.deepcopy(base_item)
+    base_item["list"] = [copy.copy(i) for i in base_item.values()]
+    base_item["map"] = copy.deepcopy(base_item)
     return copy.deepcopy(base_item)
 
 
@@ -500,9 +354,10 @@ def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
 
 def _matching_key(actual_item, expected):
     expected_item = [
-        i for i in expected
-        if i['partition_attribute'] == actual_item['partition_attribute'] and
-        i['sort_attribute'] == actual_item['sort_attribute']
+        i
+        for i in expected
+        if i["partition_attribute"] == actual_item["partition_attribute"]
+        and i["sort_attribute"] == actual_item["sort_attribute"]
     ]
     assert len(expected_item) == 1
     return expected_item[0]
@@ -528,7 +383,7 @@ def check_many_encrypted_items(actual, expected, attribute_actions, transformer=
         check_encrypted_item(
             plaintext_item=transformer(expected_item),
             ciphertext_item=transformer(actual_item),
-            attribute_actions=attribute_actions
+            attribute_actions=attribute_actions,
         )
 
 
@@ -544,24 +399,19 @@ def _generate_items(initial_item, write_transformer):
 def _cleanup_items(encrypted, write_transformer, table_name=TEST_TABLE_NAME):
     ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
     _delete_result = encrypted.batch_write_item(  # noqa
-        RequestItems={
-            table_name: [
-                {'DeleteRequest': {'Key': _key}}
-                for _key in ddb_keys
-            ]
-        }
+        RequestItems={table_name: [{"DeleteRequest": {"Key": _key}} for _key in ddb_keys]}
     )
 
 
 def cycle_batch_item_check(
-        raw,
-        encrypted,
-        initial_actions,
-        initial_item,
-        write_transformer=_nop_transformer,
-        read_transformer=_nop_transformer,
-        table_name=TEST_TABLE_NAME,
-        delete_items=True
+    raw,
+    encrypted,
+    initial_actions,
+    initial_item,
+    write_transformer=_nop_transformer,
+    read_transformer=_nop_transformer,
+    table_name=TEST_TABLE_NAME,
+    delete_items=True,
 ):
     """Check that cycling (plaintext->encrypted->decrypted) item batch has the expected results."""
     check_attribute_actions = initial_actions.copy()
@@ -569,40 +419,21 @@ def cycle_batch_item_check(
     items = _generate_items(initial_item, write_transformer)
 
     _put_result = encrypted.batch_write_item(  # noqa
-        RequestItems={
-            table_name: [
-                {'PutRequest': {'Item': _item}}
-                for _item in items
-            ]
-        }
+        RequestItems={table_name: [{"PutRequest": {"Item": _item}} for _item in items]}
     )
 
     ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
-    encrypted_result = raw.batch_get_item(
-        RequestItems={
-            table_name: {
-                'Keys': ddb_keys
-            }
-        }
-    )
+    encrypted_result = raw.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
     check_many_encrypted_items(
-        actual=encrypted_result['Responses'][table_name],
+        actual=encrypted_result["Responses"][table_name],
         expected=items,
         attribute_actions=check_attribute_actions,
-        transformer=read_transformer
+        transformer=read_transformer,
     )
 
-    decrypted_result = encrypted.batch_get_item(
-        RequestItems={
-            table_name: {
-                'Keys': ddb_keys
-            }
-        }
-    )
+    decrypted_result = encrypted.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
     assert_equal_lists_of_items(
-        actual=decrypted_result['Responses'][table_name],
-        expected=items,
-        transformer=read_transformer
+        actual=decrypted_result["Responses"][table_name], expected=items, transformer=read_transformer
     )
 
     if delete_items:
@@ -625,26 +456,13 @@ def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initia
             writer.put_item(item)
 
     ddb_keys = [key for key in TEST_BATCH_KEYS]
-    encrypted_items = [
-        raw_table.get_item(Key=key, ConsistentRead=True)['Item']
-        for key in ddb_keys
-    ]
+    encrypted_items = [raw_table.get_item(Key=key, ConsistentRead=True)["Item"] for key in ddb_keys]
     check_many_encrypted_items(
-        actual=encrypted_items,
-        expected=items,
-        attribute_actions=check_attribute_actions,
-        transformer=_nop_transformer
+        actual=encrypted_items, expected=items, attribute_actions=check_attribute_actions, transformer=_nop_transformer
     )
 
-    decrypted_result = [
-        encrypted_table.get_item(Key=key, ConsistentRead=True)['Item']
-        for key in ddb_keys
-    ]
-    assert_equal_lists_of_items(
-        actual=decrypted_result,
-        expected=items,
-        transformer=_nop_transformer
-    )
+    decrypted_result = [encrypted_table.get_item(Key=key, ConsistentRead=True)["Item"] for key in ddb_keys]
+    assert_equal_lists_of_items(actual=decrypted_result, expected=items, transformer=_nop_transformer)
 
     with encrypted_table.batch_writer() as writer:
         for key in ddb_keys:
@@ -675,21 +493,17 @@ def table_cycle_check(materials_provider, initial_actions, initial_item, table_n
 
     kwargs = {}
     if region_name is not None:
-        kwargs['region_name'] = region_name
-    table = boto3.resource('dynamodb', **kwargs).Table(table_name)
-    e_table = EncryptedTable(
-        table=table,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions,
-    )
+        kwargs["region_name"] = region_name
+    table = boto3.resource("dynamodb", **kwargs).Table(table_name)
+    e_table = EncryptedTable(table=table, materials_provider=materials_provider, attribute_actions=initial_actions)
 
     _put_result = e_table.put_item(Item=item)  # noqa
 
     encrypted_result = table.get_item(Key=TEST_KEY, ConsistentRead=True)
-    check_encrypted_item(item, encrypted_result['Item'], check_attribute_actions)
+    check_encrypted_item(item, encrypted_result["Item"], check_attribute_actions)
 
     decrypted_result = e_table.get_item(Key=TEST_KEY, ConsistentRead=True)
-    assert decrypted_result['Item'] == item
+    assert decrypted_result["Item"] == item
 
     e_table.delete_item(Key=TEST_KEY)
     del item
@@ -699,13 +513,9 @@ def table_cycle_check(materials_provider, initial_actions, initial_item, table_n
 def table_cycle_batch_writer_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
     kwargs = {}
     if region_name is not None:
-        kwargs['region_name'] = region_name
-    table = boto3.resource('dynamodb', **kwargs).Table(table_name)
-    e_table = EncryptedTable(
-        table=table,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions,
-    )
+        kwargs["region_name"] = region_name
+    table = boto3.resource("dynamodb", **kwargs).Table(table_name)
+    e_table = EncryptedTable(table=table, materials_provider=materials_provider, attribute_actions=initial_actions)
 
     cycle_batch_writer_check(table, e_table, initial_actions, initial_item)
 
@@ -713,12 +523,10 @@ def table_cycle_batch_writer_check(materials_provider, initial_actions, initial_
 def resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
     kwargs = {}
     if region_name is not None:
-        kwargs['region_name'] = region_name
-    resource = boto3.resource('dynamodb', **kwargs)
+        kwargs["region_name"] = region_name
+    resource = boto3.resource("dynamodb", **kwargs)
     e_resource = EncryptedResource(
-        resource=resource,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions
+        resource=resource, materials_provider=materials_provider, attribute_actions=initial_actions
     )
 
     cycle_batch_item_check(
@@ -726,13 +534,13 @@ def resource_cycle_batch_items_check(materials_provider, initial_actions, initia
         encrypted=e_resource,
         initial_actions=initial_actions,
         initial_item=initial_item,
-        table_name=table_name
+        table_name=table_name,
     )
 
     raw_scan_result = resource.Table(table_name).scan(ConsistentRead=True)
     e_scan_result = e_resource.Table(table_name).scan(ConsistentRead=True)
-    assert not raw_scan_result['Items']
-    assert not e_scan_result['Items']
+    assert not raw_scan_result["Items"]
+    assert not e_scan_result["Items"]
 
 
 def client_cycle_single_item_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
@@ -745,37 +553,19 @@ def client_cycle_single_item_check(materials_provider, initial_actions, initial_
 
     kwargs = {}
     if region_name is not None:
-        kwargs['region_name'] = region_name
-    client = boto3.client('dynamodb', **kwargs)
-    e_client = EncryptedClient(
-        client=client,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions
-    )
+        kwargs["region_name"] = region_name
+    client = boto3.client("dynamodb", **kwargs)
+    e_client = EncryptedClient(client=client, materials_provider=materials_provider, attribute_actions=initial_actions)
 
-    _put_result = e_client.put_item(  # noqa
-        TableName=table_name,
-        Item=ddb_item
-    )
+    _put_result = e_client.put_item(TableName=table_name, Item=ddb_item)  # noqa
 
-    encrypted_result = client.get_item(
-        TableName=table_name,
-        Key=ddb_key,
-        ConsistentRead=True
-    )
-    check_encrypted_item(item, ddb_to_dict(encrypted_result['Item']), check_attribute_actions)
+    encrypted_result = client.get_item(TableName=table_name, Key=ddb_key, ConsistentRead=True)
+    check_encrypted_item(item, ddb_to_dict(encrypted_result["Item"]), check_attribute_actions)
 
-    decrypted_result = e_client.get_item(
-        TableName=table_name,
-        Key=ddb_key,
-        ConsistentRead=True
-    )
-    assert ddb_to_dict(decrypted_result['Item']) == item
+    decrypted_result = e_client.get_item(TableName=table_name, Key=ddb_key, ConsistentRead=True)
+    assert ddb_to_dict(decrypted_result["Item"]) == item
 
-    e_client.delete_item(
-        TableName=table_name,
-        Key=ddb_key
-    )
+    e_client.delete_item(TableName=table_name, Key=ddb_key)
     del item
     del check_attribute_actions
 
@@ -783,46 +573,9 @@ def client_cycle_single_item_check(materials_provider, initial_actions, initial_
 def client_cycle_batch_items_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
     kwargs = {}
     if region_name is not None:
-        kwargs['region_name'] = region_name
-    client = boto3.client('dynamodb', **kwargs)
-    e_client = EncryptedClient(
-        client=client,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions
-    )
-
-    cycle_batch_item_check(
-        raw=client,
-        encrypted=e_client,
-        initial_actions=initial_actions,
-        initial_item=initial_item,
-        write_transformer=dict_to_ddb,
-        read_transformer=ddb_to_dict,
-        table_name=table_name
-    )
-
-    raw_scan_result = client.scan(TableName=table_name, ConsistentRead=True)
-    e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
-    assert not raw_scan_result['Items']
-    assert not e_scan_result['Items']
-
-
-def client_cycle_batch_items_check_paginators(
-        materials_provider,
-        initial_actions,
-        initial_item,
-        table_name,
-        region_name=None
-):
-    kwargs = {}
-    if region_name is not None:
-        kwargs['region_name'] = region_name
-    client = boto3.client('dynamodb', **kwargs)
-    e_client = EncryptedClient(
-        client=client,
-        materials_provider=materials_provider,
-        attribute_actions=initial_actions
-    )
+        kwargs["region_name"] = region_name
+    client = boto3.client("dynamodb", **kwargs)
+    e_client = EncryptedClient(client=client, materials_provider=materials_provider, attribute_actions=initial_actions)
 
     cycle_batch_item_check(
         raw=client,
@@ -832,18 +585,43 @@ def client_cycle_batch_items_check_paginators(
         write_transformer=dict_to_ddb,
         read_transformer=ddb_to_dict,
         table_name=table_name,
-        delete_items=False
+    )
+
+    raw_scan_result = client.scan(TableName=table_name, ConsistentRead=True)
+    e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
+    assert not raw_scan_result["Items"]
+    assert not e_scan_result["Items"]
+
+
+def client_cycle_batch_items_check_paginators(
+    materials_provider, initial_actions, initial_item, table_name, region_name=None
+):
+    kwargs = {}
+    if region_name is not None:
+        kwargs["region_name"] = region_name
+    client = boto3.client("dynamodb", **kwargs)
+    e_client = EncryptedClient(client=client, materials_provider=materials_provider, attribute_actions=initial_actions)
+
+    cycle_batch_item_check(
+        raw=client,
+        encrypted=e_client,
+        initial_actions=initial_actions,
+        initial_item=initial_item,
+        write_transformer=dict_to_ddb,
+        read_transformer=ddb_to_dict,
+        table_name=table_name,
+        delete_items=False,
     )
 
     encrypted_items = []
-    raw_paginator = client.get_paginator('scan')
+    raw_paginator = client.get_paginator("scan")
     for page in raw_paginator.paginate(TableName=table_name, ConsistentRead=True):
-        encrypted_items.extend(page['Items'])
+        encrypted_items.extend(page["Items"])
 
     decrypted_items = []
-    encrypted_paginator = e_client.get_paginator('scan')
+    encrypted_paginator = e_client.get_paginator("scan")
     for page in encrypted_paginator.paginate(TableName=table_name, ConsistentRead=True):
-        decrypted_items.extend(page['Items'])
+        decrypted_items.extend(page["Items"])
 
     print(encrypted_items)
     print(decrypted_items)
@@ -854,16 +632,12 @@ def client_cycle_batch_items_check_paginators(
         actual=encrypted_items,
         expected=decrypted_items,
         attribute_actions=check_attribute_actions,
-        transformer=ddb_to_dict
+        transformer=ddb_to_dict,
     )
 
-    _cleanup_items(
-        encrypted=e_client,
-        write_transformer=dict_to_ddb,
-        table_name=table_name
-    )
+    _cleanup_items(encrypted=e_client, write_transformer=dict_to_ddb, table_name=table_name)
 
     raw_scan_result = client.scan(TableName=table_name, ConsistentRead=True)
     e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
-    assert not raw_scan_result['Items']
-    assert not e_scan_result['Items']
+    assert not raw_scan_result["Items"]
+    assert not e_scan_result["Items"]

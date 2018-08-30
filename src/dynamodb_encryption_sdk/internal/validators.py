@@ -17,7 +17,7 @@
     namespace staying consistent. Directly reference at your own risk.
 """
 
-__all__ = ('dictionary_validator', 'iterable_validator')
+__all__ = ("dictionary_validator", "iterable_validator")
 
 
 def dictionary_validator(key_type, value_type):
@@ -36,16 +36,14 @@ def dictionary_validator(key_type, value_type):
 
         for key, data in value.items():
             if not isinstance(key, key_type):
-                raise TypeError('"{name}" dictionary keys must be of type "{type}"'.format(
-                    name=attribute.name,
-                    type=key_type
-                ))
+                raise TypeError(
+                    '"{name}" dictionary keys must be of type "{type}"'.format(name=attribute.name, type=key_type)
+                )
 
             if not isinstance(data, value_type):
-                raise TypeError('"{name}" dictionary values must be of type "{type}"'.format(
-                    name=attribute.name,
-                    type=value_type
-                ))
+                raise TypeError(
+                    '"{name}" dictionary values must be of type "{type}"'.format(name=attribute.name, type=value_type)
+                )
 
     return _validate_dictionary
 
@@ -61,17 +59,13 @@ def iterable_validator(iterable_type, member_type):
         :raises TypeError: if ``value`` members are not all of ``member_type`` type
         """
         if not isinstance(value, iterable_type):
-            raise TypeError('"{name}" must be a {type}'.format(
-                name=attribute.name,
-                type=iterable_type
-            ))
+            raise TypeError('"{name}" must be a {type}'.format(name=attribute.name, type=iterable_type))
 
         for member in value:
             if not isinstance(member, member_type):
-                raise TypeError('"{name}" members must all be of type "{type}"'.format(
-                    name=attribute.name,
-                    type=member_type
-                ))
+                raise TypeError(
+                    '"{name}" members must all be of type "{type}"'.format(name=attribute.name, type=member_type)
+                )
 
     return _validate_tuple
 
@@ -83,7 +77,4 @@ def callable_validator(instance, attribute, value):
     :raises TypeError: if ``value`` is not callable
     """
     if not callable(value):
-        raise TypeError('"{name}" value "{value}" must be callable'.format(
-            name=attribute.name,
-            value=value
-        ))
+        raise TypeError('"{name}" value "{value}" must be callable'.format(name=attribute.name, value=value))
