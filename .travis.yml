@@ -2,38 +2,48 @@ sudo: false
 language: python
 matrix:
   include:
+    # CPython 2.7
     - python: 2.7
       env: TOXENV=py27-local-slow
     - python: 2.7
       env: TOXENV=py27-integ-slow
+    # CPython 3.4
     - python: 3.4
       env: TOXENV=py34-local-slow
     - python: 3.4
       env: TOXENV=py34-integ-slow
+    # CPython 3.5
     - python: 3.5
       env: TOXENV=py35-local-slow
     - python: 3.5
       env: TOXENV=py35-integ-slow
+    # CPython 3.6
     - python: 3.6
       env: TOXENV=py36-local-slow
     - python: 3.6
       env: TOXENV=py36-integ-slow
-# Disabled pending completion of integration
-# https://github.com/aws/aws-dynamodb-encryption-python/issues/66
+    # Upstream tests
+    - python: 2.7
+      env: TOXENV=test-upstream-requirements-py27
+    # MyPy
+    # Disabled pending completion of integration
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
 #    - python: 3.6
 #      env: TOXENV=mypy-py2
 #    - python: 3.6
 #      env: TOXENV=mypy-py3
+    # Security
     - python: 3.6
       env: TOXENV=bandit
+    # Linting
     - python: 3.6
       env: TOXENV=doc8
     - python: 3.6
       env: TOXENV=readme
     - python: 3.6
       env: TOXENV=docs
-# Disabled pending completion of cleanup
-# https://github.com/aws/aws-dynamodb-encryption-python/issues/67
+    # Disabled pending completion of cleanup
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/67
 #    - python: 3.6
 #      env: TOXENV=flake8
 #    - python: 3.6
