@@ -69,5 +69,9 @@ matrix:
 #      env: TOXENV=flake8-tests
 #    - python: 3.6
 #      env: TOXENV=pylint-tests
-install: pip install tox
+install:
+    # Clean up because Travis doesn't
+    # https://github.com/travis-ci/travis-ci/issues/7940
+    - if [[ $TRAVIS_SUDO = true ]]; then sudo rm -f /etc/boto.cfg;done
+    - pip install tox
 script: travis_wait 60 tox -- -vv
