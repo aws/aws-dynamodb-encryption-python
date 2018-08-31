@@ -12,17 +12,13 @@
 # language governing permissions and limitations under the License.
 """Helper utilities for integration tests."""
 import os
-import sys
 
-# Convenience imports
-import functional_test_utils  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
-import hypothesis_strategies  # noqa: E402,F401,I100 pylint: disable=import-error,unused-import,wrong-import-position
 import pytest
 
 from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "functional"))
-
+# convenience imports
+from ..functional import functional_test_utils, hypothesis_strategies
 
 AWS_KMS_KEY_ID = "AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID"
 DDB_TABLE_NAME = "DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME"

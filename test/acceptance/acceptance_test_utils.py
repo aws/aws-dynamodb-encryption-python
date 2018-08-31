@@ -14,12 +14,10 @@
 import base64
 import json
 import os
-import sys
 from collections import defaultdict
 from functools import partial
 
 import boto3
-import functional_test_vector_generators  # noqa: E402,I100 pylint: disable=import-error,wrong-import-position
 import pytest
 from six.moves.urllib.parse import urlparse  # moves confuse pylint: disable=wrong-import-order
 
@@ -33,8 +31,7 @@ from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptograp
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials
 from dynamodb_encryption_sdk.structures import AttributeActions
 
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "functional"))
-
+from ..functional import functional_test_vector_generators
 
 _ENCRYPTED_ITEM_VECTORS_DIR = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "..", "vectors", "encrypted_item"
