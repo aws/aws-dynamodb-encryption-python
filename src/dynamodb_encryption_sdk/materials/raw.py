@@ -27,17 +27,18 @@ import copy
 import attr
 import six
 
+from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
+from dynamodb_encryption_sdk.internal.validators import dictionary_validator
+from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
-from dynamodb_encryption_sdk.internal.validators import dictionary_validator
-from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
 
-__all__ = ('RawEncryptionMaterials', 'RawDecryptionMaterials')
+__all__ = ("RawEncryptionMaterials", "RawDecryptionMaterials")
 
 
 @attr.s(init=False)
@@ -56,20 +57,19 @@ class RawEncryptionMaterials(EncryptionMaterials):
 
     _signing_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
     _encryption_key = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
-        default=None
+        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)), default=None
     )
     _material_description = attr.ib(
         validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
-        default=attr.Factory(dict)
+        default=attr.Factory(dict),
     )
 
     def __init__(
-            self,
-            signing_key,  # type: DelegatedKey
-            encryption_key=None,  # type: Optional[DelegatedKey]
-            material_description=None  # type: Optional[Dict[Text, Text]]
+        self,
+        signing_key,  # type: DelegatedKey
+        encryption_key=None,  # type: Optional[DelegatedKey]
+        material_description=None,  # type: Optional[Dict[Text, Text]]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -87,9 +87,11 @@ class RawEncryptionMaterials(EncryptionMaterials):
     def __attrs_post_init__(self):
         """Verify that the encryption key is allowed be used for raw materials."""
         if self._encryption_key is not None and not self._encryption_key.allowed_for_raw_materials:
-            raise ValueError('Encryption key type "{}" does not allow use with RawEncryptionMaterials'.format(
-                type(self._encryption_key)
-            ))
+            raise ValueError(
+                'Encryption key type "{}" does not allow use with RawEncryptionMaterials'.format(
+                    type(self._encryption_key)
+                )
+            )
 
     @property
     def material_description(self):
@@ -120,7 +122,7 @@ class RawEncryptionMaterials(EncryptionMaterials):
         :rtype: DelegatedKey
         """
         if self._encryption_key is None:
-            raise AttributeError('No encryption key available')
+            raise AttributeError("No encryption key available")
 
         return self._encryption_key
 
@@ -141,20 +143,19 @@ class RawDecryptionMaterials(DecryptionMaterials):
 
     _verification_key = attr.ib(validator=attr.validators.instance_of(DelegatedKey))
     _decryption_key = attr.ib(
-        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)),
-        default=None
+        validator=attr.validators.optional(attr.validators.instance_of(DelegatedKey)), default=None
     )
     _material_description = attr.ib(
         validator=dictionary_validator(six.string_types, six.string_types),
         converter=copy.deepcopy,
-        default=attr.Factory(dict)
+        default=attr.Factory(dict),
     )
 
     def __init__(
-            self,
-            verification_key,  # type: DelegatedKey
-            decryption_key=None,  # type: Optional[DelegatedKey]
-            material_description=None  # type: Optional[Dict[Text, Text]]
+        self,
+        verification_key,  # type: DelegatedKey
+        decryption_key=None,  # type: Optional[DelegatedKey]
+        material_description=None,  # type: Optional[Dict[Text, Text]]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -172,9 +173,11 @@ class RawDecryptionMaterials(DecryptionMaterials):
     def __attrs_post_init__(self):
         """Verify that the encryption key is allowed be used for raw materials."""
         if self._decryption_key is not None and not self._decryption_key.allowed_for_raw_materials:
-            raise ValueError('Decryption key type "{}" does not allow use with RawDecryptionMaterials'.format(
-                type(self._decryption_key)
-            ))
+            raise ValueError(
+                'Decryption key type "{}" does not allow use with RawDecryptionMaterials'.format(
+                    type(self._decryption_key)
+                )
+            )
 
     @property
     def material_description(self):
@@ -205,6 +208,6 @@ class RawDecryptionMaterials(DecryptionMaterials):
         :rtype: DelegatedKey
         """
         if self._decryption_key is None:
-            raise AttributeError('No decryption key available')
+            raise AttributeError("No decryption key available")
 
         return self._decryption_key

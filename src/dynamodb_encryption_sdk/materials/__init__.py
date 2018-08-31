@@ -13,6 +13,10 @@
 """Cryptographic materials are containers that provide delegated keys for cryptographic operations."""
 import abc
 
+import six
+
+from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Text  # noqa pylint: disable=unused-import
     from mypy_extensions import NoReturn  # noqa pylint: disable=unused-import
@@ -20,11 +24,8 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-import six
 
-from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
-
-__all__ = ('CryptographicMaterials', 'EncryptionMaterials', 'DecryptionMaterials')
+__all__ = ("CryptographicMaterials", "EncryptionMaterials", "DecryptionMaterials")
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -87,7 +88,7 @@ class EncryptionMaterials(CryptographicMaterials):
 
         :raises NotImplementedError: because encryption materials do not contain decryption keys
         """
-        raise NotImplementedError('Encryption materials do not provide decryption keys.')
+        raise NotImplementedError("Encryption materials do not provide decryption keys.")
 
     @property
     def verification_key(self):
@@ -96,7 +97,7 @@ class EncryptionMaterials(CryptographicMaterials):
 
         :raises NotImplementedError: because encryption materials do not contain verification keys
         """
-        raise NotImplementedError('Encryption materials do not provide verification keys.')
+        raise NotImplementedError("Encryption materials do not provide verification keys.")
 
 
 class DecryptionMaterials(CryptographicMaterials):
@@ -109,7 +110,7 @@ class DecryptionMaterials(CryptographicMaterials):
 
         :raises NotImplementedError: because decryption materials do not contain encryption keys
         """
-        raise NotImplementedError('Decryption materials do not provide encryption keys.')
+        raise NotImplementedError("Decryption materials do not provide encryption keys.")
 
     @property
     def signing_key(self):
@@ -118,4 +119,4 @@ class DecryptionMaterials(CryptographicMaterials):
 
         :raises NotImplementedError: because decryption materials do not contain signing keys
         """
-        raise NotImplementedError('Decryption materials do not provide signing keys.')
+        raise NotImplementedError("Decryption materials do not provide signing keys.")

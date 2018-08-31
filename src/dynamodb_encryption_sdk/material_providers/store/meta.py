@@ -14,16 +14,10 @@
 from enum import Enum
 
 import attr
+import botocore
 from boto3.dynamodb.conditions import Attr, Key
 from boto3.dynamodb.types import Binary
 from boto3.resources.base import ServiceResource
-import botocore
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Optional, Text, Tuple  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
@@ -31,34 +25,42 @@ from dynamodb_encryption_sdk.exceptions import InvalidVersionError, NoKnownVersi
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
+
 from . import ProviderStore
 
-__all__ = ('MetaStore',)
+try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
+    from typing import Dict, Optional, Text, Tuple  # noqa pylint: disable=unused-import
+except ImportError:  # pragma: no cover
+    # We only actually need these imports when running the mypy checks
+    pass
+
+
+__all__ = ("MetaStore",)
 
 
 class MetaStoreAttributeNames(Enum):
     """Names of attributes in the MetaStore table."""
 
-    PARTITION = 'N'
-    SORT = 'V'
-    INTEGRITY_ALGORITHM = 'intAlg'
-    INTEGRITY_KEY = 'int'
-    ENCRYPTION_ALGORITHM = 'encAlg'
-    ENCRYPTION_KEY = 'enc'
-    MATERIAL_TYPE_VERSION = 't'
+    PARTITION = "N"
+    SORT = "V"
+    INTEGRITY_ALGORITHM = "intAlg"
+    INTEGRITY_KEY = "int"
+    ENCRYPTION_ALGORITHM = "encAlg"
+    ENCRYPTION_KEY = "enc"
+    MATERIAL_TYPE_VERSION = "t"
 
 
 class MetaStoreValues(Enum):
     """Static values for use by MetaStore."""
 
-    INTEGRITY_ALGORITHM = 'HmacSHA256'
-    ENCRYPTION_ALGORITHM = 'AES'
-    MATERIAL_TYPE_VERSION = '0'
+    INTEGRITY_ALGORITHM = "HmacSHA256"
+    ENCRYPTION_ALGORITHM = "AES"
+    MATERIAL_TYPE_VERSION = "0"
     KEY_BITS = 256
 
 
 #: Field in material description to use for the MetaStore material name and version.
-_MATERIAL_DESCRIPTION_META_FIELD = 'amzn-ddb-meta-id'
+_MATERIAL_DESCRIPTION_META_FIELD = "amzn-ddb-meta-id"
 
 
 @attr.s(init=False)
@@ -88,8 +90,7 @@ class MetaStore(ProviderStore):
         # type: () -> None
         """Prepare the encrypted table resource from the provided table and materials provider."""
         self._encrypted_table = EncryptedTable(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            table=self._table,
-            materials_provider=self._materials_provider
+            table=self._table, materials_provider=self._materials_provider
         )
 
     @classmethod
@@ -107,32 +108,17 @@ class MetaStore(ProviderStore):
             client.create_table(
                 TableName=table_name,
                 AttributeDefinitions=[
-                    {
-                        'AttributeName': MetaStoreAttributeNames.PARTITION.value,
-                        'AttributeType': 'S'
-                    },
-                    {
-                        'AttributeName': MetaStoreAttributeNames.SORT.value,
-                        'AttributeType': 'N'
-                    }
+                    {"AttributeName": MetaStoreAttributeNames.PARTITION.value, "AttributeType": "S"},
+                    {"AttributeName": MetaStoreAttributeNames.SORT.value, "AttributeType": "N"},
                 ],
                 KeySchema=[
-                    {
-                        'AttributeName': MetaStoreAttributeNames.PARTITION.value,
-                        'KeyType': 'HASH'
-                    },
-                    {
-                        'AttributeName': MetaStoreAttributeNames.SORT.value,
-                        'KeyType': 'RANGE'
-                    }
+                    {"AttributeName": MetaStoreAttributeNames.PARTITION.value, "KeyType": "HASH"},
+                    {"AttributeName": MetaStoreAttributeNames.SORT.value, "KeyType": "RANGE"},
                 ],
-                ProvisionedThroughput={
-                    'ReadCapacityUnits': read_units,
-                    'WriteCapacityUnits': write_units
-                }
+                ProvisionedThroughput={"ReadCapacityUnits": read_units, "WriteCapacityUnits": write_units},
             )
         except botocore.exceptions.ClientError:
-            raise Exception('TODO: Could not create table')
+            raise Exception("TODO: Could not create table")
 
     def _load_materials(self, material_name, version):
         # type: (Text, int) -> Tuple[JceNameLocalDelegatedKey, JceNameLocalDelegatedKey]
@@ -141,13 +127,10 @@ class MetaStore(ProviderStore):
         :returns: Materials loaded into delegated keys
         :rtype: tuple(JceNameLocalDelegatedKey)
         """
-        key = {
-            MetaStoreAttributeNames.PARTITION.value: material_name,
-            MetaStoreAttributeNames.SORT.value: version
-        }
+        key = {MetaStoreAttributeNames.PARTITION.value: material_name, MetaStoreAttributeNames.SORT.value: version}
         response = self._encrypted_table.get_item(Key=key)
         try:
-            item = response['Item']
+            item = response["Item"]
         except KeyError:
             raise InvalidVersionError('Version not found: "{}#{}"'.format(material_name, version))
 
@@ -156,22 +139,22 @@ class MetaStore(ProviderStore):
                 key=item[MetaStoreAttributeNames.ENCRYPTION_KEY.value].value,
                 algorithm=item[MetaStoreAttributeNames.ENCRYPTION_ALGORITHM.value],
                 key_type=EncryptionKeyType.SYMMETRIC,
-                key_encoding=KeyEncodingType.RAW
+                key_encoding=KeyEncodingType.RAW,
             )
             signing_key_kwargs = dict(
                 key=item[MetaStoreAttributeNames.INTEGRITY_KEY.value].value,
                 algorithm=item[MetaStoreAttributeNames.INTEGRITY_ALGORITHM.value],
                 key_type=EncryptionKeyType.SYMMETRIC,
-                key_encoding=KeyEncodingType.RAW
+                key_encoding=KeyEncodingType.RAW,
             )
         except KeyError:
-            raise Exception('TODO: Invalid record')
+            raise Exception("TODO: Invalid record")
 
         # TODO: handle if the material type version is not in the item
         if item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION.value] != MetaStoreValues.MATERIAL_TYPE_VERSION.value:
-            raise InvalidVersionError('Unsupported material type: "{}"'.format(
-                item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION.value]
-            ))
+            raise InvalidVersionError(
+                'Unsupported material type: "{}"'.format(item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION.value])
+            )
 
         encryption_key = JceNameLocalDelegatedKey(**encryption_key_kwargs)
         signing_key = JceNameLocalDelegatedKey(**signing_key_kwargs)
@@ -192,26 +175,26 @@ class MetaStore(ProviderStore):
             MetaStoreAttributeNames.ENCRYPTION_ALGORITHM.value: encryption_key.algorithm,
             MetaStoreAttributeNames.ENCRYPTION_KEY.value: Binary(encryption_key.key),
             MetaStoreAttributeNames.INTEGRITY_ALGORITHM.value: signing_key.algorithm,
-            MetaStoreAttributeNames.INTEGRITY_KEY.value: Binary(signing_key.key)
+            MetaStoreAttributeNames.INTEGRITY_KEY.value: Binary(signing_key.key),
         }
         try:
             self._encrypted_table.put_item(
                 Item=item,
                 ConditionExpression=(
-                    Attr(MetaStoreAttributeNames.PARTITION.value).not_exists() &
-                    Attr(MetaStoreAttributeNames.SORT.value).not_exists()
-                )
+                    Attr(MetaStoreAttributeNames.PARTITION.value).not_exists()
+                    & Attr(MetaStoreAttributeNames.SORT.value).not_exists()
+                ),
             )
         except botocore.exceptions.ClientError as error:
-            if error.response['Error']['Code'] == 'ConditionalCheckFailedException':
+            if error.response["Error"]["Code"] == "ConditionalCheckFailedException":
                 raise VersionAlreadyExistsError('Version already exists: "{}#{}"'.format(material_name, version))
 
     def _save_or_load_materials(
-            self,
-            material_name,  # type: Text
-            version,  # type: int
-            encryption_key,  # type: JceNameLocalDelegatedKey
-            signing_key  # type: JceNameLocalDelegatedKey
+        self,
+        material_name,  # type: Text
+        version,  # type: int
+        encryption_key,  # type: JceNameLocalDelegatedKey
+        signing_key,  # type: JceNameLocalDelegatedKey
     ):
         # type: (...) -> Tuple[JceNameLocalDelegatedKey, JceNameLocalDelegatedKey]
         """Attempt to save the materials to the table.
@@ -238,7 +221,7 @@ class MetaStore(ProviderStore):
         :param str material_name: Material to locate
         :param int version: Version of material to locate
         """
-        return {_MATERIAL_DESCRIPTION_META_FIELD: '{name}#{version}'.format(name=material_name, version=version)}
+        return {_MATERIAL_DESCRIPTION_META_FIELD: "{name}#{version}".format(name=material_name, version=version)}
 
     def _load_provider_from_table(self, material_name, version):
         # type: (Text, int) -> CryptographicMaterialsProvider
@@ -254,7 +237,7 @@ class MetaStore(ProviderStore):
             signing_key=signing_key,
             wrapping_key=encryption_key,
             unwrapping_key=encryption_key,
-            material_description=self._material_description(material_name, version)
+            material_description=self._material_description(material_name, version),
         )
 
     def get_or_create_provider(self, material_name, version):
@@ -270,19 +253,17 @@ class MetaStore(ProviderStore):
         :raises InvalidVersionError: if the requested version is not available and cannot be created
         """
         encryption_key = JceNameLocalDelegatedKey.generate(
-            MetaStoreValues.ENCRYPTION_ALGORITHM.value,
-            MetaStoreValues.KEY_BITS.value
+            MetaStoreValues.ENCRYPTION_ALGORITHM.value, MetaStoreValues.KEY_BITS.value
         )
         signing_key = JceNameLocalDelegatedKey.generate(
-            MetaStoreValues.INTEGRITY_ALGORITHM.value,
-            MetaStoreValues.KEY_BITS.value
+            MetaStoreValues.INTEGRITY_ALGORITHM.value, MetaStoreValues.KEY_BITS.value
         )
         encryption_key, signing_key = self._save_or_load_materials(material_name, version, encryption_key, signing_key)
         return WrappedCryptographicMaterialsProvider(
             signing_key=signing_key,
             wrapping_key=encryption_key,
             unwrapping_key=encryption_key,
-            material_description=self._material_description(material_name, version)
+            material_description=self._material_description(material_name, version),
         )
 
     def provider(self, material_name, version=None):
@@ -315,12 +296,12 @@ class MetaStore(ProviderStore):
         try:
             info = material_description[_MATERIAL_DESCRIPTION_META_FIELD]
         except KeyError:
-            raise Exception('TODO: No info found')
+            raise Exception("TODO: No info found")
 
         try:
-            return int(info.split('#', 1)[1])
+            return int(info.split("#", 1)[1])
         except (IndexError, ValueError):
-            raise Exception('TODO: Malformed info')
+            raise Exception("TODO: Malformed info")
 
     def max_version(self, material_name):
         # (Text) -> int
@@ -334,10 +315,10 @@ class MetaStore(ProviderStore):
         response = self._encrypted_table.query(
             KeyConditionExpression=Key(MetaStoreAttributeNames.PARTITION.value).eq(material_name),
             ScanIndexForward=False,
-            Limit=1
+            Limit=1,
         )
 
-        if not response['Items']:
+        if not response["Items"]:
             raise NoKnownVersionError('No known version for name: "{}"'.format(material_name))
 
-        return int(response['Items'][0][MetaStoreAttributeNames.SORT.value])
+        return int(response["Items"][0][MetaStoreAttributeNames.SORT.value])

@@ -11,32 +11,36 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Functional tests for attribute de/serialization."""
-from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 import hypothesis
 import pytest
+from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
 from dynamodb_encryption_sdk.exceptions import DeserializationError, SerializationError
 from dynamodb_encryption_sdk.internal.formatting.deserialize.attribute import deserialize_attribute
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
+
 from ...functional_test_vector_generators import attribute_test_vectors
-from ...hypothesis_strategies import ddb_attribute_values, ddb_items, SLOW_SETTINGS, VERY_SLOW_SETTINGS
+from ...hypothesis_strategies import SLOW_SETTINGS, VERY_SLOW_SETTINGS, ddb_attribute_values, ddb_items
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 
-@pytest.mark.parametrize('attribute, serialized', attribute_test_vectors('serialize'))
+@pytest.mark.parametrize("attribute, serialized", attribute_test_vectors("serialize"))
 def test_serialize_attribute(attribute, serialized):
     serialized_attribute = serialize_attribute(attribute)
     assert serialized_attribute == serialized
 
 
-@pytest.mark.parametrize('attribute, expected_type, expected_message', (
-    ({'_': None}, SerializationError, r'Unsupported DynamoDB data type: *'),
-    ({}, SerializationError, r'cannot serialize attribute: incorrect number of members *'),
-    ({'a': None, 'b': None}, SerializationError, r'cannot serialize attribute: incorrect number of members *'),
-    (None, TypeError, r'Invalid attribute type *')
-))
+@pytest.mark.parametrize(
+    "attribute, expected_type, expected_message",
+    (
+        ({"_": None}, SerializationError, r"Unsupported DynamoDB data type: *"),
+        ({}, SerializationError, r"cannot serialize attribute: incorrect number of members *"),
+        ({"a": None, "b": None}, SerializationError, r"cannot serialize attribute: incorrect number of members *"),
+        (None, TypeError, r"Invalid attribute type *"),
+    ),
+)
 def test_serialize_attribute_errors(attribute, expected_type, expected_message):
     with pytest.raises(expected_type) as excinfo:
         serialize_attribute(attribute)
@@ -44,19 +48,22 @@ def test_serialize_attribute_errors(attribute, expected_type, expected_message):
     excinfo.match(expected_message)
 
 
-@pytest.mark.parametrize('attribute, serialized', attribute_test_vectors('deserialize'))
+@pytest.mark.parametrize("attribute, serialized", attribute_test_vectors("deserialize"))
 def test_deserialize_attribute(attribute, serialized):
     deserialized_attribute = deserialize_attribute(serialized)
     assert deserialized_attribute == attribute
 
 
-@pytest.mark.parametrize('data, expected_type, expected_message', (
-    (b'', DeserializationError, r'Empty serialized attribute data'),
-    (b'_', DeserializationError, r'Malformed serialized data'),
-    (b'\x00_', DeserializationError, r'Unsupported tag: *'),
-    (b'__', DeserializationError, r'Invalid tag: reserved byte is not null'),
-    (b'\x00M\x00\x00\x00\x01\x00\x00', DeserializationError, r'Malformed serialized map: *')
-))
+@pytest.mark.parametrize(
+    "data, expected_type, expected_message",
+    (
+        (b"", DeserializationError, r"Empty serialized attribute data"),
+        (b"_", DeserializationError, r"Malformed serialized data"),
+        (b"\x00_", DeserializationError, r"Unsupported tag: *"),
+        (b"__", DeserializationError, r"Invalid tag: reserved byte is not null"),
+        (b"\x00M\x00\x00\x00\x01\x00\x00", DeserializationError, r"Malformed serialized map: *"),
+    ),
+)
 def test_deserialize_attribute_errors(data, expected_type, expected_message):
     with pytest.raises(expected_type) as exc_info:
         deserialize_attribute(data)

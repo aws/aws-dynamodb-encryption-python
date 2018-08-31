@@ -24,7 +24,7 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-__all__ = ('encode_length', 'encode_value')
+__all__ = ("encode_length", "encode_value")
 
 
 def encode_length(attribute):
@@ -35,7 +35,7 @@ def encode_length(attribute):
     :returns: Encoded value
     :rtype: bytes
     """
-    return struct.pack('>I', len(attribute))
+    return struct.pack(">I", len(attribute))
 
 
 def encode_value(value):
@@ -47,8 +47,4 @@ def encode_value(value):
     :returns: Length-Value encoded value
     :rtype: bytes
     """
-    return struct.pack(
-        '>I{attr_len:d}s'.format(attr_len=len(value)),
-        len(value),
-        value
-    )
+    return struct.pack(">I{attr_len:d}s".format(attr_len=len(value)), len(value), value)

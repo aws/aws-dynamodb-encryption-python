@@ -13,11 +13,14 @@
 """Functional tests for ``dynamodb_encryption_sdk.encrypted.resource``."""
 import pytest
 
-from ..functional_test_utils import (
-    resource_cycle_batch_items_check, set_parametrized_actions,
-    set_parametrized_cmp, set_parametrized_item, TEST_TABLE_NAME
-)
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
+from ..functional_test_utils import (
+    TEST_TABLE_NAME,
+    resource_cycle_batch_items_check,
+    set_parametrized_actions,
+    set_parametrized_cmp,
+    set_parametrized_item,
+)
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
@@ -29,7 +32,7 @@ def pytest_generate_tests(metafunc):
 
 
 def _resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
-    resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, 'us-west-2')
+    resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2")
 
 
 def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):

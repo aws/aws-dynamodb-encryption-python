@@ -20,25 +20,22 @@ from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 pytestmark = [pytest.mark.unit, pytest.mark.local]
 
 
-@pytest.mark.parametrize('initial, expected, transform', (
+@pytest.mark.parametrize(
+    "initial, expected, transform",
     (
-        {
-            'test': 'value',
-            'zzz': 'another',
-            'aaa': 'qqq',
-            '?>?>?': 5,
-            b'\x00\x00': None
-        },
-        [
-            (b'\x00\x00', None, b'\x00\x00'),
-            (b'?>?>?', 5, '?>?>?'),
-            (b'aaa', 'qqq', 'aaa'),
-            (b'test', 'value', 'test'),
-            (b'zzz', 'another', 'zzz')
-        ],
-        to_bytes
+        (
+            {"test": "value", "zzz": "another", "aaa": "qqq", "?>?>?": 5, b"\x00\x00": None},
+            [
+                (b"\x00\x00", None, b"\x00\x00"),
+                (b"?>?>?", 5, "?>?>?"),
+                (b"aaa", "qqq", "aaa"),
+                (b"test", "value", "test"),
+                (b"zzz", "another", "zzz"),
+            ],
+            to_bytes,
+        ),
     ),
-))
+)
 def test_sorted_key_map(initial, expected, transform):
     actual = _sorted_key_map(initial, transform)
 

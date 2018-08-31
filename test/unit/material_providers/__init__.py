@@ -18,15 +18,15 @@ from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsPro
 pytestmark = [pytest.mark.unit, pytest.mark.local]
 
 
-@pytest.mark.parametrize('method, message', (
-    ('decryption_materials', 'No decryption materials available'),
-    ('encryption_materials', 'No encryption materials available')
-))
+@pytest.mark.parametrize(
+    "method, message",
+    (
+        ("decryption_materials", "No decryption materials available"),
+        ("encryption_materials", "No encryption materials available"),
+    ),
+)
 def test_no_materials(method, message):
-    empty_cmp = CryptographicMaterialsProvider(
-        decryption_materials=None,
-        encryption_materials=None
-    )
+    empty_cmp = CryptographicMaterialsProvider(decryption_materials=None, encryption_materials=None)
 
     with pytest.raises(AttributeError) as excinfo:
         getattr(empty_cmp, method)(None)

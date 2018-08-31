@@ -13,8 +13,11 @@
 """Integration tests for ``dynamodb_encryption_sdk.encrypted.table``."""
 import pytest
 
-from ..integration_test_utils import aws_kms_cmp, ddb_table_name  # noqa pylint: disable=unused-import
-from ..integration_test_utils import functional_test_utils
+from ..integration_test_utils import (  # noqa pylint: disable=unused-import
+    aws_kms_cmp,
+    ddb_table_name,
+    functional_test_utils,
+)
 
 pytestmark = [pytest.mark.integ, pytest.mark.ddb_integ]
 
@@ -33,10 +36,7 @@ def test_ephemeral_item_cycle(ddb_table_name, some_cmps, parametrized_actions, p
 def test_ephemeral_item_cycle_batch_writer(ddb_table_name, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     functional_test_utils.table_cycle_batch_writer_check(
-        some_cmps,
-        parametrized_actions,
-        parametrized_item,
-        ddb_table_name
+        some_cmps, parametrized_actions, parametrized_item, ddb_table_name
     )
 
 

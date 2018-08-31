@@ -15,6 +15,7 @@ import pytest
 
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
+
 from ..unit_test_utils import wrapped_cmp  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.unit, pytest.mark.local]
@@ -24,12 +25,9 @@ def test_with_item(wrapped_cmp):
     config = CryptoConfig(
         materials_provider=wrapped_cmp,
         encryption_context=EncryptionContext(attributes={}),
-        attribute_actions=AttributeActions()
+        attribute_actions=AttributeActions(),
     )
-    item = {
-        'test': 'item',
-        'with': 'some data'
-    }
+    item = {"test": "item", "with": "some data"}
     new_config = config.with_item(item)
 
     assert config.encryption_context.attributes == {}

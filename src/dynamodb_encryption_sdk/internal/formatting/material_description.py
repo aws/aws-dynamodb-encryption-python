@@ -20,6 +20,14 @@ import io
 import logging
 import struct
 
+from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
+from dynamodb_encryption_sdk.internal.identifiers import Tag
+from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
+
+from .deserialize import decode_value, unpack_value
+from .serialize import encode_value
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Text  # noqa pylint: disable=unused-import
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
@@ -27,16 +35,10 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
-from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
-from dynamodb_encryption_sdk.internal.identifiers import Tag
-from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
-from .deserialize import decode_value, unpack_value
-from .serialize import encode_value
 
-__all__ = ('serialize', 'deserialize')
+__all__ = ("serialize", "deserialize")
 _LOGGER = logging.getLogger(LOGGER_NAME)
-_MATERIAL_DESCRIPTION_VERSION = b'\00' * 4
+_MATERIAL_DESCRIPTION_VERSION = b"\00" * 4
 
 
 def serialize(material_description):
@@ -57,10 +59,7 @@ def serialize(material_description):
             material_description_bytes.extend(encode_value(to_bytes(value)))
         except (TypeError, struct.error):
             raise InvalidMaterialDescriptionError(
-                'Invalid name or value in material description: "{name}"="{value}"'.format(
-                    name=name,
-                    value=value
-                )
+                'Invalid name or value in material description: "{name}"="{value}"'.format(name=name, value=value)
             )
 
     return {Tag.BINARY.dynamodb_tag: bytes(material_description_bytes)}
@@ -82,7 +81,7 @@ def deserialize(serialized_material_description):
         material_description_bytes = io.BytesIO(_raw_material_description)
         total_bytes = len(_raw_material_description)
     except (TypeError, KeyError):
-        message = 'Invalid material description'
+        message = "Invalid material description"
         _LOGGER.exception(message)
         raise InvalidMaterialDescriptionError(message)
     # We don't currently do anything with the version, but do check to make sure it is the one we know about.
@@ -95,7 +94,7 @@ def deserialize(serialized_material_description):
             value = to_str(decode_value(material_description_bytes))
             material_description[name] = value
     except struct.error:
-        message = 'Invalid material description'
+        message = "Invalid material description"
         _LOGGER.exception(message)
         raise InvalidMaterialDescriptionError(message)
     return material_description
@@ -111,10 +110,10 @@ def _read_version(material_description_bytes):
     :raises InvalidMaterialDescriptionVersionError: if unknown version is found
     """
     try:
-        (version,) = unpack_value('>4s', material_description_bytes)
+        (version,) = unpack_value(">4s", material_description_bytes)
     except struct.error:
-        message = 'Malformed material description version'
+        message = "Malformed material description version"
         _LOGGER.exception(message)
         raise InvalidMaterialDescriptionError(message)
     if version != _MATERIAL_DESCRIPTION_VERSION:
-        raise InvalidMaterialDescriptionVersionError('Invalid material description version: {}'.format(repr(version)))
+        raise InvalidMaterialDescriptionVersionError("Invalid material description version: {}".format(repr(version)))

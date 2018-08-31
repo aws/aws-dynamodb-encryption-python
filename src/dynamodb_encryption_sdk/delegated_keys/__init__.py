@@ -12,17 +12,19 @@
 # language governing permissions and limitations under the License.
 """Delegated keys."""
 import abc
+
+import six
+
+from dynamodb_encryption_sdk.identifiers import EncryptionKeyType  # noqa pylint: disable=unused-import
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-import six
 
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyType  # noqa pylint: disable=unused-import
-
-__all__ = ('DelegatedKey',)
+__all__ = ("DelegatedKey",)
 
 
 def _raise_not_implemented(method_name):
@@ -70,7 +72,7 @@ class DelegatedKey(object):
         :returns: Generated delegated key
         :rtype: DelegatedKey
         """
-        _raise_not_implemented('generate')
+        _raise_not_implemented("generate")
 
     def encrypt(self, algorithm, name, plaintext, additional_associated_data=None):  # type: ignore
         # type: (Text, Text, bytes, Optional[Dict[Text, Text]]) -> bytes
@@ -85,7 +87,7 @@ class DelegatedKey(object):
         :returns: Encrypted ciphertext
         :rtype: bytes
         """
-        _raise_not_implemented('encrypt')
+        _raise_not_implemented("encrypt")
 
     def decrypt(self, algorithm, name, ciphertext, additional_associated_data=None):  # type: ignore
         # type: (Text, Text, bytes, Optional[Dict[Text, Text]]) -> bytes
@@ -100,7 +102,7 @@ class DelegatedKey(object):
         :returns: Decrypted plaintext
         :rtype: bytes
         """
-        _raise_not_implemented('decrypt')
+        _raise_not_implemented("decrypt")
 
     def wrap(self, algorithm, content_key, additional_associated_data=None):  # type: ignore
         # type: (Text, bytes, Optional[Dict[Text, Text]]) -> bytes
@@ -114,15 +116,10 @@ class DelegatedKey(object):
         :returns: Wrapped key
         :rtype: bytes
         """
-        _raise_not_implemented('wrap')
+        _raise_not_implemented("wrap")
 
     def unwrap(  # type: ignore
-            self,
-            algorithm,
-            wrapped_key,
-            wrapped_key_algorithm,
-            wrapped_key_type,
-            additional_associated_data=None
+        self, algorithm, wrapped_key, wrapped_key_algorithm, wrapped_key_type, additional_associated_data=None
     ):
         # type: (Text, bytes, Text, EncryptionKeyType, Optional[Dict[Text, Text]]) -> DelegatedKey
         # pylint: disable=unused-argument,no-self-use
@@ -137,7 +134,7 @@ class DelegatedKey(object):
         :returns: Delegated key using unwrapped key
         :rtype: DelegatedKey
         """
-        _raise_not_implemented('unwrap')
+        _raise_not_implemented("unwrap")
 
     def sign(self, algorithm, data):  # type: ignore
         # type: (Text, bytes) -> bytes
@@ -149,7 +146,7 @@ class DelegatedKey(object):
         :returns: Signature value
         :rtype: bytes
         """
-        _raise_not_implemented('sign')
+        _raise_not_implemented("sign")
 
     def verify(self, algorithm, signature, data):  # type: ignore
         # type: (Text, bytes, bytes) -> None
@@ -160,7 +157,7 @@ class DelegatedKey(object):
         :param bytes signature: Signature to verify
         :param bytes data: Data over which to verify signature
         """
-        _raise_not_implemented('verify')
+        _raise_not_implemented("verify")
 
     def signing_algorithm(self):  # type: ignore
         # type: () -> Text
@@ -173,4 +170,4 @@ class DelegatedKey(object):
         :returns: Signing algorithm identifier
         :rtype: str
         """
-        _raise_not_implemented('signing_algorithm')
+        _raise_not_implemented("signing_algorithm")

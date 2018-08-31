@@ -17,10 +17,18 @@
     namespace staying consistent. Directly reference at your own risk.
 """
 import codecs
-from decimal import Decimal
 import io
 import logging
 import struct
+from decimal import Decimal
+
+from boto3.dynamodb.types import Binary
+
+from dynamodb_encryption_sdk.exceptions import DeserializationError
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
+from dynamodb_encryption_sdk.internal.formatting.deserialize import decode_byte, decode_length, decode_tag, decode_value
+from dynamodb_encryption_sdk.internal.identifiers import TEXT_ENCODING, Tag, TagValues
+from dynamodb_encryption_sdk.internal.str_ops import to_str
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Callable, Dict, List, Text, Union  # noqa pylint: disable=unused-import
@@ -29,15 +37,8 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from boto3.dynamodb.types import Binary
 
-from dynamodb_encryption_sdk.exceptions import DeserializationError
-from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
-from dynamodb_encryption_sdk.internal.formatting.deserialize import decode_byte, decode_length, decode_tag, decode_value
-from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues, TEXT_ENCODING
-from dynamodb_encryption_sdk.internal.str_ops import to_str
-
-__all__ = ('deserialize_attribute',)
+__all__ = ("deserialize_attribute",)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 
@@ -101,7 +102,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         """
         raw_value = codecs.decode(value, TEXT_ENCODING)
         decimal_value = Decimal(to_str(raw_value)).normalize()
-        return '{0:f}'.format(decimal_value)
+        return "{0:f}".format(decimal_value)
 
     def _deserialize_number(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.STRING]
@@ -114,10 +115,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         value = decode_value(stream)
         return {Tag.NUMBER.dynamodb_tag: _transform_number_value(value)}
 
-    _boolean_map = {
-        TagValues.FALSE.value: False,
-        TagValues.TRUE.value: True
-    }
+    _boolean_map = {TagValues.FALSE.value: False, TagValues.TRUE.value: True}
 
     def _deserialize_boolean(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.BOOLEAN]
@@ -149,10 +147,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :rtype: list
         """
         member_count = decode_length(stream)
-        return sorted([
-            member_transform(decode_value(stream))
-            for _ in range(member_count)
-        ])
+        return sorted([member_transform(decode_value(stream)) for _ in range(member_count)])
 
     def _deserialize_binary_set(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.SET[dynamodb_types.BINARY]]
@@ -193,10 +188,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :rtype: dict
         """
         member_count = decode_length(stream)
-        return {Tag.LIST.dynamodb_tag: [
-            _deserialize(stream)
-            for _ in range(member_count)
-        ]}
+        return {Tag.LIST.dynamodb_tag: [_deserialize(stream) for _ in range(member_count)]}
 
     def _deserialize_map(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.MAP]
@@ -238,7 +230,7 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
             Tag.BOOLEAN.tag: _deserialize_boolean,
             Tag.NULL.tag: _deserialize_null,
             Tag.LIST.tag: _deserialize_list,
-            Tag.MAP.tag: _deserialize_map
+            Tag.MAP.tag: _deserialize_map,
         }
         try:
             return deserialize_functions[tag]
@@ -257,10 +249,10 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
             tag = decode_tag(stream)
             return _deserialize_function(tag)(stream)
         except struct.error:
-            raise DeserializationError('Malformed serialized data')
+            raise DeserializationError("Malformed serialized data")
 
     if not serialized_attribute:
-        raise DeserializationError('Empty serialized attribute data')
+        raise DeserializationError("Empty serialized attribute data")
 
     stream = io.BytesIO(serialized_attribute)
     return _deserialize(stream)

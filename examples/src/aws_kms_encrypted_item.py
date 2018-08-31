@@ -13,6 +13,7 @@
 """Example showing use of AWS KMS CMP with item encryption functions directly."""
 import boto3
 from boto3.dynamodb.types import Binary
+
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.identifiers import CryptoAction
@@ -23,27 +24,24 @@ from dynamodb_encryption_sdk.transform import dict_to_ddb
 
 def encrypt_item(table_name, aws_cmk_id):
     """Demonstrate use of EncryptedTable to transparently encrypt an item."""
-    index_key = {
-        'partition_attribute': 'is this',
-        'sort_attribute': 55
-    }
+    index_key = {"partition_attribute": "is this", "sort_attribute": 55}
     plaintext_item = {
-        'example': 'data',
-        'some numbers': 99,
-        'and some binary': Binary(b'\x00\x01\x02'),
-        'leave me': 'alone'  # We want to ignore this attribute
+        "example": "data",
+        "some numbers": 99,
+        "and some binary": Binary(b"\x00\x01\x02"),
+        "leave me": "alone",  # We want to ignore this attribute
     }
     # Collect all of the attributes that will be encrypted (used later).
     encrypted_attributes = set(plaintext_item.keys())
-    encrypted_attributes.remove('leave me')
+    encrypted_attributes.remove("leave me")
     # Collect all of the attributes that will not be encrypted (used later).
     unencrypted_attributes = set(index_key.keys())
-    unencrypted_attributes.add('leave me')
+    unencrypted_attributes.add("leave me")
     # Add the index pairs to the item.
     plaintext_item.update(index_key)
 
     # Create a normal table resource.
-    table = boto3.resource('dynamodb').Table(table_name)
+    table = boto3.resource("dynamodb").Table(table_name)
 
     # Use the TableInfo helper to collect information about the indexes.
     table_info = TableInfo(name=table_name)
@@ -60,24 +58,21 @@ def encrypt_item(table_name, aws_cmk_id):
         # are the primary index attributes.
         # These attributes need to be in the form of a DynamoDB JSON structure, so first
         # convert the standard dictionary.
-        attributes=dict_to_ddb(index_key)
+        attributes=dict_to_ddb(index_key),
     )
 
     # Create attribute actions that tells the encrypted table to encrypt all attributes,
     # only sign the primary index attributes, and ignore the one identified attribute to
     # ignore.
     actions = AttributeActions(
-        default_action=CryptoAction.ENCRYPT_AND_SIGN,
-        attribute_actions={'leave me': CryptoAction.DO_NOTHING}
+        default_action=CryptoAction.ENCRYPT_AND_SIGN, attribute_actions={"leave me": CryptoAction.DO_NOTHING}
     )
     actions.set_index_keys(*table_info.protected_index_keys())
 
     # Build the crypto config to use for this item.
     # When using the higher-level helpers, this is handled for you.
     crypto_config = CryptoConfig(
-        materials_provider=aws_kms_cmp,
-        encryption_context=encryption_context,
-        attribute_actions=actions
+        materials_provider=aws_kms_cmp, encryption_context=encryption_context, attribute_actions=actions
     )
 
     # Encrypt the plaintext item directly

@@ -17,21 +17,26 @@ import attr
 from boto3.resources.base import ServiceResource
 from boto3.resources.collection import CollectionManager
 
+from dynamodb_encryption_sdk.internal.utils import (
+    TableInfoCache,
+    crypto_config_from_cache,
+    decrypt_batch_get_item,
+    encrypt_batch_write_item,
+)
+from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
+from dynamodb_encryption_sdk.structures import AttributeActions
+
+from .item import decrypt_python_item, encrypt_python_item
+from .table import EncryptedTable
+
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Optional  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.internal.utils import (
-    crypto_config_from_cache, decrypt_batch_get_item, encrypt_batch_write_item, TableInfoCache
-)
-from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.structures import AttributeActions
-from .item import decrypt_python_item, encrypt_python_item
-from .table import EncryptedTable
 
-__all__ = ('EncryptedResource', 'EncryptedTablesCollectionManager')
+__all__ = ("EncryptedResource", "EncryptedTablesCollectionManager")
 
 
 @attr.s(init=False)
@@ -54,11 +59,11 @@ class EncryptedTablesCollectionManager(object):
     _table_info_cache = attr.ib(validator=attr.validators.instance_of(TableInfoCache))
 
     def __init__(
-            self,
-            collection,  # type: CollectionManager
-            materials_provider,  # type: CryptographicMaterialsProvider
-            attribute_actions,  # type: AttributeActions
-            table_info_cache  # type: TableInfoCache
+        self,
+        collection,  # type: CollectionManager
+        materials_provider,  # type: CryptographicMaterialsProvider
+        attribute_actions,  # type: AttributeActions
+        table_info_cache,  # type: TableInfoCache
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -74,20 +79,16 @@ class EncryptedTablesCollectionManager(object):
     def __attrs_post_init__(self):
         """Set up the translation methods."""
         self.all = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            self._transform_table,
-            self._collection.all
+            self._transform_table, self._collection.all
         )
         self.filter = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            self._transform_table,
-            self._collection.filter
+            self._transform_table, self._collection.filter
         )
         self.limit = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            self._transform_table,
-            self._collection.limit
+            self._transform_table, self._collection.limit
         )
         self.page_size = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            self._transform_table,
-            self._collection.page_size
+            self._transform_table, self._collection.page_size
         )
 
     def __getattr__(self, name):
@@ -112,7 +113,7 @@ class EncryptedTablesCollectionManager(object):
                 table=table,
                 materials_provider=self._materials_provider,
                 table_info=self._table_info_cache.table_info(table.name),
-                attribute_actions=self._attribute_actions
+                attribute_actions=self._attribute_actions,
             )
 
 
@@ -153,20 +154,16 @@ class EncryptedResource(object):
     _resource = attr.ib(validator=attr.validators.instance_of(ServiceResource))
     _materials_provider = attr.ib(validator=attr.validators.instance_of(CryptographicMaterialsProvider))
     _attribute_actions = attr.ib(
-        validator=attr.validators.instance_of(AttributeActions),
-        default=attr.Factory(AttributeActions)
+        validator=attr.validators.instance_of(AttributeActions), default=attr.Factory(AttributeActions)
     )
-    _auto_refresh_table_indexes = attr.ib(
-        validator=attr.validators.instance_of(bool),
-        default=True
-    )
+    _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool), default=True)
 
     def __init__(
-            self,
-            resource,  # type: ServiceResource
-            materials_provider,  # type: CryptographicMaterialsProvider
-            attribute_actions=None,  # type: Optional[AttributeActions]
-            auto_refresh_table_indexes=True  # type: Optional[bool]
+        self,
+        resource,  # type: ServiceResource
+        materials_provider,  # type: CryptographicMaterialsProvider
+        attribute_actions=None,  # type: Optional[AttributeActions]
+        auto_refresh_table_indexes=True,  # type: Optional[bool]
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -185,32 +182,22 @@ class EncryptedResource(object):
     def __attrs_post_init__(self):
         """Set up the table info cache, encrypted tables collection manager, and translation methods."""
         self._table_info_cache = TableInfoCache(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            client=self._resource.meta.client,
-            auto_refresh_table_indexes=self._auto_refresh_table_indexes
+            client=self._resource.meta.client, auto_refresh_table_indexes=self._auto_refresh_table_indexes
         )
         self._crypto_config = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            crypto_config_from_cache,
-            self._materials_provider,
-            self._attribute_actions,
-            self._table_info_cache
+            crypto_config_from_cache, self._materials_provider, self._attribute_actions, self._table_info_cache
         )
         self.tables = EncryptedTablesCollectionManager(  # attrs confuses pylint: disable=attribute-defined-outside-init
             collection=self._resource.tables,
             materials_provider=self._materials_provider,
             attribute_actions=self._attribute_actions,
-            table_info_cache=self._table_info_cache
+            table_info_cache=self._table_info_cache,
         )
         self.batch_get_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            decrypt_batch_get_item,
-            decrypt_python_item,
-            self._crypto_config,
-            self._resource.batch_get_item
+            decrypt_batch_get_item, decrypt_python_item, self._crypto_config, self._resource.batch_get_item
         )
         self.batch_write_item = partial(  # attrs confuses pylint: disable=attribute-defined-outside-init
-            encrypt_batch_write_item,
-            encrypt_python_item,
-            self._crypto_config,
-            self._resource.batch_write_item
+            encrypt_batch_write_item, encrypt_python_item, self._crypto_config, self._resource.batch_write_item
         )
 
     def __getattr__(self, name):
@@ -241,10 +228,10 @@ class EncryptedResource(object):
         """
         table_kwargs = dict(
             table=self._resource.Table(name),
-            materials_provider=kwargs.get('materials_provider', self._materials_provider),
-            attribute_actions=kwargs.get('attribute_actions', self._attribute_actions),
-            auto_refresh_table_indexes=kwargs.get('auto_refresh_table_indexes', self._auto_refresh_table_indexes),
-            table_info=self._table_info_cache.table_info(name)
+            materials_provider=kwargs.get("materials_provider", self._materials_provider),
+            attribute_actions=kwargs.get("attribute_actions", self._attribute_actions),
+            auto_refresh_table_indexes=kwargs.get("auto_refresh_table_indexes", self._auto_refresh_table_indexes),
+            table_info=self._table_info_cache.table_info(name),
         )
 
         return EncryptedTable(**table_kwargs)

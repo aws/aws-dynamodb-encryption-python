@@ -11,8 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Unit tests for ``dynamodb_encryption_sdk.material_providers.static``."""
-from mock import MagicMock
 import pytest
+from mock import MagicMock
 
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
@@ -21,10 +21,13 @@ from dynamodb_encryption_sdk.structures import EncryptionContext
 pytestmark = [pytest.mark.unit, pytest.mark.local]
 
 
-@pytest.mark.parametrize('method, message', (
-    ('decryption_materials', 'No decryption materials available'),
-    ('encryption_materials', 'No encryption materials available')
-))
+@pytest.mark.parametrize(
+    "method, message",
+    (
+        ("decryption_materials", "No decryption materials available"),
+        ("encryption_materials", "No encryption materials available"),
+    ),
+)
 def test_no_materials(method, message):
     empty_cmp = StaticCryptographicMaterialsProvider()
 
@@ -34,19 +37,22 @@ def test_no_materials(method, message):
     excinfo.match(message)
 
 
-@pytest.mark.parametrize('invalid_kwargs', (
-    dict(decryption_materials='not decryption materails'),
-    dict(encryption_materials='not encryption materails')
-))
+@pytest.mark.parametrize(
+    "invalid_kwargs",
+    (dict(decryption_materials="not decryption materails"), dict(encryption_materials="not encryption materails")),
+)
 def test_attrs_fail(invalid_kwargs):
     with pytest.raises(TypeError):
         StaticCryptographicMaterialsProvider(**invalid_kwargs)
 
 
-@pytest.mark.parametrize('materials, method', (
-    (MagicMock(__class__=DecryptionMaterials), 'decryption_materials'),
-    (MagicMock(__class__=EncryptionMaterials), 'encryption_materials')
-))
+@pytest.mark.parametrize(
+    "materials, method",
+    (
+        (MagicMock(__class__=DecryptionMaterials), "decryption_materials"),
+        (MagicMock(__class__=EncryptionMaterials), "encryption_materials"),
+    ),
+)
 def test_valid_materials(materials, method):
     kwargs = {method: materials}
     static_cmp = StaticCryptographicMaterialsProvider(**kwargs)

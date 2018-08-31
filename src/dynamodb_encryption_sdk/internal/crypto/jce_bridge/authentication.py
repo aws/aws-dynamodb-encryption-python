@@ -20,10 +20,16 @@ import abc
 import logging
 
 import attr
+import six
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
-import six
+
+from dynamodb_encryption_sdk.exceptions import InvalidAlgorithmError, SignatureVerificationError, SigningError
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, KeyEncodingType
+from dynamodb_encryption_sdk.internal.validators import callable_validator
+
+from .primitives import load_rsa_key
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Any, Callable, Text  # noqa pylint: disable=unused-import
@@ -31,12 +37,8 @@ except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
 
-from dynamodb_encryption_sdk.exceptions import InvalidAlgorithmError, SignatureVerificationError, SigningError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType, LOGGER_NAME
-from dynamodb_encryption_sdk.internal.validators import callable_validator
-from .primitives import load_rsa_key
 
-__all__ = ('JavaAuthenticator', 'JavaMac', 'JavaSignature', 'JAVA_AUTHENTICATOR')
+__all__ = ("JavaAuthenticator", "JavaMac", "JavaSignature", "JAVA_AUTHENTICATOR")
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 
@@ -103,10 +105,7 @@ class JavaMac(JavaAuthenticator):
     hash_type = attr.ib(validator=callable_validator)
 
     def __init__(
-            self,
-            java_name,  # type: Text
-            algorithm_type,  # type: Callable
-            hash_type  # type: Callable
+        self, java_name, algorithm_type, hash_type  # type: Text  # type: Callable  # type: Callable
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -123,11 +122,7 @@ class JavaMac(JavaAuthenticator):
 
         :param bytes key: Key to use in signer
         """
-        return self.algorithm_type(
-            key,
-            self.hash_type(),
-            backend=default_backend()
-        )
+        return self.algorithm_type(key, self.hash_type(), backend=default_backend())
 
     def load_key(self, key, key_type, key_encoding):
         # (bytes, EncryptionKeyType, KeyEncodingType) -> bytes
@@ -141,7 +136,7 @@ class JavaMac(JavaAuthenticator):
         :raises ValueError: if ``key_type`` is not symmetric or ``key_encoding`` is not raw
         """
         if not (key_type is EncryptionKeyType.SYMMETRIC and key_encoding is KeyEncodingType.RAW):
-            raise ValueError('Key type must be symmetric and encoding must be raw.')
+            raise ValueError("Key type must be symmetric and encoding must be raw.")
 
         return key
 
@@ -155,8 +150,7 @@ class JavaMac(JavaAuthenticator):
         if not algorithm.startswith(self.java_name):
             raise InvalidAlgorithmError(
                 'Requested algorithm "{requested}" is not compatible with signature "{actual}"'.format(
-                    requested=algorithm,
-                    actual=self.java_name
+                    requested=algorithm, actual=self.java_name
                 )
             )
 
@@ -175,7 +169,7 @@ class JavaMac(JavaAuthenticator):
             signer.update(data)
             return signer.finalize()
         except Exception:
-            message = 'Unable to sign data'
+            message = "Unable to sign data"
             _LOGGER.exception(message)
             raise SigningError(message)
 
@@ -193,7 +187,7 @@ class JavaMac(JavaAuthenticator):
             verifier.update(data)
             verifier.verify(signature)
         except Exception:
-            message = 'Unable to verify signature'
+            message = "Unable to verify signature"
             _LOGGER.exception(message)
             raise SignatureVerificationError(message)
 
@@ -212,11 +206,7 @@ class JavaSignature(JavaAuthenticator):
     padding_type = attr.ib(validator=callable_validator)
 
     def __init__(
-            self,
-            java_name,  # type: Text
-            algorithm_type,
-            hash_type,  # type: Callable
-            padding_type  # type: Callable
+        self, java_name, algorithm_type, hash_type, padding_type  # type: Text  # type: Callable  # type: Callable
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -238,8 +228,7 @@ class JavaSignature(JavaAuthenticator):
         if not algorithm.endswith(self.java_name):
             raise InvalidAlgorithmError(
                 'Requested algorithm "{requested}" is not compatible with signature "{actual}"'.format(
-                    requested=algorithm,
-                    actual=self.java_name
+                    requested=algorithm, actual=self.java_name
                 )
             )
 
@@ -269,16 +258,12 @@ class JavaSignature(JavaAuthenticator):
         :rtype: bytes
         :raises SigningError: if unable to sign ``data`` with ``key``
         """
-        if hasattr(key, 'public_bytes'):
+        if hasattr(key, "public_bytes"):
             raise SigningError('"sign" is not supported by public keys')
         try:
-            return key.sign(
-                data,
-                self.padding_type(),
-                self.hash_type()
-            )
+            return key.sign(data, self.padding_type(), self.hash_type())
         except Exception:
-            message = 'Unable to sign data'
+            message = "Unable to sign data"
             _LOGGER.exception(message)
             raise SigningError(message)
 
@@ -293,19 +278,14 @@ class JavaSignature(JavaAuthenticator):
         :param bytes data: Data over which to verify signature
         :raises SignatureVerificationError: if unable to verify ``signature``
         """
-        if hasattr(key, 'private_bytes'):
+        if hasattr(key, "private_bytes"):
             _key = key.public_key()
         else:
             _key = key
         try:
-            _key.verify(
-                signature,
-                data,
-                self.padding_type(),
-                self.hash_type()
-            )
+            _key.verify(signature, data, self.padding_type(), self.hash_type())
         except Exception:
-            message = 'Unable to verify signature'
+            message = "Unable to verify signature"
             _LOGGER.exception(message)
             raise SignatureVerificationError(message)
 
@@ -315,12 +295,12 @@ class JavaSignature(JavaAuthenticator):
 # SHA(1|224|256|384|512)with(|EC)DSA
 # If this changes, remember to update the JceNameLocalDelegatedKey docs.
 JAVA_AUTHENTICATOR = {
-    'HmacSHA224': JavaMac('HmacSHA224', hmac.HMAC, hashes.SHA224),
-    'HmacSHA256': JavaMac('HmacSHA256', hmac.HMAC, hashes.SHA256),
-    'HmacSHA384': JavaMac('HmacSHA384', hmac.HMAC, hashes.SHA384),
-    'HmacSHA512': JavaMac('HmacSHA512', hmac.HMAC, hashes.SHA512),
-    'SHA224withRSA': JavaSignature('SHA224withRSA', rsa, hashes.SHA224, padding.PKCS1v15),
-    'SHA256withRSA': JavaSignature('SHA256withRSA', rsa, hashes.SHA256, padding.PKCS1v15),
-    'SHA384withRSA': JavaSignature('SHA384withRSA', rsa, hashes.SHA384, padding.PKCS1v15),
-    'SHA512withRSA': JavaSignature('SHA512withRSA', rsa, hashes.SHA512, padding.PKCS1v15)
+    "HmacSHA224": JavaMac("HmacSHA224", hmac.HMAC, hashes.SHA224),
+    "HmacSHA256": JavaMac("HmacSHA256", hmac.HMAC, hashes.SHA256),
+    "HmacSHA384": JavaMac("HmacSHA384", hmac.HMAC, hashes.SHA384),
+    "HmacSHA512": JavaMac("HmacSHA512", hmac.HMAC, hashes.SHA512),
+    "SHA224withRSA": JavaSignature("SHA224withRSA", rsa, hashes.SHA224, padding.PKCS1v15),
+    "SHA256withRSA": JavaSignature("SHA256withRSA", rsa, hashes.SHA256, padding.PKCS1v15),
+    "SHA384withRSA": JavaSignature("SHA384withRSA", rsa, hashes.SHA384, padding.PKCS1v15),
+    "SHA512withRSA": JavaSignature("SHA512withRSA", rsa, hashes.SHA512, padding.PKCS1v15),
 }
