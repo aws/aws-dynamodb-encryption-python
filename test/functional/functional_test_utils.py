@@ -16,6 +16,7 @@ from __future__ import division
 import copy
 import itertools
 import logging
+import os
 from collections import defaultdict
 from decimal import Decimal
 
@@ -38,6 +39,7 @@ from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEnc
 from dynamodb_encryption_sdk.structures import AttributeActions
 from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
 
+RUNNING_IN_TRAVIS = "TRAVIS" in os.environ
 _DELEGATED_KEY_CACHE = defaultdict(lambda: defaultdict(dict))
 TEST_TABLE_NAME = "my_table"
 TEST_INDEX = {
