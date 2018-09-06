@@ -18,7 +18,11 @@ import pytest
 from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
 
 # convenience imports
-from ..functional import functional_test_utils, hypothesis_strategies
+try:
+    from ..functional import functional_test_utils, hypothesis_strategies
+except (ImportError, ValueError, SystemError):
+    if "AWS_ENCRYPTION_SDK_EXAMPLES_TESTING" not in os.environ:
+        raise
 
 AWS_KMS_KEY_ID = "AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID"
 DDB_TABLE_NAME = "DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME"
@@ -52,7 +56,7 @@ def ddb_table_name():
     except KeyError:
         raise ValueError(
             (
-                'Environment variable "{}" must be set to the correct DynamoDB table name'
+                "Environment variable '{}' must be set to the correct DynamoDB table name"
                 " for integration tests to run"
-            ).format(AWS_KMS_KEY_ID)
+            ).format(DDB_TABLE_NAME)
         )

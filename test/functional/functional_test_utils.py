@@ -48,7 +48,7 @@ TEST_INDEX = {
 }
 SECONARY_INDEX = {
     "secondary_index_1": {"type": "B", "value": Binary(b"\x00\x01\x02")},
-    "secondary_index_1": {"type": "S", "value": "another_value"},
+    "secondary_index_2": {"type": "S", "value": "another_value"},
 }
 TEST_KEY = {name: value["value"] for name, value in TEST_INDEX.items()}
 TEST_BATCH_INDEXES = [

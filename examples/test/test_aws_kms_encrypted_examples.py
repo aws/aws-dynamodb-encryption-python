@@ -11,23 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Test ``aws_kms_encrypted_*`` examples."""
-import os
-import sys
-
-sys.path.extend(
-    [  # noqa
-        os.sep.join([os.path.dirname(__file__), "..", "..", "test", "integration"]),
-        os.sep.join([os.path.dirname(__file__), "..", "src"]),
-    ]
-)
-
 import pytest
 
-import aws_kms_encrypted_client  # noqa
-import aws_kms_encrypted_item  # noqa
-import aws_kms_encrypted_resource  # noqa
-import aws_kms_encrypted_table  # noqa
-from integration_test_utils import cmk_arn, ddb_table_name  # noqa pylint: disable=unused-import
+from ..src import aws_kms_encrypted_client, aws_kms_encrypted_item, aws_kms_encrypted_resource, aws_kms_encrypted_table
+from .examples_test_utils import cmk_arn, ddb_table_name  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.examples]
 
