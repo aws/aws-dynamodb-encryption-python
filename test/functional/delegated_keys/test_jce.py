@@ -13,6 +13,8 @@
 """Functional test suite for ``dynamodb_encryption_sdk.delegated_keys.jce``."""
 from __future__ import division
 
+import logging
+
 import pytest
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -20,8 +22,6 @@ from cryptography.hazmat.primitives import serialization
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.internal.crypto.jce_bridge.authentication import JAVA_AUTHENTICATOR
 from dynamodb_encryption_sdk.internal.identifiers import MinimumKeySizes
-
-from ..functional_test_utils import RUNNING_IN_TRAVIS, capturing_logger
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
@@ -75,8 +75,9 @@ def build_short_key_cases():
 
 
 @pytest.mark.parametrize("algorithm, key_bits, too_short, error_message", build_short_key_cases())
-def test_warn_on_short_keys(capturing_logger, algorithm, key_bits, too_short, error_message):
-    _test = JceNameLocalDelegatedKey.generate(algorithm, key_bits)
+def test_warn_on_short_keys(caplog, algorithm, key_bits, too_short, error_message):
+    with caplog.at_level(logging.DEBUG):
+        _test = JceNameLocalDelegatedKey.generate(algorithm, key_bits)
 
-    logging_results = capturing_logger.getvalue()
+    logging_results = caplog.text
     assert (too_short and error_message in logging_results) or (not too_short and error_message not in logging_results)

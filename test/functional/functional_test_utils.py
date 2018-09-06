@@ -645,13 +645,3 @@ def client_cycle_batch_items_check_paginators(
     e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
     assert not raw_scan_result["Items"]
     assert not e_scan_result["Items"]
-
-
-@pytest.fixture
-def capturing_logger():
-    output_stream = six.StringIO()
-    handler = logging.StreamHandler(stream=output_stream)
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
-    return output_stream
