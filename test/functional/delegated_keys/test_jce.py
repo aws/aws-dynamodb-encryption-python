@@ -74,6 +74,7 @@ def build_short_key_cases():
     yield ("RSA", MinimumKeySizes.RSA.value // 2, True, message)
 
 
+@pytest.mark.travis_isolation
 @pytest.mark.parametrize("algorithm, key_bits, too_short, error_message", build_short_key_cases())
 def test_warn_on_short_keys(caplog, algorithm, key_bits, too_short, error_message):
     with caplog.at_level(logging.DEBUG):
