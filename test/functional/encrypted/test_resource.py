@@ -40,6 +40,7 @@ def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actio
     _resource_cycle_batch_items_check(some_cmps, parametrized_actions, parametrized_item)
 
 
+@pytest.mark.travis_isolation
 @pytest.mark.slow
 def test_ephemeral_batch_item_cycle_slow(example_table, all_the_cmps, parametrized_actions, parametrized_item):
     """Test ALL THE CMPS against a small number of curated items."""
