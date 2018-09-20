@@ -15,11 +15,14 @@ from __future__ import division
 
 import copy
 import itertools
+import logging
+import os
 from collections import defaultdict
 from decimal import Decimal
 
 import boto3
 import pytest
+import six
 from boto3.dynamodb.types import Binary
 from moto import mock_dynamodb2
 
@@ -36,6 +39,7 @@ from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEnc
 from dynamodb_encryption_sdk.structures import AttributeActions
 from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
 
+RUNNING_IN_TRAVIS = "TRAVIS" in os.environ
 _DELEGATED_KEY_CACHE = defaultdict(lambda: defaultdict(dict))
 TEST_TABLE_NAME = "my_table"
 TEST_INDEX = {
@@ -44,7 +48,7 @@ TEST_INDEX = {
 }
 SECONARY_INDEX = {
     "secondary_index_1": {"type": "B", "value": Binary(b"\x00\x01\x02")},
-    "secondary_index_1": {"type": "S", "value": "another_value"},
+    "secondary_index_2": {"type": "S", "value": "another_value"},
 }
 TEST_KEY = {name: value["value"] for name, value in TEST_INDEX.items()}
 TEST_BATCH_INDEXES = [

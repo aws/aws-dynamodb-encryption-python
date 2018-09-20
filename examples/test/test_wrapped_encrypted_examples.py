@@ -11,22 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Test ``wrapped_*_encrypted_*`` examples."""
-import os
-import sys
-
-sys.path.extend(
-    [  # noqa
-        os.sep.join([os.path.dirname(__file__), "..", "..", "test", "integration"]),
-        os.sep.join([os.path.dirname(__file__), "..", "src"]),
-    ]
-)
-
 import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
-import wrapped_rsa_encrypted_table  # noqa
-import wrapped_symmetric_encrypted_table  # noqa
-from integration_test_utils import ddb_table_name  # noqa pylint: disable=unused-import
+
+from ..src import wrapped_rsa_encrypted_table, wrapped_symmetric_encrypted_table
+from .examples_test_utils import ddb_table_name  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.examples]
 

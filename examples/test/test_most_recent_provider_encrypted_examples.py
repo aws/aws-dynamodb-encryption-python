@@ -11,23 +11,15 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Test most recent provider examples."""
-import os
-import sys
-
-sys.path.extend(
-    [  # noqa
-        os.sep.join([os.path.dirname(__file__), "..", "..", "test", "integration"]),
-        os.sep.join([os.path.dirname(__file__), "..", "src"]),
-    ]
-)
 import uuid
 
 import boto3
 import pytest
 
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
-import most_recent_provider_encrypted_table  # noqa
-from integration_test_utils import cmk_arn, ddb_table_name  # noqa pylint: disable=unused-import
+
+from ..src import most_recent_provider_encrypted_table
+from .examples_test_utils import cmk_arn, ddb_table_name  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.examples]
 

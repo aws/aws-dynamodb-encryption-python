@@ -27,6 +27,7 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 from dynamodb_encryption_sdk.exceptions import InvalidAlgorithmError, SignatureVerificationError, SigningError
 from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, KeyEncodingType
+from dynamodb_encryption_sdk.internal.identifiers import MinimumKeySizes
 from dynamodb_encryption_sdk.internal.validators import callable_validator
 
 from .primitives import load_rsa_key
@@ -36,7 +37,6 @@ try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
-
 
 __all__ = ("JavaAuthenticator", "JavaMac", "JavaSignature", "JAVA_AUTHENTICATOR")
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -137,6 +137,9 @@ class JavaMac(JavaAuthenticator):
         """
         if not (key_type is EncryptionKeyType.SYMMETRIC and key_encoding is KeyEncodingType.RAW):
             raise ValueError("Key type must be symmetric and encoding must be raw.")
+
+        if len(key) * 8 < MinimumKeySizes.HMAC.value:
+            _LOGGER.warning("HMAC keys smaller than %d bits are unsafe" % MinimumKeySizes.HMAC.value)
 
         return key
 

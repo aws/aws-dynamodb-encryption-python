@@ -4,33 +4,45 @@ matrix:
   include:
     # CPython 2.7
     - python: 2.7
-      env: TOXENV=py27-local-slow
+      env: TOXENV=py27-travis-local-slow
     - python: 2.7
-      env: TOXENV=py27-integ-slow
+      env: TOXENV=py27-travis-integ-slow
+    - python: 2.7
+      env: TOXENV=py27-travis-isolation
     # CPython 3.4
     - python: 3.4
-      env: TOXENV=py34-local-slow
+      env: TOXENV=py34-travis-local-slow
     - python: 3.4
-      env: TOXENV=py34-integ-slow
+      env: TOXENV=py34-travis-integ-slow
+    - python: 3.4
+      env: TOXENV=py34-travis-isolation
     # CPython 3.5
     - python: 3.5
-      env: TOXENV=py35-local-slow
+      env: TOXENV=py35-travis-local-slow
     - python: 3.5
-      env: TOXENV=py35-integ-slow
+      env: TOXENV=py35-travis-integ-slow
+    - python: 3.5
+      env: TOXENV=py35-travis-isolation
     # CPython 3.6
     - python: 3.6
-      env: TOXENV=py36-local-slow
+      env: TOXENV=py36-travis-local-slow
     - python: 3.6
-      env: TOXENV=py36-integ-slow
+      env: TOXENV=py36-travis-integ-slow
+    - python: 3.6
+      env: TOXENV=py36-travis-isolation
     # CPython 3.7
     # xenial + sudo are currently needed to get 3.7
     # https://github.com/travis-ci/travis-ci/issues/9815
     - python: 3.7
-      env: TOXENV=py37-local-slow
+      env: TOXENV=py37-travis-local-slow
       dist: xenial
       sudo: true
     - python: 3.7
-      env: TOXENV=py37-integ-slow
+      env: TOXENV=py37-travis-integ-slow
+      dist: xenial
+      sudo: true
+    - python: 3.7
+      env: TOXENV=py37-travis-isolation
       dist: xenial
       sudo: true
     # Upstream tests

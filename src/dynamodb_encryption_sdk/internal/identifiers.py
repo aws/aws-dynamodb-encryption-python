@@ -32,11 +32,19 @@ __all__ = (
     "SignatureValues",
     "MaterialDescriptionKeys",
     "MaterialDescriptionValues",
+    "MinimumKeySizes",
 )
 
 #: Encoding to use for all text values.
 #: This is noted here for consistency but should not be changed.
 TEXT_ENCODING = "utf-8"
+
+
+class MinimumKeySizes(Enum):
+    """Minimum safe key sizes for algorithms."""
+
+    RSA = 2048
+    HMAC = 128
 
 
 class ReservedAttributes(Enum):

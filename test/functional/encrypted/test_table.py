@@ -60,6 +60,7 @@ def test_ephemeral_item_cycle_batch_writer_slow(example_table, all_the_cmps, par
     table_cycle_batch_writer_check(all_the_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, "us-west-2")
 
 
+@pytest.mark.travis_isolation
 @pytest.mark.slow
 @pytest.mark.hypothesis
 @SLOW_SETTINGS
