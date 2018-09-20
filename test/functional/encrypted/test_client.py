@@ -80,6 +80,7 @@ def test_ephemeral_batch_item_cycle_slow(example_table, all_the_cmps, parametriz
     _client_cycle_batch_items_check(all_the_cmps, parametrized_actions, parametrized_item)
 
 
+@pytest.mark.travis_isolation
 @pytest.mark.slow
 @pytest.mark.hypothesis
 @SLOW_SETTINGS
