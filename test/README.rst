@@ -14,3 +14,19 @@ In order to run these integration tests successfully, these things which must be
 
 .. _automatically discoverable credential locations: http://boto3.readthedocs.io/en/latest/guide/configuration.html
 .. _AWS KMS CMK ARN: http://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html
+
+Updating Upstream Requirements
+==============================
+
+In order to update the upstream requirements in `upstream-requirements-py37.txt` and
+`upstream-requirements-py27.txt`, run these commands:
+
+   .. code::
+
+      $ tox -e freeze-upstream-requirements-py27
+      $ tox -e freeze-upstream-requirements-py37
+
+Test them using:
+   .. code::
+      $ tox -e test-upstream-requirements-py27
+      $ tox -e test-upstream-requirements-py37
