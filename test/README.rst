@@ -18,7 +18,11 @@ In order to run these integration tests successfully, these things which must be
 Updating Upstream Requirements
 ==============================
 
-In order to update the upstream requirements in `upstream-requirements-py37.txt` and
+The purpose of the upstream requirements files is to provide a stable list of
+packages for pyca/cryptography's downstream test of the DynamoDB Encryption
+Client. They are frozen so that dependencies unrelated to pyca/cryptography
+don't break the pyca/cryptography CI. In order to update the upstream
+requirements in `upstream-requirements-py37.txt` and
 `upstream-requirements-py27.txt`, run these commands:
 
    .. code::
@@ -27,6 +31,7 @@ In order to update the upstream requirements in `upstream-requirements-py37.txt`
       $ tox -e freeze-upstream-requirements-py37
 
 Test them using:
+
    .. code::
       $ tox -e test-upstream-requirements-py27
       $ tox -e test-upstream-requirements-py37
