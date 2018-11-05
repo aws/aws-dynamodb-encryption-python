@@ -1,6 +1,8 @@
 hypothesis==3.63.0
 mock
-moto>=1.3.3
+# temporarily pinning moto pending resolution of
+# https://github.com/spulec/moto/issues/1924
+moto==1.3.6
 pytest>=3.4.0
 pytest-cov
 pytest-mock
