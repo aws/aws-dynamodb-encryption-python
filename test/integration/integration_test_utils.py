@@ -28,8 +28,7 @@ AWS_KMS_KEY_ID = "AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID"
 DDB_TABLE_NAME = "DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME"
 
 
-@pytest.fixture
-def cmk_arn():
+def cmk_arn_value():
     """Retrieve the target CMK ARN from environment variable."""
     arn = os.environ.get(AWS_KMS_KEY_ID, None)
     if arn is None:
@@ -44,8 +43,14 @@ def cmk_arn():
 
 
 @pytest.fixture
+def cmk_arn():
+    """As of Pytest 4.0.0, fixtures cannot be called directly."""
+    return cmk_arn_value()
+
+
+@pytest.fixture
 def aws_kms_cmp():
-    return AwsKmsCryptographicMaterialsProvider(key_id=cmk_arn())
+    return AwsKmsCryptographicMaterialsProvider(key_id=cmk_arn_value())
 
 
 @pytest.fixture
