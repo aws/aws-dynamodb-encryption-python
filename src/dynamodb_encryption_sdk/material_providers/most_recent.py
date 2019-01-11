@@ -134,10 +134,8 @@ class MostRecentProvider(CryptographicMaterialsProvider):
     _material_name = attr.ib(validator=attr.validators.instance_of(six.string_types))
     _version_ttl = attr.ib(validator=attr.validators.instance_of(float))
 
-    def __init__(
-        self, provider_store, material_name, version_ttl  # type: ProviderStore  # type: Text  # type: float
-    ):  # noqa=D107
-        # type: (...) -> None
+    def __init__(self, provider_store, material_name, version_ttl):  # noqa=D107
+        # type: (ProviderStore, Text, float) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
         # https://github.com/python-attrs/attrs/issues/215
@@ -242,6 +240,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             # We failed to acquire the lock.
             # If blocking, we will never reach this point.
             # If not blocking, we want whatever the latest local version is.
+            _LOGGER.debug("Failed to acquire lock. Returning the last cached version.")
             version = self._version
             return self._cache.get(version)
 
@@ -254,6 +253,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             received_version = self._provider_store.version_from_material_description(provider._material_description)
             # TODO: ^ should we promote material description from hidden?
 
+            _LOGGER.debug("Caching materials provider version %d", received_version)
             self._version = received_version
             self._last_updated = time.time()
             self._cache.put(received_version, provider)
@@ -271,17 +271,22 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         """
         ttl_action = self._ttl_action()
 
+        provider = None
+
         if ttl_action is TtlActions.LIVE:
             try:
-                return self._cache.get(self._version)
+                _LOGGER.debug("Looking in cache for materials provider version %d", self._version)
+                provider = self._cache.get(self._version)
             except KeyError:
+                _LOGGER.debug("Provider not found in cache")
                 ttl_action = TtlActions.EXPIRED
 
-        # Just get the latest local version if we cannot acquire the lock.
-        # Otherwise, block until we can acquire the lock.
-        allow_local = bool(ttl_action is TtlActions.GRACE_PERIOD)
+        if provider is None:
+            # Just get the latest local version if we cannot acquire the lock.
+            # Otherwise, block until we can acquire the lock.
+            allow_local = bool(ttl_action is TtlActions.GRACE_PERIOD)
 
-        provider = self._get_most_recent_version(allow_local)
+            provider = self._get_most_recent_version(allow_local)
 
         return provider.encryption_materials(encryption_context)
 
