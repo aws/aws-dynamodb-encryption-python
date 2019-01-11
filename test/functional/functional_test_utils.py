@@ -13,6 +13,7 @@
 """Helper tools for use in tests."""
 from __future__ import division
 
+import base64
 import copy
 import itertools
 import logging
@@ -34,6 +35,7 @@ from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
 from dynamodb_encryption_sdk.structures import AttributeActions
@@ -645,3 +647,25 @@ def client_cycle_batch_items_check_paginators(
     e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
     assert not raw_scan_result["Items"]
     assert not e_scan_result["Items"]
+
+
+def build_metastore():
+    client = boto3.client("dynamodb", region_name="us-west-2")
+    table_name = base64.urlsafe_b64encode(os.urandom(32)).decode("utf-8").replace("=", ".")
+
+    MetaStore.create_table(client, table_name, 1, 1)
+    waiter = client.get_waiter("table_exists")
+    waiter.wait(TableName=table_name)
+
+    table = boto3.resource("dynamodb", region_name="us-west-2").Table(table_name)
+    yield MetaStore(table, build_static_jce_cmp("AES", 256, "HmacSHA256", 256))
+
+    client.delete_table(TableName=table_name)
+    waiter = client.get_waiter("table_not_exists")
+    waiter.wait(TableName=table_name)
+
+
+@pytest.fixture
+def mock_metastore():
+    with mock_dynamodb2():
+        yield next(build_metastore())
