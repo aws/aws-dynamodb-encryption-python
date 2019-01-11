@@ -17,7 +17,7 @@ import six
 
 from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
 from dynamodb_encryption_sdk.material_providers import (  # noqa pylint: disable=unused-import
-    CryptographicMaterialsProvider
+    CryptographicMaterialsProvider,
 )
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules

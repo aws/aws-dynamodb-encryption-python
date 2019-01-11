@@ -214,7 +214,9 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
             default_algorithm=_DEFAULT_SIGNING_ALGORITHM,
             default_key_length=_DEFAULT_SIGNING_KEY_LENGTH,
         )
-        self._regional_clients = {}  # type: Dict[Text, botocore.client.BaseClient]  # noqa pylint: disable=attribute-defined-outside-init
+        self._regional_clients = (
+            {}
+        )  # type: Dict[Text, botocore.client.BaseClient]  # noqa pylint: disable=attribute-defined-outside-init
 
     def _add_regional_client(self, region_name):
         # type: (Text) -> None
