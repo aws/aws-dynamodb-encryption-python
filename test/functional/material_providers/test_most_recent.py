@@ -95,7 +95,6 @@ def test_encryption_materials_cache_use():
         ("version_from_material_description", 0),
     ]
 
-    a = store.provider_calls
     assert store.provider_calls == expected_calls
 
     test2 = provider.encryption_materials(sentinel.encryption_context_1)
