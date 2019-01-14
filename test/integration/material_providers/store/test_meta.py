@@ -19,9 +19,9 @@ import pytest
 from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore, MetaStoreAttributeNames
 
-from ...integration_test_utils import temp_metastore
+from ...integration_test_utils import temp_metastore  # pylint: disable=unused-import
 
-pytestmark = [pytest.mark.integ]
+pytestmark = [pytest.mark.integ, pytest.mark.ddb_integ]
 
 
 def test_max_version_empty(temp_metastore):
