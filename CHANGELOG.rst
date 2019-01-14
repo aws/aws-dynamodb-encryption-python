@@ -2,6 +2,14 @@
 Changelog
 *********
 
+1.0.6 -- 2018-01-xx
+===================
+
+Bugfixes
+--------
+* Fix :class:`MostRecentProvider` bug in providing invalid cached results.
+  `#102 <https://github.com/aws/aws-dynamodb-encryption-python/pull/102>`_
+
 1.0.5 -- 2018-08-01
 ===================
 * Move the ``aws-dynamodb-encryption-python`` repository from ``awslabs`` to ``aws``.

@@ -65,3 +65,8 @@ def ddb_table_name():
                 " for integration tests to run"
             ).format(DDB_TABLE_NAME)
         )
+
+
+@pytest.fixture
+def temp_metastore():
+    yield next(functional_test_utils.build_metastore())
