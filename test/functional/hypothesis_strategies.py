@@ -25,10 +25,9 @@ SLOW_SETTINGS = hypothesis.settings(
         hypothesis.HealthCheck.hung_test,
         hypothesis.HealthCheck.large_base_example,
     ),
-    timeout=hypothesis.unlimited,
     deadline=None,
 )
-VERY_SLOW_SETTINGS = hypothesis.settings(SLOW_SETTINGS, max_examples=1000, max_iterations=1500)
+VERY_SLOW_SETTINGS = hypothesis.settings(SLOW_SETTINGS, max_examples=1000)
 MAX_ITEM_BYTES = 400 * 1024 * 1024
 
 # _MIN_NUMBER = Decimal('1E-128')  # The DDB min is 1E-130, but DYNAMODB_CONTEXT Emin is -128

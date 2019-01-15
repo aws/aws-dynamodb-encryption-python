@@ -1,4 +1,4 @@
-hypothesis==3.63.0
+hypothesis>=3.63.0
 mock
 # temporarily pinning moto pending resolution of
 # https://github.com/spulec/moto/issues/1924
