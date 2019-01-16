@@ -16,14 +16,12 @@ from __future__ import division
 import base64
 import copy
 import itertools
-import logging
 import os
 from collections import defaultdict
 from decimal import Decimal
 
 import boto3
 import pytest
-import six
 from boto3.dynamodb.types import Binary
 from moto import mock_dynamodb2
 
@@ -658,14 +656,23 @@ def build_metastore():
     waiter.wait(TableName=table_name)
 
     table = boto3.resource("dynamodb", region_name="us-west-2").Table(table_name)
-    yield MetaStore(table, build_static_jce_cmp("AES", 256, "HmacSHA256", 256))
+    return MetaStore(table, build_static_jce_cmp("AES", 256, "HmacSHA256", 256)), table_name
 
+
+def delete_metastore(table_name):
+    client = boto3.client("dynamodb", region_name="us-west-2")
     client.delete_table(TableName=table_name)
-    waiter = client.get_waiter("table_not_exists")
-    waiter.wait(TableName=table_name)
+    # It sometimes takes a long time to delete a table.
+    # If hanging, asynchronously deleting tables becomes an issue,
+    # come back to this.
+    # Otherwise, let's just let them take care of themselves.
+    # waiter = client.get_waiter("table_not_exists")
+    # waiter.wait(TableName=table_name)
 
 
 @pytest.fixture
 def mock_metastore():
     with mock_dynamodb2():
-        yield next(build_metastore())
+        metastore, table_name = build_metastore()
+        yield metastore
+        delete_metastore(table_name)
