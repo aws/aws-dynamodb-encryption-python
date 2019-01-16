@@ -183,6 +183,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :rtype: TtlActions
         """
         if self._version is None:
+            _LOGGER.debug("TTL Expired because no version is known")
             return TtlActions.EXPIRED
 
         time_since_updated = time.time() - self._last_updated
@@ -193,6 +194,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         elif time_since_updated < self._version_ttl + _GRACE_PERIOD:
             return TtlActions.GRACE_PERIOD
 
+        _LOGGER.debug("TTL Expired because known version has expired")
         return TtlActions.EXPIRED
 
     def _get_max_version(self):
@@ -260,6 +262,8 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         finally:
             self._lock.release()
 
+        _LOGGER.debug("New latest version is %d", self._version)
+
         return provider
 
     def encryption_materials(self, encryption_context):
@@ -270,6 +274,8 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :raises AttributeError: if no encryption materials are available
         """
         ttl_action = self._ttl_action()
+
+        _LOGGER.debug('TTL Action "%s" when getting encryption materials', ttl_action.name)
 
         provider = None
 
@@ -286,6 +292,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             # Otherwise, block until we can acquire the lock.
             allow_local = bool(ttl_action is TtlActions.GRACE_PERIOD)
 
+            _LOGGER.debug("Getting most recent materials provider version")
             provider = self._get_most_recent_version(allow_local)
 
         return provider.encryption_materials(encryption_context)
@@ -293,6 +300,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
     def refresh(self):
         # type: () -> None
         """Clear all local caches for this provider."""
+        _LOGGER.debug("Refreshing MostRecentProvider instance.")
         with self._lock:
             self._cache.clear()
             self._version = None  # type: int # pylint: disable=attribute-defined-outside-init
