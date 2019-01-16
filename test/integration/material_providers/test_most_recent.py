@@ -15,9 +15,9 @@ import pytest
 
 from ..integration_test_utils import (  # pylint: disable=unused-import
     ddb_table_name,
+    functional_test_utils,
     temp_metastore,
 )
-from ..integration_test_utils import functional_test_utils
 
 pytestmark = [pytest.mark.integ, pytest.mark.ddb_integ]
 

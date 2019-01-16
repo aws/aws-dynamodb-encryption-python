@@ -701,10 +701,7 @@ def check_metastore_cache_use_encrypt(metastore, table_name, log_capture):
     table = boto3.resource("dynamodb").Table(table_name)
 
     most_recent_provider = MostRecentProvider(provider_store=metastore, material_name="test", version_ttl=600.0)
-    e_table = EncryptedTable(
-        table=table,
-        materials_provider=most_recent_provider,
-    )
+    e_table = EncryptedTable(table=table, materials_provider=most_recent_provider)
 
     item = diverse_item()
     item.update(TEST_KEY)
