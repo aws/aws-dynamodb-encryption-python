@@ -21,6 +21,9 @@ from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsPro
 from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentProvider
 from dynamodb_encryption_sdk.material_providers.store import ProviderStore
 
+from ..functional_test_utils import mock_metastore, example_table  # pylint: disable=unused-import
+from ..functional_test_utils import TEST_TABLE_NAME, check_metastore_cache_use_encrypt
+
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 
@@ -130,3 +133,7 @@ def test_decryption_materials_cache_use():
     expected_calls.append(("version_from_material_description", 0))
 
     assert store.provider_calls == expected_calls
+
+
+def test_cache_use_encrypt(mock_metastore, example_table, caplog):
+    check_metastore_cache_use_encrypt(mock_metastore, TEST_TABLE_NAME, caplog)

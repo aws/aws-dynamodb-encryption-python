@@ -21,7 +21,7 @@ from dynamodb_encryption_sdk.structures import AttributeActions, TableIndex, Tab
 from .functional_test_utils import (
     TEST_TABLE_NAME,
     example_table,
-    table_with_global_seconary_indexes,
+    table_with_global_secondary_indexes,
     table_with_local_seconary_indexes,
 )
 

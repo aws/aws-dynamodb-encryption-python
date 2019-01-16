@@ -32,6 +32,7 @@ from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
+from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentProvider
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
@@ -74,7 +75,7 @@ TEST_BATCH_KEYS = [{name: value["value"] for name, value in key.items()} for key
 
 @pytest.fixture
 def example_table():
-    mock_dynamodb2().start()
+    mock_dynamodb2().start(reset=False)
     ddb = boto3.client("dynamodb", region_name="us-west-2")
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
@@ -94,7 +95,7 @@ def example_table():
 
 @pytest.fixture
 def table_with_local_seconary_indexes():
-    mock_dynamodb2().start()
+    mock_dynamodb2().start(reset=False)
     ddb = boto3.client("dynamodb", region_name="us-west-2")
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
@@ -126,8 +127,8 @@ def table_with_local_seconary_indexes():
 
 
 @pytest.fixture
-def table_with_global_seconary_indexes():
-    mock_dynamodb2().start()
+def table_with_global_secondary_indexes():
+    mock_dynamodb2().start(reset=False)
     ddb = boto3.client("dynamodb", region_name="us-west-2")
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
@@ -676,3 +677,72 @@ def mock_metastore():
         metastore, table_name = build_metastore()
         yield metastore
         delete_metastore(table_name)
+
+
+def _count_entries(records, *messages):
+    count = 0
+
+    for record in records:
+        if all((message in record.getMessage() for message in messages)):
+            count += 1
+
+    return count
+
+
+def _count_puts(records, table_name):
+    return _count_entries(records, '"TableName": "{}"'.format(table_name), "OperationModel(name=PutItem)")
+
+
+def _count_gets(records, table_name):
+    return _count_entries(records, '"TableName": "{}"'.format(table_name), "OperationModel(name=GetItem)")
+
+
+def check_metastore_cache_use_encrypt(metastore, table_name, log_capture):
+    table = boto3.resource("dynamodb").Table(table_name)
+
+    most_recent_provider = MostRecentProvider(provider_store=metastore, material_name="test", version_ttl=600.0)
+    e_table = EncryptedTable(
+        table=table,
+        materials_provider=most_recent_provider,
+    )
+
+    item = diverse_item()
+    item.update(TEST_KEY)
+    e_table.put_item(Item=item)
+    e_table.put_item(Item=item)
+    e_table.put_item(Item=item)
+    e_table.put_item(Item=item)
+
+    try:
+        primary_puts = _count_puts(log_capture.records, e_table.name)
+        metastore_puts = _count_puts(log_capture.records, metastore._table.name)
+
+        assert primary_puts == 4
+        assert metastore_puts == 1
+
+        e_table.get_item(Key=TEST_KEY)
+        e_table.get_item(Key=TEST_KEY)
+        e_table.get_item(Key=TEST_KEY)
+
+        primary_gets = _count_gets(log_capture.records, e_table.name)
+        metastore_gets = _count_gets(log_capture.records, metastore._table.name)
+        metastore_puts = _count_puts(log_capture.records, metastore._table.name)
+
+        assert primary_gets == 3
+        assert metastore_gets == 0
+        assert metastore_puts == 1
+
+        most_recent_provider.refresh()
+
+        e_table.get_item(Key=TEST_KEY)
+        e_table.get_item(Key=TEST_KEY)
+        e_table.get_item(Key=TEST_KEY)
+
+        primary_gets = _count_gets(log_capture.records, e_table.name)
+        metastore_gets = _count_gets(log_capture.records, metastore._table.name)
+
+        assert primary_gets == 6
+        assert metastore_gets == 1
+
+    finally:
+        e_table.delete_item(Key=TEST_KEY)
