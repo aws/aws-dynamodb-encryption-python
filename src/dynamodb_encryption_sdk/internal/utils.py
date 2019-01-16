@@ -59,10 +59,8 @@ class TableInfoCache(object):
     _client = attr.ib(validator=attr.validators.instance_of(botocore.client.BaseClient))
     _auto_refresh_table_indexes = attr.ib(validator=attr.validators.instance_of(bool))
 
-    def __init__(
-        self, client, auto_refresh_table_indexes  # type: botocore.client.BaseClient  # type: bool
-    ):  # noqa=D107
-        # type: (...) -> None
+    def __init__(self, client, auto_refresh_table_indexes):  # noqa=D107
+        # type: (botocore.client.BaseClient, bool) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
         # https://github.com/python-attrs/attrs/issues/215
