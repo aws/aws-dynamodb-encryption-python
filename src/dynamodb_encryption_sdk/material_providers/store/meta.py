@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Meta cryptographic provider store."""
+import logging
 from enum import Enum
 
 import attr
@@ -22,7 +23,7 @@ from boto3.resources.base import ServiceResource
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.exceptions import InvalidVersionError, NoKnownVersionError, VersionAlreadyExistsError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, KeyEncodingType
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 
