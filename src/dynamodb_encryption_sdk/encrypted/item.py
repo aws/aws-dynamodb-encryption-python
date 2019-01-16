@@ -70,7 +70,6 @@ def encrypt_dynamodb_item(item, crypto_config):
                 'Reserved attribute name "{}" is not allowed in plaintext item.'.format(reserved_name.value)
             )
 
-    crypto_config.materials_provider.refresh()
     encryption_materials = crypto_config.encryption_materials()
 
     inner_material_description = encryption_materials.material_description.copy()
