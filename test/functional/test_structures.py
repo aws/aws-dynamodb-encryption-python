@@ -21,8 +21,8 @@ from dynamodb_encryption_sdk.structures import AttributeActions, TableIndex, Tab
 from .functional_test_utils import (
     TEST_TABLE_NAME,
     example_table,
-    table_with_global_seconary_indexes,
-    table_with_local_seconary_indexes,
+    table_with_global_secondary_indexes,
+    table_with_local_secondary_indexes,
 )
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
@@ -37,14 +37,14 @@ def test_tableinfo_refresh_indexes_no_secondary_indexes(example_table):
     table.refresh_indexed_attributes(client)
 
 
-def test_tableinfo_refresh_indexes_with_gsis(table_with_global_seconary_indexes):
+def test_tableinfo_refresh_indexes_with_gsis(table_with_global_secondary_indexes):
     client = boto3.client("dynamodb", region_name="us-west-2")
     table = TableInfo(name=TEST_TABLE_NAME)
 
     table.refresh_indexed_attributes(client)
 
 
-def test_tableinfo_refresh_indexes_with_lsis(table_with_local_seconary_indexes):
+def test_tableinfo_refresh_indexes_with_lsis(table_with_local_secondary_indexes):
     client = boto3.client("dynamodb", region_name="us-west-2")
     table = TableInfo(name=TEST_TABLE_NAME)
 

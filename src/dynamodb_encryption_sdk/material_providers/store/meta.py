@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Meta cryptographic provider store."""
+import logging
 from enum import Enum
 
 import attr
@@ -22,7 +23,7 @@ from boto3.resources.base import ServiceResource
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.exceptions import InvalidVersionError, NoKnownVersionError, VersionAlreadyExistsError
-from dynamodb_encryption_sdk.identifiers import EncryptionKeyType, KeyEncodingType
+from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, KeyEncodingType
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 
@@ -36,6 +37,7 @@ except ImportError:  # pragma: no cover
 
 
 __all__ = ("MetaStore",)
+_LOGGER = logging.getLogger(LOGGER_NAME)
 
 
 class MetaStoreAttributeNames(Enum):
@@ -104,6 +106,7 @@ class MetaStore(ProviderStore):
         :param int read_units: Read capacity units to provision
         :param int write_units: Write capacity units to provision
         """
+        _LOGGER.debug("Creating MetaStore table")
         try:
             client.create_table(
                 TableName=table_name,
@@ -127,6 +130,7 @@ class MetaStore(ProviderStore):
         :returns: Materials loaded into delegated keys
         :rtype: tuple(JceNameLocalDelegatedKey)
         """
+        _LOGGER.debug('Loading material "%s" version %d from MetaStore table', material_name, version)
         key = {MetaStoreAttributeNames.PARTITION.value: material_name, MetaStoreAttributeNames.SORT.value: version}
         response = self._encrypted_table.get_item(Key=key)
         try:
@@ -168,6 +172,7 @@ class MetaStore(ProviderStore):
         :param int version: Version of material to locate
         :raises VersionAlreadyExistsError: if the specified version already exists
         """
+        _LOGGER.debug('Saving material "%s" version %d to MetaStore table', material_name, version)
         item = {
             MetaStoreAttributeNames.PARTITION.value: material_name,
             MetaStoreAttributeNames.SORT.value: version,

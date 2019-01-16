@@ -11,9 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Integration tests for ``dynamodb_encryption_sdk.material_providers.store.meta``."""
-import os
-
-import boto3
 import pytest
 
 from dynamodb_encryption_sdk.exceptions import NoKnownVersionError

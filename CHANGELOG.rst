@@ -2,6 +2,14 @@
 Changelog
 *********
 
+1.0.7 -- 2018-01-xx
+===================
+
+Bugfixes
+--------
+* Fix :class:`MostRecentProvider` cache reuse bug.
+  `#105 <https://github.com/aws/aws-dynamodb-encryption-python/pull/105>`_
+
 1.0.6 -- 2018-01-15
 ===================
 

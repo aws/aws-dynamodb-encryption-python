@@ -69,4 +69,6 @@ def ddb_table_name():
 
 @pytest.fixture
 def temp_metastore():
-    yield next(functional_test_utils.build_metastore())
+    metastore, table_name = functional_test_utils.build_metastore()
+    yield metastore
+    functional_test_utils.delete_metastore(table_name)

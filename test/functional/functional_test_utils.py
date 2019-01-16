@@ -16,15 +16,14 @@ from __future__ import division
 import base64
 import copy
 import itertools
-import logging
 import os
 from collections import defaultdict
 from decimal import Decimal
 
 import boto3
 import pytest
-import six
 from boto3.dynamodb.types import Binary
+from botocore.exceptions import NoRegionError
 from moto import mock_dynamodb2
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
@@ -34,6 +33,7 @@ from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
+from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentProvider
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
@@ -44,11 +44,12 @@ from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
 RUNNING_IN_TRAVIS = "TRAVIS" in os.environ
 _DELEGATED_KEY_CACHE = defaultdict(lambda: defaultdict(dict))
 TEST_TABLE_NAME = "my_table"
+TEST_REGION_NAME = "us-west-2"
 TEST_INDEX = {
     "partition_attribute": {"type": "S", "value": "test_value"},
     "sort_attribute": {"type": "N", "value": Decimal("99.233")},
 }
-SECONARY_INDEX = {
+SECONDARY_INDEX = {
     "secondary_index_1": {"type": "B", "value": Binary(b"\x00\x01\x02")},
     "secondary_index_2": {"type": "S", "value": "another_value"},
 }
@@ -76,8 +77,8 @@ TEST_BATCH_KEYS = [{name: value["value"] for name, value in key.items()} for key
 
 @pytest.fixture
 def example_table():
-    mock_dynamodb2().start()
-    ddb = boto3.client("dynamodb", region_name="us-west-2")
+    mock_dynamodb2().start(reset=False)
+    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
@@ -95,9 +96,9 @@ def example_table():
 
 
 @pytest.fixture
-def table_with_local_seconary_indexes():
-    mock_dynamodb2().start()
-    ddb = boto3.client("dynamodb", region_name="us-west-2")
+def table_with_local_secondary_indexes():
+    mock_dynamodb2().start(reset=False)
+    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
@@ -118,7 +119,7 @@ def table_with_local_seconary_indexes():
         ],
         AttributeDefinitions=[
             {"AttributeName": name, "AttributeType": value["type"]}
-            for name, value in list(TEST_INDEX.items()) + list(SECONARY_INDEX.items())
+            for name, value in list(TEST_INDEX.items()) + list(SECONDARY_INDEX.items())
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
@@ -128,9 +129,9 @@ def table_with_local_seconary_indexes():
 
 
 @pytest.fixture
-def table_with_global_seconary_indexes():
-    mock_dynamodb2().start()
-    ddb = boto3.client("dynamodb", region_name="us-west-2")
+def table_with_global_secondary_indexes():
+    mock_dynamodb2().start(reset=False)
+    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
     ddb.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
@@ -153,7 +154,7 @@ def table_with_global_seconary_indexes():
         ],
         AttributeDefinitions=[
             {"AttributeName": name, "AttributeType": value["type"]}
-            for name, value in list(TEST_INDEX.items()) + list(SECONARY_INDEX.items())
+            for name, value in list(TEST_INDEX.items()) + list(SECONDARY_INDEX.items())
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
@@ -650,22 +651,100 @@ def client_cycle_batch_items_check_paginators(
 
 
 def build_metastore():
-    client = boto3.client("dynamodb", region_name="us-west-2")
+    client = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
     table_name = base64.urlsafe_b64encode(os.urandom(32)).decode("utf-8").replace("=", ".")
 
     MetaStore.create_table(client, table_name, 1, 1)
     waiter = client.get_waiter("table_exists")
     waiter.wait(TableName=table_name)
 
-    table = boto3.resource("dynamodb", region_name="us-west-2").Table(table_name)
-    yield MetaStore(table, build_static_jce_cmp("AES", 256, "HmacSHA256", 256))
+    table = boto3.resource("dynamodb", region_name=TEST_REGION_NAME).Table(table_name)
+    return MetaStore(table, build_static_jce_cmp("AES", 256, "HmacSHA256", 256)), table_name
 
+
+def delete_metastore(table_name):
+    client = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
     client.delete_table(TableName=table_name)
-    waiter = client.get_waiter("table_not_exists")
-    waiter.wait(TableName=table_name)
+    # It sometimes takes a long time to delete a table.
+    # If hanging, asynchronously deleting tables becomes an issue,
+    # come back to this.
+    # Otherwise, let's just let them take care of themselves.
+    # waiter = client.get_waiter("table_not_exists")
+    # waiter.wait(TableName=table_name)
 
 
 @pytest.fixture
 def mock_metastore():
     with mock_dynamodb2():
-        yield next(build_metastore())
+        metastore, table_name = build_metastore()
+        yield metastore
+        delete_metastore(table_name)
+
+
+def _count_entries(records, *messages):
+    count = 0
+
+    for record in records:
+        if all((message in record.getMessage() for message in messages)):
+            count += 1
+
+    return count
+
+
+def _count_puts(records, table_name):
+    return _count_entries(records, '"TableName": "{}"'.format(table_name), "OperationModel(name=PutItem)")
+
+
+def _count_gets(records, table_name):
+    return _count_entries(records, '"TableName": "{}"'.format(table_name), "OperationModel(name=GetItem)")
+
+
+def check_metastore_cache_use_encrypt(metastore, table_name, log_capture):
+    try:
+        table = boto3.resource("dynamodb").Table(table_name)
+    except NoRegionError:
+        table = boto3.resource("dynamodb", region_name=TEST_REGION_NAME).Table(table_name)
+
+    most_recent_provider = MostRecentProvider(provider_store=metastore, material_name="test", version_ttl=600.0)
+    e_table = EncryptedTable(table=table, materials_provider=most_recent_provider)
+
+    item = diverse_item()
+    item.update(TEST_KEY)
+    e_table.put_item(Item=item)
+    e_table.put_item(Item=item)
+    e_table.put_item(Item=item)
+    e_table.put_item(Item=item)
+
+    try:
+        primary_puts = _count_puts(log_capture.records, e_table.name)
+        metastore_puts = _count_puts(log_capture.records, metastore._table.name)
+
+        assert primary_puts == 4
+        assert metastore_puts == 1
+
+        e_table.get_item(Key=TEST_KEY)
+        e_table.get_item(Key=TEST_KEY)
+        e_table.get_item(Key=TEST_KEY)
+
+        primary_gets = _count_gets(log_capture.records, e_table.name)
+        metastore_gets = _count_gets(log_capture.records, metastore._table.name)
+        metastore_puts = _count_puts(log_capture.records, metastore._table.name)
+
+        assert primary_gets == 3
+        assert metastore_gets == 0
+        assert metastore_puts == 1
+
+        most_recent_provider.refresh()
+
+        e_table.get_item(Key=TEST_KEY)
+        e_table.get_item(Key=TEST_KEY)
+        e_table.get_item(Key=TEST_KEY)
+
+        primary_gets = _count_gets(log_capture.records, e_table.name)
+        metastore_gets = _count_gets(log_capture.records, metastore._table.name)
+
+        assert primary_gets == 6
+        assert metastore_gets == 1
+
+    finally:
+        e_table.delete_item(Key=TEST_KEY)

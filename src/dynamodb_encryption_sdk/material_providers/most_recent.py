@@ -112,6 +112,7 @@ class BasicCache(object):
     def clear(self):
         # type: () -> None
         """Clear the cache."""
+        _LOGGER.debug("Clearing cache")
         with self._cache_lock:
             self._cache = OrderedDict()  # type: OrderedDict[Any, Any] # pylint: disable=attribute-defined-outside-init
 
@@ -163,8 +164,10 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         """
         version = self._provider_store.version_from_material_description(encryption_context.material_description)
         try:
+            _LOGGER.debug("Looking in cache for decryption materials provider version %d", version)
             provider = self._cache.get(version)
         except KeyError:
+            _LOGGER.debug("Decryption materials provider not found in cache")
             try:
                 provider = self._provider_store.provider(self._material_name, version)
             except InvalidVersionError:
@@ -183,6 +186,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :rtype: TtlActions
         """
         if self._version is None:
+            _LOGGER.debug("TTL Expired because no version is known")
             return TtlActions.EXPIRED
 
         time_since_updated = time.time() - self._last_updated
@@ -193,6 +197,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         elif time_since_updated < self._version_ttl + _GRACE_PERIOD:
             return TtlActions.GRACE_PERIOD
 
+        _LOGGER.debug("TTL Expired because known version has expired")
         return TtlActions.EXPIRED
 
     def _get_max_version(self):
@@ -260,6 +265,8 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         finally:
             self._lock.release()
 
+        _LOGGER.debug("New latest version is %d", self._version)
+
         return provider
 
     def encryption_materials(self, encryption_context):
@@ -271,14 +278,16 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         """
         ttl_action = self._ttl_action()
 
+        _LOGGER.debug('TTL Action "%s" when getting encryption materials', ttl_action.name)
+
         provider = None
 
         if ttl_action is TtlActions.LIVE:
             try:
-                _LOGGER.debug("Looking in cache for materials provider version %d", self._version)
+                _LOGGER.debug("Looking in cache for encryption materials provider version %d", self._version)
                 provider = self._cache.get(self._version)
             except KeyError:
-                _LOGGER.debug("Provider not found in cache")
+                _LOGGER.debug("Encryption materials provider not found in cache")
                 ttl_action = TtlActions.EXPIRED
 
         if provider is None:
@@ -286,6 +295,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             # Otherwise, block until we can acquire the lock.
             allow_local = bool(ttl_action is TtlActions.GRACE_PERIOD)
 
+            _LOGGER.debug("Getting most recent materials provider version")
             provider = self._get_most_recent_version(allow_local)
 
         return provider.encryption_materials(encryption_context)
@@ -293,6 +303,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
     def refresh(self):
         # type: () -> None
         """Clear all local caches for this provider."""
+        _LOGGER.debug("Refreshing MostRecentProvider instance.")
         with self._lock:
             self._cache.clear()
             self._version = None  # type: int # pylint: disable=attribute-defined-outside-init
