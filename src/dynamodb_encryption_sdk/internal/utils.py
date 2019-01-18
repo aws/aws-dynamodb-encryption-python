@@ -16,17 +16,20 @@
     No guarantee is provided on the modules and APIs within this
     namespace staying consistent. Directly reference at your own risk.
 """
+import copy
+from functools import partial
+
 import attr
 import botocore.client
 
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
 from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_python_item
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
-from dynamodb_encryption_sdk.structures import EncryptionContext, TableInfo
+from dynamodb_encryption_sdk.structures import CryptoAction, EncryptionContext, TableInfo
 from dynamodb_encryption_sdk.transform import dict_to_ddb
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Callable, Dict, Text  # noqa pylint: disable=unused-import
+    from typing import Any, Bool, Callable, Dict, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -271,19 +274,22 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
     """Transparently encrypt multiple items before putting them in a batch request.
 
     :param callable encrypt_method: Method to use to encrypt items
-    :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
+    :param callable crypto_config_method: Method that accepts a table name string and provides a :class:`CryptoConfig`
     :param callable write_method: Method that writes to the table
     :param **kwargs: Keyword arguments to pass to ``write_method``
     :return: DynamoDB response
     :rtype: dict
     """
     request_crypto_config = kwargs.pop("crypto_config", None)
+    table_cryptos = {}
+    plaintext_items = copy.deepcopy(kwargs["RequestItems"])
 
     for table_name, items in kwargs["RequestItems"].items():
         if request_crypto_config is not None:
             crypto_config = request_crypto_config
         else:
             crypto_config = crypto_config_method(table_name=table_name)
+        table_cryptos[table_name] = crypto_config
 
         for pos, value in enumerate(items):
             for request_type, item in value.items():
@@ -293,4 +299,81 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
                         item=item["Item"],
                         crypto_config=crypto_config.with_item(_item_transformer(encrypt_method)(item["Item"])),
                     )
-    return write_method(**kwargs)
+
+    response = write_method(**kwargs)
+    return _process_batch_write_response(plaintext_items, response, table_cryptos)
+
+
+def _process_batch_write_response(request, response, table_crypto_config):
+    # type: (Dict, Dict, Dict[Text, CryptoConfig]) -> Dict
+    """Handle unprocessed items in the response from a transparently encrypted write.
+
+    :param dict request: The DynamoDB plaintext request dictionary
+    :param dict response: The DynamoDB response from the batch operation
+    :param Dict[Text, CryptoConfig] table_crypto_config: table level CryptoConfig used in encrypting the request items
+    :return: DynamoDB response, with any unprocessed items reverted back to the original plaintext values
+    :rtype: dict
+    """
+    if not (response and response.get("UnprocessedItems")):
+        return response
+
+    # Unprocessed items need to be returned in their original state
+    for table_name, unprocessed in response["UnprocessedItems"].items():
+        original_items = request[table_name]
+        crypto_config = table_crypto_config[table_name]
+
+        if crypto_config.encryption_context.partition_key_name:
+            items_match = partial(_item_keys_match, crypto_config)
+        else:
+            items_match = partial(_item_attributes_match, crypto_config)
+
+        for pos, operation in enumerate(unprocessed):
+            for request_type, item in operation.items():
+                for plaintext_item in original_items:
+                    if plaintext_item.get(request_type) and items_match(
+                        plaintext_item[request_type]["Item"], item["Item"]
+                    ):
+                        unprocessed[pos] = plaintext_item.copy()
+                        break
+
+    return response
+
+
+def _item_keys_match(crypto_config, item1, item2):
+    # type: (CryptoConfig, Dict, Dict) -> Bool
+    """Determines whether the values in the primary and sort keys (if they exist) are the same
+
+    :param CryptoConfig crypto_config: CryptoConfig used in encrypting the given items
+    :param dict item1: The first item to compare
+    :param dict item2: The second item to compare
+    :return: Bool response, True if the key attributes match
+    :rtype: bool
+    """
+    encryption_context = crypto_config.encryption_context
+
+    return item1[encryption_context.partition_key_name] == item2[encryption_context.partition_key_name] \
+        and item1.get(encryption_context.sort_key_name) == item2.get(encryption_context.sort_key_name)
+
+
+def _item_attributes_match(crypto_config, plaintext_item, encrypted_item):
+    # type: (CryptoConfig, Dict, Dict) -> Bool
+    """Determines whether the unencrypted values in the plaintext items attributes are the same as those in the
+    encrypted item. Essentially this uses brute force to cover when we don't know the primary and sort
+    index attribute names, since they can't be encrypted.
+
+    :param CryptoConfig crypto_config: CryptoConfig used in encrypting the given items
+    :param dict plaintext_item: The plaintext item
+    :param dict encrypted_item: The encrypted item
+    :return: Bool response, True if the unencrypted attributes in the plaintext item match those in
+    the encrypted item
+    :rtype: bool
+    """
+
+    for name, value in plaintext_item.items():
+        if crypto_config.attribute_actions.action(name) != CryptoAction.DO_NOTHING:
+            continue
+
+        if encrypted_item.get(name) != value:
+            return False
+
+    return True
