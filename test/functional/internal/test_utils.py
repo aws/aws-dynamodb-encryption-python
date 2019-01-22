@@ -30,7 +30,6 @@ from ..functional_test_utils import diverse_item
 def get_test_item(standard_dict_format, partition_key, sort_key=None):
     attributes = diverse_item()
 
-    attributes = {"attr_" + str(pos): attribute[0] for pos, attribute in enumerate(attributes)}
     attributes["partition-key"] = partition_key
     if sort_key is not None:
         attributes["sort-key"] = sort_key
