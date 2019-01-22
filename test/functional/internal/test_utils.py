@@ -69,8 +69,7 @@ def get_dummy_crypto_config(partition_key_name=None, sort_key_name=None, sign_ke
     )
     if sign_keys:
         actions.attribute_actions['partition-key'] = CryptoAction.SIGN_ONLY
-        if sort_key_name is not None:
-            actions.attribute_actions['sort-key'] = CryptoAction.SIGN_ONLY
+        actions.attribute_actions['sort-key'] = CryptoAction.SIGN_ONLY
 
     materials = Mock(spec=CryptographicMaterialsProvider)  # type: CryptographicMaterialsProvider
     return CryptoConfig(materials_provider=materials, encryption_context=context, attribute_actions=actions)
