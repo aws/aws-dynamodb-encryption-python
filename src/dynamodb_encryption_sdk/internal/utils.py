@@ -281,7 +281,7 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
     :rtype: dict
     """
     request_crypto_config = kwargs.pop("crypto_config", None)
-    table_cryptos = {}
+    table_crypto_configs = {}
     plaintext_items = copy.deepcopy(kwargs["RequestItems"])
 
     for table_name, items in kwargs["RequestItems"].items():
@@ -289,7 +289,7 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
             crypto_config = request_crypto_config
         else:
             crypto_config = crypto_config_method(table_name=table_name)
-        table_cryptos[table_name] = crypto_config
+        table_crypto_configs[table_name] = crypto_config
 
         for pos, value in enumerate(items):
             for request_type, item in value.items():
@@ -301,7 +301,7 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
                     )
 
     response = write_method(**kwargs)
-    return _process_batch_write_response(plaintext_items, response, table_cryptos)
+    return _process_batch_write_response(plaintext_items, response, table_crypto_configs)
 
 
 def _process_batch_write_response(request, response, table_crypto_config):
@@ -314,11 +314,13 @@ def _process_batch_write_response(request, response, table_crypto_config):
     :return: DynamoDB response, with any unprocessed items reverted back to the original plaintext values
     :rtype: dict
     """
-    if not (response and response.get("UnprocessedItems")):
+    try:
+        unprocessed_items = response["UnprocessedItems"]
+    except KeyError:
         return response
 
     # Unprocessed items need to be returned in their original state
-    for table_name, unprocessed in response["UnprocessedItems"].items():
+    for table_name, unprocessed in unprocessed_items.items():
         original_items = request[table_name]
         crypto_config = table_crypto_config[table_name]
 
@@ -329,6 +331,9 @@ def _process_batch_write_response(request, response, table_crypto_config):
 
         for pos, operation in enumerate(unprocessed):
             for request_type, item in operation.items():
+                if request_type != "PutRequest":
+                    continue
+
                 for plaintext_item in original_items:
                     if plaintext_item.get(request_type) and items_match(
                         plaintext_item[request_type]["Item"], item["Item"]
@@ -349,10 +354,15 @@ def _item_keys_match(crypto_config, item1, item2):
     :return: Bool response, True if the key attributes match
     :rtype: bool
     """
-    encryption_context = crypto_config.encryption_context
+    partition_key_name = crypto_config.encryption_context.partition_key_name
+    sort_key_name = crypto_config.encryption_context.sort_key_name
 
-    return item1[encryption_context.partition_key_name] == item2[encryption_context.partition_key_name] \
-        and item1.get(encryption_context.sort_key_name) == item2.get(encryption_context.sort_key_name)
+    partition_keys_match = item1[partition_key_name] == item2[partition_key_name]
+
+    if sort_key_name is None:
+        return partition_keys_match
+
+    return partition_keys_match and item1[sort_key_name] == item2[sort_key_name]
 
 
 def _item_attributes_match(crypto_config, plaintext_item, encrypted_item):
@@ -370,7 +380,7 @@ def _item_attributes_match(crypto_config, plaintext_item, encrypted_item):
     """
 
     for name, value in plaintext_item.items():
-        if crypto_config.attribute_actions.action(name) != CryptoAction.DO_NOTHING:
+        if crypto_config.attribute_actions.action(name) == CryptoAction.ENCRYPT_AND_SIGN:
             continue
 
         if encrypted_item.get(name) != value:
