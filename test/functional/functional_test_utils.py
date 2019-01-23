@@ -24,6 +24,7 @@ import boto3
 import pytest
 from boto3.dynamodb.types import Binary
 from botocore.exceptions import NoRegionError
+from mock import patch
 from moto import mock_dynamodb2
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
@@ -336,6 +337,12 @@ def diverse_item():
 _reserved_attributes = set([attr.value for attr in ReservedAttributes])
 
 
+def return_requestitems_as_unprocessed(*args, **kwargs):
+    return {
+        "UnprocessedItems": kwargs['RequestItems']
+    }
+
+
 def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
     # Verify that all expected attributes are present
     ciphertext_attributes = set(ciphertext_item.keys())
@@ -374,12 +381,20 @@ def _nop_transformer(item):
     return item
 
 
-def assert_equal_lists_of_items(actual, expected, transformer=_nop_transformer):
-    assert len(actual) == len(expected)
-
-    for actual_item in actual:
+def assert_items_exist_in_list(source, expected, transformer):
+    for actual_item in source:
         expected_item = _matching_key(actual_item, expected)
         assert transformer(actual_item) == transformer(expected_item)
+
+
+def assert_equal_lists_of_items(actual, expected, transformer=_nop_transformer):
+    assert len(actual) == len(expected)
+    assert_items_exist_in_list(actual, expected, transformer)
+
+
+def assert_list_of_items_contains(full, subset, transformer=_nop_transformer):
+    assert len(full) >= len(subset)
+    assert_items_exist_in_list(subset, full, transformer)
 
 
 def check_many_encrypted_items(actual, expected, attribute_actions, transformer=_nop_transformer):
@@ -479,6 +494,28 @@ def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initia
     del items
 
 
+def batch_write_item_unprocessed_check(
+    encrypted,
+    initial_item,
+    write_transformer=_nop_transformer,
+    table_name=TEST_TABLE_NAME,
+):
+    """Check that unprocessed items in a batch result are unencrypted."""
+    items = _generate_items(initial_item, write_transformer)
+
+    request_items = {table_name: [{"PutRequest": {"Item": _item}} for _item in items]}
+    _put_result = encrypted.batch_write_item(RequestItems=request_items)
+
+    # we expect results to include Unprocessed items, or the test case is invalid!
+    unprocessed_items = _put_result["UnprocessedItems"]
+    assert unprocessed_items != {}
+
+    unprocessed = [operation["PutRequest"]["Item"] for operation in _put_result["UnprocessedItems"][TEST_TABLE_NAME]]
+    assert_list_of_items_contains(items, unprocessed, transformer=_nop_transformer)
+
+    del items
+
+
 def cycle_item_check(plaintext_item, crypto_config):
     """Check that cycling (plaintext->encrypted->decrypted) an item has the expected results."""
     ciphertext_item = encrypt_python_item(plaintext_item, crypto_config)
@@ -527,6 +564,34 @@ def table_cycle_batch_writer_check(materials_provider, initial_actions, initial_
     cycle_batch_writer_check(table, e_table, initial_actions, initial_item)
 
 
+def table_batch_writer_unprocessed_items_check(
+    materials_provider,
+    initial_actions,
+    initial_item,
+    table_name,
+    region_name=None
+):
+    kwargs = {}
+    if region_name is not None:
+        kwargs["region_name"] = region_name
+    resource = boto3.resource("dynamodb", **kwargs)
+    table = resource.Table(table_name)
+
+    items = _generate_items(initial_item, _nop_transformer)
+    request_items = {table_name: [{"PutRequest": {"Item": _item}} for _item in items]}
+
+    with patch.object(table.meta.client, "batch_write_item") as batch_write_mock:
+        # Check that unprocessed items returned to a BatchWriter are successfully retried
+        batch_write_mock.side_effect = [{"UnprocessedItems": request_items}, {'UnprocessedItems': {}}]
+        e_table = EncryptedTable(table=table, materials_provider=materials_provider, attribute_actions=initial_actions)
+
+        with e_table.batch_writer() as writer:
+            for item in items:
+                writer.put_item(item)
+
+    del items
+
+
 def resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
     kwargs = {}
     if region_name is not None:
@@ -548,6 +613,31 @@ def resource_cycle_batch_items_check(materials_provider, initial_actions, initia
     e_scan_result = e_resource.Table(table_name).scan(ConsistentRead=True)
     assert not raw_scan_result["Items"]
     assert not e_scan_result["Items"]
+
+
+def resource_batch_items_unprocessed_check(
+    materials_provider,
+    initial_actions,
+    initial_item,
+    table_name,
+    region_name=None
+):
+    kwargs = {}
+    if region_name is not None:
+        kwargs["region_name"] = region_name
+    resource = boto3.resource('dynamodb', **kwargs)
+
+    with patch.object(resource, "batch_write_item", return_requestitems_as_unprocessed):
+        e_resource = EncryptedResource(
+            resource=resource, materials_provider=materials_provider, attribute_actions=initial_actions
+        )
+
+        batch_write_item_unprocessed_check(
+            encrypted=e_resource,
+            initial_item=initial_item,
+            write_transformer=dict_to_ddb,
+            table_name=table_name,
+        )
 
 
 def client_cycle_single_item_check(materials_provider, initial_actions, initial_item, table_name, region_name=None):
@@ -598,6 +688,31 @@ def client_cycle_batch_items_check(materials_provider, initial_actions, initial_
     e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
     assert not raw_scan_result["Items"]
     assert not e_scan_result["Items"]
+
+
+def client_batch_items_unprocessed_check(
+    materials_provider,
+    initial_actions,
+    initial_item,
+    table_name,
+    region_name=None
+):
+    kwargs = {}
+    if region_name is not None:
+        kwargs["region_name"] = region_name
+    client = boto3.client('dynamodb', **kwargs)
+
+    with patch.object(client, "batch_write_item", return_requestitems_as_unprocessed):
+        e_client = EncryptedClient(
+            client=client, materials_provider=materials_provider, attribute_actions=initial_actions
+        )
+
+        batch_write_item_unprocessed_check(
+            encrypted=e_client,
+            initial_item=initial_item,
+            write_transformer=dict_to_ddb,
+            table_name=table_name,
+        )
 
 
 def client_cycle_batch_items_check_paginators(

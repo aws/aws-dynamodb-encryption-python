@@ -17,6 +17,8 @@ import pytest
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 from ..functional_test_utils import (
     TEST_TABLE_NAME,
+    build_static_jce_cmp,
+    client_batch_items_unprocessed_check,
     client_cycle_batch_items_check,
     client_cycle_batch_items_check_paginators,
     client_cycle_single_item_check,
@@ -53,6 +55,12 @@ def _client_cycle_batch_items_check_paginators(materials_provider, initial_actio
     )
 
 
+def _client_batch_items_unprocessed_check(materials_provider, initial_actions, initial_item):
+    client_batch_items_unprocessed_check(
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
+    )
+
+
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     _client_cycle_single_item_check(some_cmps, parametrized_actions, parametrized_item)
@@ -66,6 +74,12 @@ def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actio
 def test_ephemeral_batch_item_cycle_paginators(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items using paginators."""
     _client_cycle_batch_items_check_paginators(some_cmps, parametrized_actions, parametrized_item)
+
+
+def test_batch_item_unprocessed(example_table, parametrized_actions, parametrized_item):
+    """Test Unprocessed Items handling with a single ephemeral static CMP against a small number of curated items."""
+    cmp = build_static_jce_cmp("AES", 256, "HmacSHA256", 256)
+    _client_batch_items_unprocessed_check(cmp, parametrized_actions, parametrized_item)
 
 
 @pytest.mark.slow

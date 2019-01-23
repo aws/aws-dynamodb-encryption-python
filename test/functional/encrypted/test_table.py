@@ -14,12 +14,14 @@
 import hypothesis
 import pytest
 
-from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
+from ..functional_test_utils import example_table # noqa pylint: disable=unused-import
 from ..functional_test_utils import (
     TEST_TABLE_NAME,
+    build_static_jce_cmp,
     set_parametrized_actions,
     set_parametrized_cmp,
     set_parametrized_item,
+    table_batch_writer_unprocessed_items_check,
     table_cycle_batch_writer_check,
     table_cycle_check,
 )
@@ -46,6 +48,14 @@ def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, pa
 def test_ephemeral_item_cycle_batch_writer(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     table_cycle_batch_writer_check(some_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, "us-west-2")
+
+
+def test_batch_writer_unprocessed(example_table, parametrized_actions, parametrized_item):
+    """Test Unprocessed Items handling with a single ephemeral static CMP against a small number of curated items."""
+    cmp = build_static_jce_cmp("AES", 256, "HmacSHA256", 256)
+    table_batch_writer_unprocessed_items_check(
+        cmp, parametrized_actions, parametrized_item, TEST_TABLE_NAME, "us-west-2"
+    )
 
 
 @pytest.mark.slow
