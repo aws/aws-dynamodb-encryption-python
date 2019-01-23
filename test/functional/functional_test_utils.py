@@ -510,7 +510,7 @@ def batch_write_item_unprocessed_check(
     unprocessed_items = _put_result["UnprocessedItems"]
     assert unprocessed_items != {}
 
-    unprocessed = [operation["PutRequest"]["Item"] for operation in _put_result["UnprocessedItems"][TEST_TABLE_NAME]]
+    unprocessed = [operation["PutRequest"]["Item"] for operation in unprocessed_items[TEST_TABLE_NAME]]
     assert_list_of_items_contains(items, unprocessed, transformer=_nop_transformer)
 
     del items
