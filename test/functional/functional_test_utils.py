@@ -338,9 +338,7 @@ _reserved_attributes = set([attr.value for attr in ReservedAttributes])
 
 
 def return_requestitems_as_unprocessed(*args, **kwargs):
-    return {
-        "UnprocessedItems": kwargs['RequestItems']
-    }
+    return {"UnprocessedItems": kwargs["RequestItems"]}
 
 
 def check_encrypted_item(plaintext_item, ciphertext_item, attribute_actions):
@@ -495,10 +493,7 @@ def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initia
 
 
 def batch_write_item_unprocessed_check(
-    encrypted,
-    initial_item,
-    write_transformer=_nop_transformer,
-    table_name=TEST_TABLE_NAME,
+    encrypted, initial_item, write_transformer=_nop_transformer, table_name=TEST_TABLE_NAME
 ):
     """Check that unprocessed items in a batch result are unencrypted."""
     items = _generate_items(initial_item, write_transformer)
@@ -565,11 +560,7 @@ def table_cycle_batch_writer_check(materials_provider, initial_actions, initial_
 
 
 def table_batch_writer_unprocessed_items_check(
-    materials_provider,
-    initial_actions,
-    initial_item,
-    table_name,
-    region_name=None
+    materials_provider, initial_actions, initial_item, table_name, region_name=None
 ):
     kwargs = {}
     if region_name is not None:
@@ -582,7 +573,7 @@ def table_batch_writer_unprocessed_items_check(
 
     with patch.object(table.meta.client, "batch_write_item") as batch_write_mock:
         # Check that unprocessed items returned to a BatchWriter are successfully retried
-        batch_write_mock.side_effect = [{"UnprocessedItems": request_items}, {'UnprocessedItems': {}}]
+        batch_write_mock.side_effect = [{"UnprocessedItems": request_items}, {"UnprocessedItems": {}}]
         e_table = EncryptedTable(table=table, materials_provider=materials_provider, attribute_actions=initial_actions)
 
         with e_table.batch_writer() as writer:
@@ -616,16 +607,12 @@ def resource_cycle_batch_items_check(materials_provider, initial_actions, initia
 
 
 def resource_batch_items_unprocessed_check(
-    materials_provider,
-    initial_actions,
-    initial_item,
-    table_name,
-    region_name=None
+    materials_provider, initial_actions, initial_item, table_name, region_name=None
 ):
     kwargs = {}
     if region_name is not None:
         kwargs["region_name"] = region_name
-    resource = boto3.resource('dynamodb', **kwargs)
+    resource = boto3.resource("dynamodb", **kwargs)
 
     with patch.object(resource, "batch_write_item", return_requestitems_as_unprocessed):
         e_resource = EncryptedResource(
@@ -633,10 +620,7 @@ def resource_batch_items_unprocessed_check(
         )
 
         batch_write_item_unprocessed_check(
-            encrypted=e_resource,
-            initial_item=initial_item,
-            write_transformer=dict_to_ddb,
-            table_name=table_name,
+            encrypted=e_resource, initial_item=initial_item, write_transformer=dict_to_ddb, table_name=table_name
         )
 
 
@@ -691,16 +675,12 @@ def client_cycle_batch_items_check(materials_provider, initial_actions, initial_
 
 
 def client_batch_items_unprocessed_check(
-    materials_provider,
-    initial_actions,
-    initial_item,
-    table_name,
-    region_name=None
+    materials_provider, initial_actions, initial_item, table_name, region_name=None
 ):
     kwargs = {}
     if region_name is not None:
         kwargs["region_name"] = region_name
-    client = boto3.client('dynamodb', **kwargs)
+    client = boto3.client("dynamodb", **kwargs)
 
     with patch.object(client, "batch_write_item", return_requestitems_as_unprocessed):
         e_client = EncryptedClient(
@@ -708,10 +688,7 @@ def client_batch_items_unprocessed_check(
         )
 
         batch_write_item_unprocessed_check(
-            encrypted=e_client,
-            initial_item=initial_item,
-            write_transformer=dict_to_ddb,
-            table_name=table_name,
+            encrypted=e_client, initial_item=initial_item, write_transformer=dict_to_ddb, table_name=table_name
         )
 
 

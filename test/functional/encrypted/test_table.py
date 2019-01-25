@@ -14,7 +14,7 @@
 import hypothesis
 import pytest
 
-from ..functional_test_utils import example_table # noqa pylint: disable=unused-import
+from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 from ..functional_test_utils import (
     TEST_TABLE_NAME,
     build_static_jce_cmp,

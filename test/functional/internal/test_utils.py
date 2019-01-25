@@ -62,14 +62,11 @@ def get_test_items(standard_dict_format, table_name="table", with_sort_keys=Fals
 def get_dummy_crypto_config(partition_key_name=None, sort_key_name=None, sign_keys=False):
     context = EncryptionContext(partition_key_name=partition_key_name, sort_key_name=sort_key_name)
     actions = AttributeActions(
-        default_action=CryptoAction.DO_NOTHING,
-        attribute_actions={
-            "encrypt-me": CryptoAction.ENCRYPT_AND_SIGN
-        },
+        default_action=CryptoAction.DO_NOTHING, attribute_actions={"encrypt-me": CryptoAction.ENCRYPT_AND_SIGN}
     )
     if sign_keys:
-        actions.attribute_actions['partition-key'] = CryptoAction.SIGN_ONLY
-        actions.attribute_actions['sort-key'] = CryptoAction.SIGN_ONLY
+        actions.attribute_actions["partition-key"] = CryptoAction.SIGN_ONLY
+        actions.attribute_actions["sort-key"] = CryptoAction.SIGN_ONLY
 
     materials = Mock(spec=CryptographicMaterialsProvider)  # type: CryptographicMaterialsProvider
     return CryptoConfig(materials_provider=materials, encryption_context=context, attribute_actions=actions)
@@ -78,7 +75,7 @@ def get_dummy_crypto_config(partition_key_name=None, sort_key_name=None, sign_ke
 def check_encrypt_batch_write_item_call(request_items, crypto_config):
     def dummy_encrypt(item, **kwargs):
         result = item.copy()
-        result['encrypt-me'] = "pretend Im encrypted"
+        result["encrypt-me"] = "pretend Im encrypted"
         return result
 
     # execute a batch write, but make the write method return ALL the provided items as unprocessed
@@ -96,11 +93,7 @@ def check_encrypt_batch_write_item_call(request_items, crypto_config):
 
 
 @pytest.mark.parametrize(
-    "items",
-    (
-        get_test_items(standard_dict_format=True),
-        get_test_items(standard_dict_format=False),
-    )
+    "items", (get_test_items(standard_dict_format=True), get_test_items(standard_dict_format=False))
 )
 def test_encrypt_batch_write_returns_plaintext_unprocessed_items_with_known_partition_key(items):
     crypto_config = get_dummy_crypto_config("partition-key")
@@ -112,7 +105,7 @@ def test_encrypt_batch_write_returns_plaintext_unprocessed_items_with_known_part
     (
         get_test_items(standard_dict_format=True, with_sort_keys=True),
         get_test_items(standard_dict_format=False, with_sort_keys=True),
-    )
+    ),
 )
 def test_encrypt_batch_write_returns_plaintext_unprocessed_items_with_known_partition_and_sort_keys(items):
     crypto_config = get_dummy_crypto_config("partition-key", "sort-key")
@@ -126,7 +119,7 @@ def test_encrypt_batch_write_returns_plaintext_unprocessed_items_with_known_part
         get_test_items(standard_dict_format=False),
         get_test_items(standard_dict_format=True, with_sort_keys=True),
         get_test_items(standard_dict_format=False, with_sort_keys=True),
-    )
+    ),
 )
 def test_encrypt_batch_write_returns_plaintext_unprocessed_items_with_unknown_keys(items):
     crypto_config = get_dummy_crypto_config(None, None)
@@ -141,7 +134,7 @@ def test_encrypt_batch_write_returns_plaintext_unprocessed_items_with_unknown_ke
         get_test_items(standard_dict_format=False),
         get_test_items(standard_dict_format=True, with_sort_keys=True),
         get_test_items(standard_dict_format=False, with_sort_keys=True),
-    )
+    ),
 )
 def test_encrypt_batch_write_returns_plaintext_unprocessed_items_with_unknown_signed_keys(items):
     crypto_config = get_dummy_crypto_config(None, None, sign_keys=True)
