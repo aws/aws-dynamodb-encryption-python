@@ -16,6 +16,8 @@ import pytest
 from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
 from ..functional_test_utils import (
     TEST_TABLE_NAME,
+    build_static_jce_cmp,
+    resource_batch_items_unprocessed_check,
     resource_cycle_batch_items_check,
     set_parametrized_actions,
     set_parametrized_cmp,
@@ -35,9 +37,22 @@ def _resource_cycle_batch_items_check(materials_provider, initial_actions, initi
     resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2")
 
 
+def _resource_batch_items_unprocessed_check(materials_provider, initial_actions, initial_item):
+    resource_batch_items_unprocessed_check(
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
+    )
+
+
 def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
     _resource_cycle_batch_items_check(some_cmps, parametrized_actions, parametrized_item)
+
+
+def test_batch_item_unprocessed(example_table, parametrized_actions, parametrized_item):
+    """Test Unprocessed Items handling with a single ephemeral static CMP against a small number of curated items."""
+    _resource_batch_items_unprocessed_check(
+        build_static_jce_cmp("AES", 256, "HmacSHA256", 256), parametrized_actions, parametrized_item
+    )
 
 
 @pytest.mark.travis_isolation
