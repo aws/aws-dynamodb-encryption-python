@@ -1,6 +1,4 @@
-"""
-Helper utilities for use while testing examples.
-"""
+"""Helper utilities for use while testing examples."""
 import os
 import sys
 
