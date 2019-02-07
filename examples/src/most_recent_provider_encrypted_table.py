@@ -10,9 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Example showing use of MostRecentProvider backed by a MetaStore using an AWS KMS CMP,
-with EncryptedTable.
-"""
+"""Example showing use of MostRecentProvider backed by a MetaStore using an AWS KMS CMP, with EncryptedTable."""
 import boto3
 from boto3.dynamodb.types import Binary
 
