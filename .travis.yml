@@ -81,9 +81,11 @@ matrix:
 #      env: TOXENV=flake8-tests
 #    - python: 3.6
 #      env: TOXENV=pylint-tests
-    - python: 3.6
+    - python: 3.7
+      dist: xenial
       env: TOXENV=flake8-examples
-    - python: 3.6
+    - python: 3.7
+      dist: xenial
       env: TOXENV=pylint-examples
 install:
     # Clean up because Travis doesn't
