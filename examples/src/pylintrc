@@ -1,3 +1,9 @@
+[MESSAGES CONTROL]
+# Disabling messages that we either don't care about for tests or are necessary to break for tests.
+disable =
+    duplicate-code,  # these examples often feature similar code
+    too-many-locals,  # for these examples, we prioritize keeping everything together for simple readability
+
 [BASIC]
 # Allow function names up to 50 characters
 function-rgx = [a-z_][a-z0-9_]{2,50}$
