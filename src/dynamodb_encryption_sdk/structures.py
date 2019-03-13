@@ -141,9 +141,9 @@ class AttributeActions(object):
                 raise ValueError('No override behavior can be set for reserved attribute "{}"'.format(attribute.value))
 
         # Enums are not hashable, but their names are unique
-        _unique_actions = set([self.default_action.name])
-        _unique_actions.update(set([action.name for action in self.attribute_actions.values()]))
-        no_actions = _unique_actions == set([CryptoAction.DO_NOTHING.name])
+        _unique_actions = {self.default_action.name}
+        _unique_actions.update({action.name for action in self.attribute_actions.values()})
+        no_actions = _unique_actions == {CryptoAction.DO_NOTHING.name}
         self.take_no_actions = no_actions  # attrs confuses pylint: disable=attribute-defined-outside-init
 
     def action(self, attribute_name):
@@ -222,8 +222,8 @@ class TableIndex(object):
     partition = attr.ib(validator=attr.validators.instance_of(six.string_types))
     sort = attr.ib(validator=attr.validators.optional(attr.validators.instance_of(six.string_types)), default=None)
 
-    def __init__(self, partition, sort=None):  # type: Text  # type: Optional[Text]  # noqa=D107
-        # type: (...) -> None
+    def __init__(self, partition, sort=None):
+        # type: (Text, Optional[Text]) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
         # https://github.com/python-attrs/attrs/issues/215

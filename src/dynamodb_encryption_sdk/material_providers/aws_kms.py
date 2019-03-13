@@ -86,8 +86,8 @@ class KeyInfo(object):
     algorithm = attr.ib(validator=attr.validators.instance_of(six.string_types))
     length = attr.ib(validator=attr.validators.instance_of(six.integer_types))
 
-    def __init__(self, description, algorithm, length):  # type: Text  # type: Text  # type: int  # noqa=D107
-        # type: (...) -> None
+    def __init__(self, description, algorithm, length):
+        # type: (Text, Text, int) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
         # https://github.com/python-attrs/attrs/issues/215
