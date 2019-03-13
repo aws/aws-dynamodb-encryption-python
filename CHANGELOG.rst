@@ -2,6 +2,14 @@
 Changelog
 *********
 
+1.1.0 -- 2019-03-13
+===================
+
+Features
+--------
+* Batch write operations via the high-level helper clients now return plaintext items in ``UnprocessedItems``.
+    `#107 <https://github.com/aws/aws-dynamodb-encryption-python/pull/107>`_
+
 1.0.7 -- 2018-01-16
 ===================
 
