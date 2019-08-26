@@ -437,6 +437,7 @@ def cycle_batch_item_check(
     check_attribute_actions = initial_actions.copy()
     check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
     items = _generate_items(initial_item, write_transformer)
+    items_in_table = len(items)
 
     _put_result = encrypted.batch_write_item(  # noqa
         RequestItems={table_name: [{"PutRequest": {"Item": _item}} for _item in items]}
@@ -458,9 +459,11 @@ def cycle_batch_item_check(
 
     if delete_items:
         _cleanup_items(encrypted, write_transformer, table_name)
+        items_in_table = 0
 
     del check_attribute_actions
     del items
+    return items_in_table
 
 
 def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initial_item):
@@ -692,16 +695,23 @@ def client_batch_items_unprocessed_check(
         )
 
 
-def client_cycle_batch_items_check_paginators(
+def client_cycle_batch_items_check_scan_paginator(
     materials_provider, initial_actions, initial_item, table_name, region_name=None
 ):
+    """Helper function for testing the "scan" paginator.
+
+    Populate the specified table with encrypted items,
+    scan the table with raw client paginator to get encrypted items,
+    scan the table with encrypted client paginator to get decrypted items,
+    then verify that all items appear to have been encrypted correctly.
+    """
     kwargs = {}
     if region_name is not None:
         kwargs["region_name"] = region_name
     client = boto3.client("dynamodb", **kwargs)
     e_client = EncryptedClient(client=client, materials_provider=materials_provider, attribute_actions=initial_actions)
 
-    cycle_batch_item_check(
+    items_in_table = cycle_batch_item_check(
         raw=client,
         encrypted=e_client,
         initial_actions=initial_actions,
@@ -722,8 +732,8 @@ def client_cycle_batch_items_check_paginators(
     for page in encrypted_paginator.paginate(TableName=table_name, ConsistentRead=True):
         decrypted_items.extend(page["Items"])
 
-    print(encrypted_items)
-    print(decrypted_items)
+    assert encrypted_items and decrypted_items
+    assert len(encrypted_items) == len(decrypted_items) == items_in_table
 
     check_attribute_actions = initial_actions.copy()
     check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
