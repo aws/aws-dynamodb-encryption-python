@@ -443,23 +443,24 @@ def cycle_batch_item_check(
         RequestItems={table_name: [{"PutRequest": {"Item": _item}} for _item in items]}
     )
 
-    ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
-    encrypted_result = raw.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
-    check_many_encrypted_items(
-        actual=encrypted_result["Responses"][table_name],
-        expected=items,
-        attribute_actions=check_attribute_actions,
-        transformer=read_transformer,
-    )
+    try:
+        ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
+        encrypted_result = raw.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
+        check_many_encrypted_items(
+            actual=encrypted_result["Responses"][table_name],
+            expected=items,
+            attribute_actions=check_attribute_actions,
+            transformer=read_transformer,
+        )
 
-    decrypted_result = encrypted.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
-    assert_equal_lists_of_items(
-        actual=decrypted_result["Responses"][table_name], expected=items, transformer=read_transformer
-    )
-
-    if delete_items:
-        _cleanup_items(encrypted, write_transformer, table_name)
-        items_in_table = 0
+        decrypted_result = encrypted.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
+        assert_equal_lists_of_items(
+            actual=decrypted_result["Responses"][table_name], expected=items, transformer=read_transformer
+        )
+    finally:
+        if delete_items:
+            _cleanup_items(encrypted, write_transformer, table_name)
+            items_in_table = 0
 
     del check_attribute_actions
     del items
@@ -722,29 +723,31 @@ def client_cycle_batch_items_check_scan_paginator(
         delete_items=False,
     )
 
-    encrypted_items = []
-    raw_paginator = client.get_paginator("scan")
-    for page in raw_paginator.paginate(TableName=table_name, ConsistentRead=True):
-        encrypted_items.extend(page["Items"])
+    try:
+        encrypted_items = []
+        raw_paginator = client.get_paginator("scan")
+        for page in raw_paginator.paginate(TableName=table_name, ConsistentRead=True):
+            encrypted_items.extend(page["Items"])
 
-    decrypted_items = []
-    encrypted_paginator = e_client.get_paginator("scan")
-    for page in encrypted_paginator.paginate(TableName=table_name, ConsistentRead=True):
-        decrypted_items.extend(page["Items"])
+        decrypted_items = []
+        encrypted_paginator = e_client.get_paginator("scan")
+        for page in encrypted_paginator.paginate(TableName=table_name, ConsistentRead=True):
+            decrypted_items.extend(page["Items"])
 
-    assert encrypted_items and decrypted_items
-    assert len(encrypted_items) == len(decrypted_items) == items_in_table
+        assert encrypted_items and decrypted_items
+        assert len(encrypted_items) == len(decrypted_items) == items_in_table
 
-    check_attribute_actions = initial_actions.copy()
-    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
-    check_many_encrypted_items(
-        actual=encrypted_items,
-        expected=decrypted_items,
-        attribute_actions=check_attribute_actions,
-        transformer=ddb_to_dict,
-    )
+        check_attribute_actions = initial_actions.copy()
+        check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+        check_many_encrypted_items(
+            actual=encrypted_items,
+            expected=decrypted_items,
+            attribute_actions=check_attribute_actions,
+            transformer=ddb_to_dict,
+        )
 
-    _cleanup_items(encrypted=e_client, write_transformer=dict_to_ddb, table_name=table_name)
+    finally:
+        _cleanup_items(encrypted=e_client, write_transformer=dict_to_ddb, table_name=table_name)
 
     raw_scan_result = client.scan(TableName=table_name, ConsistentRead=True)
     e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)
