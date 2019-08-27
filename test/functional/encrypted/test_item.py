@@ -38,7 +38,7 @@ pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 def pytest_generate_tests(metafunc):
     set_parametrized_actions(metafunc)
-    set_parametrized_cmp(metafunc)
+    set_parametrized_cmp(metafunc, require_attributes=False)
     set_parametrized_item(metafunc)
 
 
