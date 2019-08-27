@@ -29,7 +29,7 @@ from dynamodb_encryption_sdk.structures import CryptoAction, EncryptionContext, 
 from dynamodb_encryption_sdk.transform import dict_to_ddb
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Bool, Callable, Dict, Text  # noqa pylint: disable=unused-import
+    from typing import Any, Bool, Callable, Dict, Iterable, Text  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass
@@ -41,6 +41,7 @@ __all__ = (
     "crypto_config_from_cache",
     "decrypt_get_item",
     "decrypt_multi_get",
+    "decrypt_list_of_items",
     "decrypt_batch_get_item",
     "encrypt_put_item",
     "encrypt_batch_write_item",
@@ -171,6 +172,22 @@ def _item_transformer(crypto_transformer):
     return lambda x: x
 
 
+def decrypt_list_of_items(crypto_config, decrypt_method, items):
+    # type: (CryptoConfig, Callable, Iterable[Any]) -> Iterable[Any]
+    # TODO: narrow this down
+    """Iterate through a list of encrypted items, decrypting each item and yielding the plaintext item.
+
+    :param CryptoConfig crypto_config: :class:`CryptoConfig` to use
+    :param callable decrypt_method: Method to use to decrypt items
+    :param items: Iterable of encrypted items
+    :return: Iterable of plaintext items
+    """
+    for value in items:
+        yield decrypt_method(
+            item=value, crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(value))
+        )
+
+
 def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwargs):
     # type: (Callable, Callable, Callable, **Any) -> Dict
     # TODO: narrow this down
@@ -186,11 +203,9 @@ def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwarg
     validate_get_arguments(kwargs)
     crypto_config, ddb_kwargs = crypto_config_method(**kwargs)
     response = read_method(**ddb_kwargs)
-    for pos in range(len(response["Items"])):
-        response["Items"][pos] = decrypt_method(
-            item=response["Items"][pos],
-            crypto_config=crypto_config.with_item(_item_transformer(decrypt_method)(response["Items"][pos])),
-        )
+    response["Items"] = list(
+        decrypt_list_of_items(crypto_config=crypto_config, decrypt_method=decrypt_method, items=response["Items"])
+    )
     return response
 
 

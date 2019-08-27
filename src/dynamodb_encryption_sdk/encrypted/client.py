@@ -22,6 +22,7 @@ from dynamodb_encryption_sdk.internal.utils import (
     crypto_config_from_kwargs,
     decrypt_batch_get_item,
     decrypt_get_item,
+    decrypt_list_of_items,
     decrypt_multi_get,
     encrypt_batch_write_item,
     encrypt_put_item,
@@ -104,8 +105,11 @@ class EncryptedPaginator(object):
         crypto_config, ddb_kwargs = self._crypto_config_method(**kwargs)
 
         for page in self._paginator.paginate(**ddb_kwargs):
-            for pos, value in enumerate(page["Items"]):
-                page["Items"][pos] = self._decrypt_method(item=value, crypto_config=crypto_config)
+            page["Items"] = list(
+                decrypt_list_of_items(
+                    crypto_config=crypto_config, decrypt_method=self._decrypt_method, items=page["Items"]
+                )
+            )
             yield page
 
 
