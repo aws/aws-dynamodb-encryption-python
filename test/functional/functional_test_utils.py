@@ -290,10 +290,7 @@ def _all_possible_cmps(algorithm_generator, require_attributes):
         else:
             outer_cmp = inner_cmp
 
-        yield pytest.param(
-            outer_cmp,
-            id=id_string,
-        )
+        yield pytest.param(outer_cmp, id=id_string)
 
 
 def set_parametrized_cmp(metafunc, require_attributes=True):
