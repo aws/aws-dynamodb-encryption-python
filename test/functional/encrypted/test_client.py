@@ -71,8 +71,8 @@ def test_ephemeral_batch_item_cycle(example_table, some_cmps, parametrized_actio
     _client_cycle_batch_items_check(some_cmps, parametrized_actions, parametrized_item)
 
 
-def test_ephemeral_batch_item_cycle_paginators(example_table, some_cmps, parametrized_actions, parametrized_item):
-    """Test a small number of curated CMPs against a small number of curated items using paginators."""
+def test_ephemeral_batch_item_cycle_scan_paginator(example_table, some_cmps, parametrized_actions, parametrized_item):
+    """Test a small number of curated CMPs against a small number of curated items using the scan paginator."""
     _client_cycle_batch_items_check_scan_paginator(some_cmps, parametrized_actions, parametrized_item)
 
 
