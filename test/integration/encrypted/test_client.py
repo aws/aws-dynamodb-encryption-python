@@ -54,3 +54,17 @@ def test_ephemeral_batch_item_cycle_kms(ddb_table_name, aws_kms_cmp, parametrize
     functional_test_utils.client_cycle_batch_items_check(
         aws_kms_cmp, parametrized_actions, parametrized_item, ddb_table_name
     )
+
+
+def test_ephemeral_batch_item_cycle_scan_paginator(ddb_table_name, some_cmps, parametrized_actions, parametrized_item):
+    """Test a small number of curated CMPs against a small number of curated items using the scan paginator."""
+    functional_test_utils.client_cycle_batch_items_check_scan_paginator(
+        some_cmps, parametrized_actions, parametrized_item, ddb_table_name
+    )
+
+
+def test_ephemeral_batch_item_cycle_scan_paginator_kms(ddb_table_name, aws_kms_cmp, parametrized_actions, parametrized_item):
+    """Test a the AWS KMS CMP against a small number of curated items using the scan paginator."""
+    functional_test_utils.client_cycle_batch_items_check_scan_paginator(
+        aws_kms_cmp, parametrized_actions, parametrized_item, ddb_table_name
+    )
