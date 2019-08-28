@@ -14,9 +14,9 @@
 import pytest
 
 from ..integration_test_utils import (  # noqa pylint: disable=unused-import
-    aws_kms_cmp,
     ddb_table_name,
     functional_test_utils,
+    set_parameterized_kms_cmps,
 )
 
 pytestmark = [pytest.mark.integ, pytest.mark.ddb_integ]
@@ -26,6 +26,7 @@ def pytest_generate_tests(metafunc):
     functional_test_utils.set_parametrized_actions(metafunc)
     functional_test_utils.set_parametrized_cmp(metafunc)
     functional_test_utils.set_parametrized_item(metafunc)
+    set_parameterized_kms_cmps(metafunc)
 
 
 def test_ephemeral_batch_item_cycle(ddb_table_name, some_cmps, parametrized_actions, parametrized_item):
@@ -35,8 +36,8 @@ def test_ephemeral_batch_item_cycle(ddb_table_name, some_cmps, parametrized_acti
     )
 
 
-def test_ephemeral_batch_item_cycle_kms(ddb_table_name, aws_kms_cmp, parametrized_actions, parametrized_item):
+def test_ephemeral_batch_item_cycle_kms(ddb_table_name, all_aws_kms_cmps, parametrized_actions, parametrized_item):
     """Test the AWS KMS CMP against a small number of curated items."""
     functional_test_utils.resource_cycle_batch_items_check(
-        aws_kms_cmp, parametrized_actions, parametrized_item, ddb_table_name
+        all_aws_kms_cmps, parametrized_actions, parametrized_item, ddb_table_name
     )

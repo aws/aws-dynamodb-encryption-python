@@ -34,12 +34,14 @@ from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
+from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentProvider
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
+from dynamodb_encryption_sdk.materials import CryptographicMaterials
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
-from dynamodb_encryption_sdk.structures import AttributeActions
+from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
 from dynamodb_encryption_sdk.transform import ddb_to_dict, dict_to_ddb
 
 RUNNING_IN_TRAVIS = "TRAVIS" in os.environ
@@ -164,6 +166,38 @@ def table_with_global_secondary_indexes():
     mock_dynamodb2().stop()
 
 
+class PassThroughCryptographicMaterialsProviderThatRequiresAttributes(CryptographicMaterialsProvider):
+    """Cryptographic materials provider that passes through to another, but requires that attributes are set.
+
+    If the EncryptionContext passed to decryption_materials or encryption_materials
+    ever does not have attributes set,
+    a ValueError is raised.
+    Otherwise, it passes through to the passthrough CMP normally.
+    """
+
+    def __init__(self, passthrough_cmp):
+        self._passthrough_cmp = passthrough_cmp
+
+    def _assert_attributes_set(self, encryption_context):
+        # type: (EncryptionContext) -> None
+        if not encryption_context.attributes:
+            raise ValueError("Encryption context attributes MUST be set!")
+
+    def decryption_materials(self, encryption_context):
+        # type: (EncryptionContext) -> CryptographicMaterials
+        self._assert_attributes_set(encryption_context)
+        return self._passthrough_cmp.decryption_materials(encryption_context)
+
+    def encryption_materials(self, encryption_context):
+        # type: (EncryptionContext) -> CryptographicMaterials
+        self._assert_attributes_set(encryption_context)
+        return self._passthrough_cmp.encryption_materials(encryption_context)
+
+    def refresh(self):
+        # type: () -> None
+        self._passthrough_cmp.refresh()
+
+
 def _get_from_cache(dk_class, algorithm, key_length):
     """Don't generate new keys every time. All we care about is that they are valid keys, not that they are unique."""
     try:
@@ -221,8 +255,15 @@ def _some_algorithm_pairs():
 _cmp_builders = {"static": build_static_jce_cmp, "wrapped": _build_wrapped_jce_cmp}
 
 
-def _all_possible_cmps(algorithm_generator):
-    """Generate all possible cryptographic materials providers based on the supplied generator."""
+def _all_possible_cmps(algorithm_generator, require_attributes):
+    """Generate all possible cryptographic materials providers based on the supplied generator.
+
+    require_attributes determines whether the CMP will be wrapped in
+    PassThroughCryptographicMaterialsProviderThatRequiresAttributes
+    to require that attributes are set on every request.
+    This should ONLY be disabled on the item encryptor tests.
+    All high-level helper clients MUST set the attributes before passing the encryption context down.
+    """
     # The AES combinations do the same thing, but this makes sure that the AESWrap name works as expected.
     yield _build_wrapped_jce_cmp("AESWrap", 256, "HmacSHA256", 256)
 
@@ -242,17 +283,28 @@ def _all_possible_cmps(algorithm_generator):
             sig_key_length=signing_key_length,
         )
 
-        yield pytest.param(
-            builder_func(encryption_algorithm, encryption_key_length, signing_algorithm, signing_key_length),
-            id=id_string,
-        )
+        inner_cmp = builder_func(encryption_algorithm, encryption_key_length, signing_algorithm, signing_key_length)
+
+        if require_attributes:
+            outer_cmp = PassThroughCryptographicMaterialsProviderThatRequiresAttributes(inner_cmp)
+        else:
+            outer_cmp = inner_cmp
+
+        yield pytest.param(outer_cmp, id=id_string)
 
 
-def set_parametrized_cmp(metafunc):
-    """Set paramatrized values for cryptographic materials providers."""
+def set_parametrized_cmp(metafunc, require_attributes=True):
+    """Set paramatrized values for cryptographic materials providers.
+
+    require_attributes determines whether the CMP will be wrapped in
+    PassThroughCryptographicMaterialsProviderThatRequiresAttributes
+    to require that attributes are set on every request.
+    This should ONLY be disabled on the item encryptor tests.
+    All high-level helper clients MUST set the attributes before passing the encryption context down.
+    """
     for name, algorithm_generator in (("all_the_cmps", _all_algorithm_pairs), ("some_cmps", _some_algorithm_pairs)):
         if name in metafunc.fixturenames:
-            metafunc.parametrize(name, _all_possible_cmps(algorithm_generator))
+            metafunc.parametrize(name, _all_possible_cmps(algorithm_generator, require_attributes))
 
 
 _ACTIONS = {
@@ -437,30 +489,34 @@ def cycle_batch_item_check(
     check_attribute_actions = initial_actions.copy()
     check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
     items = _generate_items(initial_item, write_transformer)
+    items_in_table = len(items)
 
     _put_result = encrypted.batch_write_item(  # noqa
         RequestItems={table_name: [{"PutRequest": {"Item": _item}} for _item in items]}
     )
 
-    ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
-    encrypted_result = raw.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
-    check_many_encrypted_items(
-        actual=encrypted_result["Responses"][table_name],
-        expected=items,
-        attribute_actions=check_attribute_actions,
-        transformer=read_transformer,
-    )
+    try:
+        ddb_keys = [write_transformer(key) for key in TEST_BATCH_KEYS]
+        encrypted_result = raw.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
+        check_many_encrypted_items(
+            actual=encrypted_result["Responses"][table_name],
+            expected=items,
+            attribute_actions=check_attribute_actions,
+            transformer=read_transformer,
+        )
 
-    decrypted_result = encrypted.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
-    assert_equal_lists_of_items(
-        actual=decrypted_result["Responses"][table_name], expected=items, transformer=read_transformer
-    )
-
-    if delete_items:
-        _cleanup_items(encrypted, write_transformer, table_name)
+        decrypted_result = encrypted.batch_get_item(RequestItems={table_name: {"Keys": ddb_keys}})
+        assert_equal_lists_of_items(
+            actual=decrypted_result["Responses"][table_name], expected=items, transformer=read_transformer
+        )
+    finally:
+        if delete_items:
+            _cleanup_items(encrypted, write_transformer, table_name)
+            items_in_table = 0
 
     del check_attribute_actions
     del items
+    return items_in_table
 
 
 def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initial_item):
@@ -692,16 +748,23 @@ def client_batch_items_unprocessed_check(
         )
 
 
-def client_cycle_batch_items_check_paginators(
+def client_cycle_batch_items_check_scan_paginator(
     materials_provider, initial_actions, initial_item, table_name, region_name=None
 ):
+    """Helper function for testing the "scan" paginator.
+
+    Populate the specified table with encrypted items,
+    scan the table with raw client paginator to get encrypted items,
+    scan the table with encrypted client paginator to get decrypted items,
+    then verify that all items appear to have been encrypted correctly.
+    """
     kwargs = {}
     if region_name is not None:
         kwargs["region_name"] = region_name
     client = boto3.client("dynamodb", **kwargs)
     e_client = EncryptedClient(client=client, materials_provider=materials_provider, attribute_actions=initial_actions)
 
-    cycle_batch_item_check(
+    items_in_table = cycle_batch_item_check(
         raw=client,
         encrypted=e_client,
         initial_actions=initial_actions,
@@ -712,29 +775,31 @@ def client_cycle_batch_items_check_paginators(
         delete_items=False,
     )
 
-    encrypted_items = []
-    raw_paginator = client.get_paginator("scan")
-    for page in raw_paginator.paginate(TableName=table_name, ConsistentRead=True):
-        encrypted_items.extend(page["Items"])
+    try:
+        encrypted_items = []
+        raw_paginator = client.get_paginator("scan")
+        for page in raw_paginator.paginate(TableName=table_name, ConsistentRead=True):
+            encrypted_items.extend(page["Items"])
 
-    decrypted_items = []
-    encrypted_paginator = e_client.get_paginator("scan")
-    for page in encrypted_paginator.paginate(TableName=table_name, ConsistentRead=True):
-        decrypted_items.extend(page["Items"])
+        decrypted_items = []
+        encrypted_paginator = e_client.get_paginator("scan")
+        for page in encrypted_paginator.paginate(TableName=table_name, ConsistentRead=True):
+            decrypted_items.extend(page["Items"])
 
-    print(encrypted_items)
-    print(decrypted_items)
+        assert encrypted_items and decrypted_items
+        assert len(encrypted_items) == len(decrypted_items) == items_in_table
 
-    check_attribute_actions = initial_actions.copy()
-    check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
-    check_many_encrypted_items(
-        actual=encrypted_items,
-        expected=decrypted_items,
-        attribute_actions=check_attribute_actions,
-        transformer=ddb_to_dict,
-    )
+        check_attribute_actions = initial_actions.copy()
+        check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
+        check_many_encrypted_items(
+            actual=encrypted_items,
+            expected=decrypted_items,
+            attribute_actions=check_attribute_actions,
+            transformer=ddb_to_dict,
+        )
 
-    _cleanup_items(encrypted=e_client, write_transformer=dict_to_ddb, table_name=table_name)
+    finally:
+        _cleanup_items(encrypted=e_client, write_transformer=dict_to_ddb, table_name=table_name)
 
     raw_scan_result = client.scan(TableName=table_name, ConsistentRead=True)
     e_scan_result = e_client.scan(TableName=table_name, ConsistentRead=True)

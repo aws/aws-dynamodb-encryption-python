@@ -48,9 +48,15 @@ def cmk_arn():
     return cmk_arn_value()
 
 
-@pytest.fixture
-def aws_kms_cmp():
-    return AwsKmsCryptographicMaterialsProvider(key_id=cmk_arn_value())
+def set_parameterized_kms_cmps(metafunc, require_attributes=True):
+    inner_cmp = AwsKmsCryptographicMaterialsProvider(key_id=cmk_arn_value())
+    if require_attributes:
+        outer_cmp = functional_test_utils.PassThroughCryptographicMaterialsProviderThatRequiresAttributes(inner_cmp)
+    else:
+        outer_cmp = inner_cmp
+
+    if "all_aws_kms_cmps" in metafunc.fixturenames:
+        metafunc.parametrize("all_aws_kms_cmps", (pytest.param(outer_cmp, id="Standard KMS CMP"),))
 
 
 @pytest.fixture
