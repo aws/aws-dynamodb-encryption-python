@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 """Helper utilities for integration tests."""
 import os
+from functools import partial
 
 import pytest
 
@@ -48,15 +49,21 @@ def cmk_arn():
     return cmk_arn_value()
 
 
-def set_parameterized_kms_cmps(metafunc, require_attributes=True):
+def _build_kms_cmp(require_attributes):
     inner_cmp = AwsKmsCryptographicMaterialsProvider(key_id=cmk_arn_value())
     if require_attributes:
-        outer_cmp = functional_test_utils.PassThroughCryptographicMaterialsProviderThatRequiresAttributes(inner_cmp)
+        return functional_test_utils.PassThroughCryptographicMaterialsProviderThatRequiresAttributes(inner_cmp)
     else:
-        outer_cmp = inner_cmp
+        return inner_cmp
 
-    if "all_aws_kms_cmps" in metafunc.fixturenames:
-        metafunc.parametrize("all_aws_kms_cmps", (pytest.param(outer_cmp, id="Standard KMS CMP"),))
+
+def set_parameterized_kms_cmps(metafunc, require_attributes=True):
+
+    if "all_aws_kms_cmp_builders" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "all_aws_kms_cmp_builders",
+            (pytest.param(partial(_build_kms_cmp, require_attributes), id="Standard KMS CMP"),),
+        )
 
 
 @pytest.fixture
