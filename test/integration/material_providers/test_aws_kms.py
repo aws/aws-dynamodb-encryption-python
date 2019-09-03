@@ -36,10 +36,10 @@ def pytest_generate_tests(metafunc):
     set_parameterized_kms_cmps(metafunc, require_attributes=False)
 
 
-def test_verify_user_agent(all_aws_kms_cmps, caplog):
+def test_verify_user_agent(all_aws_kms_cmp_builders, caplog):
     caplog.set_level(level=logging.DEBUG)
 
-    all_aws_kms_cmps.encryption_materials(EncryptionContext())
+    all_aws_kms_cmp_builders().encryption_materials(EncryptionContext())
 
     assert USER_AGENT_SUFFIX in caplog.text
 
@@ -54,10 +54,10 @@ def _many_items():
 
 
 @pytest.mark.parametrize("item", _many_items())
-def test_aws_kms_diverse_indexes(all_aws_kms_cmps, item):
+def test_aws_kms_diverse_indexes(all_aws_kms_cmp_builders, item):
     """Verify that AWS KMS cycle works for items with all possible combinations for primary index attribute types."""
     crypto_config = CryptoConfig(
-        materials_provider=all_aws_kms_cmps,
+        materials_provider=all_aws_kms_cmp_builders(),
         encryption_context=EncryptionContext(
             partition_key_name="partition_key", sort_key_name="sort_key", attributes=dict_to_ddb(item)
         ),
@@ -68,9 +68,9 @@ def test_aws_kms_diverse_indexes(all_aws_kms_cmps, item):
     functional_test_utils.cycle_item_check(item, crypto_config)
 
 
-def test_aws_kms_item_cycle(all_aws_kms_cmps, parametrized_actions, parametrized_item):
+def test_aws_kms_item_cycle(all_aws_kms_cmp_builders, parametrized_actions, parametrized_item):
     crypto_config = CryptoConfig(
-        materials_provider=all_aws_kms_cmps,
+        materials_provider=all_aws_kms_cmp_builders(),
         encryption_context=EncryptionContext(),
         attribute_actions=parametrized_actions,
     )
@@ -80,9 +80,9 @@ def test_aws_kms_item_cycle(all_aws_kms_cmps, parametrized_actions, parametrized
 @pytest.mark.slow
 @hypothesis_strategies.SLOW_SETTINGS
 @hypothesis.given(item=hypothesis_strategies.ddb_items)
-def test_aws_kms_item_cycle_hypothesis_slow(all_aws_kms_cmps, hypothesis_actions, item):
+def test_aws_kms_item_cycle_hypothesis_slow(all_aws_kms_cmp_builders, hypothesis_actions, item):
     crypto_config = CryptoConfig(
-        materials_provider=all_aws_kms_cmps,
+        materials_provider=all_aws_kms_cmp_builders(),
         encryption_context=EncryptionContext(),
         attribute_actions=hypothesis_actions,
     )
@@ -92,9 +92,9 @@ def test_aws_kms_item_cycle_hypothesis_slow(all_aws_kms_cmps, hypothesis_actions
 @pytest.mark.veryslow
 @hypothesis_strategies.VERY_SLOW_SETTINGS
 @hypothesis.given(item=hypothesis_strategies.ddb_items)
-def test_aws_kms_item_cycle_hypothesis_veryslow(all_aws_kms_cmps, hypothesis_actions, item):
+def test_aws_kms_item_cycle_hypothesis_veryslow(all_aws_kms_cmp_builders, hypothesis_actions, item):
     crypto_config = CryptoConfig(
-        materials_provider=all_aws_kms_cmps,
+        materials_provider=all_aws_kms_cmp_builders(),
         encryption_context=EncryptionContext(),
         attribute_actions=hypothesis_actions,
     )

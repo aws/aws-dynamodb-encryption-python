@@ -41,6 +41,8 @@ def test_ephemeral_item_cycle_batch_writer(ddb_table_name, some_cmps, parametriz
     )
 
 
-def test_ephemeral_item_cycle_kms(ddb_table_name, all_aws_kms_cmps, parametrized_actions, parametrized_item):
+def test_ephemeral_item_cycle_kms(ddb_table_name, all_aws_kms_cmp_builders, parametrized_actions, parametrized_item):
     """Test the AWS KMS CMP against a small number of curated items."""
-    functional_test_utils.table_cycle_check(all_aws_kms_cmps, parametrized_actions, parametrized_item, ddb_table_name)
+    functional_test_utils.table_cycle_check(
+        all_aws_kms_cmp_builders(), parametrized_actions, parametrized_item, ddb_table_name
+    )
