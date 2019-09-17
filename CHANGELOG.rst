@@ -2,6 +2,14 @@
 Changelog
 *********
 
+1.1.2 -- 2019-09-??
+===================
+
+Bugfixes
+--------
+* Fix :class:`AwsKmsCryptographicMaterialsProvider` regional clients override bug
+  `#124 <https://github.com/aws/aws-dynamodb-encryption-python/issues/124>`_
+
 1.1.1 -- 2019-08-29
 ===================
 
