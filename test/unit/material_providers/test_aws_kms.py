@@ -32,6 +32,8 @@ from dynamodb_encryption_sdk.material_providers.aws_kms import (
 )
 from dynamodb_encryption_sdk.structures import EncryptionContext
 
+from ..unit_test_utils import all_possible_combinations_kwargs
+
 pytestmark = [pytest.mark.unit, pytest.mark.local]
 
 _VALID_KEY_INFO_KWARGS = dict(description="some string", algorithm="algorithm name", length=1234)
@@ -216,6 +218,36 @@ def test_loaded_key_infos():
     assert cmp._content_key_info == KeyInfo.from_description(_DEFAULT_CONTENT_ENCRYPTION_ALGORITHM)
     assert cmp._signing_key_info == KeyInfo.from_description(_DEFAULT_SIGNING_ALGORITHM)
     assert cmp._regional_clients == {}
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        pytest.param(val, id=str(val))
+        for val in all_possible_combinations_kwargs(
+            dict(),
+            dict(botocore_session=botocore.session.Session()),
+            dict(grant_tokens=("sdvoaweih", "auwshefiouawh")),
+            dict(material_description={"asoiufeoia": "soajfijewi"}),
+            dict(
+                regional_clients={
+                    "my-region-1": boto3.session.Session().client("kms", endpoint_url="https://not-a-real-url")
+                }
+            ),
+        )
+    ],
+)
+def test_kms_cmp_values_set(kwargs):
+    cmp = AwsKmsCryptographicMaterialsProvider(key_id="example_key_id", **kwargs)
+
+    assert cmp._key_id == "example_key_id"
+
+    if "botocore_session" in kwargs:
+        assert cmp._botocore_session == kwargs["botocore_session"]
+
+    assert cmp._grant_tokens == kwargs.get("grant_tokens", ())
+    assert cmp._material_description == kwargs.get("material_description", {})
+    assert cmp._regional_clients == kwargs.get("regional_clients", {})
 
 
 def test_add_regional_client_known_region(default_kms_cmp, patch_boto3_session):
