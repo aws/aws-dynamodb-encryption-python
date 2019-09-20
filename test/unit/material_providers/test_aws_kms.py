@@ -231,7 +231,9 @@ def test_loaded_key_infos():
             dict(material_description={"asoiufeoia": "soajfijewi"}),
             dict(
                 regional_clients={
-                    "my-region-1": boto3.session.Session().client("kms", endpoint_url="https://not-a-real-url")
+                    "my-region-1": boto3.session.Session().client(
+                        "kms", region_name="not-a-real-region", endpoint_url="https://not-a-real-url"
+                    )
                 }
             ),
         )
