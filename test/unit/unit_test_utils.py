@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Helper utilities for unit tests."""
+import itertools
+
 import pytest
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
@@ -25,3 +27,16 @@ def wrapped_cmp():
         signing_key=signing_key, wrapping_key=wrapping_key, unwrapping_key=wrapping_key
     )
     return cmp
+
+
+def all_possible_combinations(*base_values):
+    combinations = [itertools.combinations(base_values, i) for i in range(1, len(base_values) + 1)]
+    return itertools.chain(*combinations)
+
+
+def all_possible_combinations_kwargs(*base_values):
+    for combo in all_possible_combinations(*base_values):
+        kwargs = {}
+        for values in combo:
+            kwargs.update(values)
+        yield kwargs
