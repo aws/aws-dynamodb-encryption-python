@@ -39,7 +39,7 @@ def encrypt_item(table_name, aws_cmk_id):
     plaintext_item.update(index_key)
 
     # Create a normal table resource.
-    table = boto3.resource("dynamodb").Table(table_name)
+    table = boto3.resource("dynamodb").Table(table_name)  # generated code confuse pylint: disable=no-member
     # Create a crypto materials provider using the specified AWS KMS key.
     aws_kms_cmp = AwsKmsCryptographicMaterialsProvider(key_id=aws_cmk_id)
     # Create attribute actions that tells the encrypted table to encrypt all attributes except one.

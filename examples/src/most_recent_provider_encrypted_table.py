@@ -41,7 +41,7 @@ def encrypt_item(table_name, aws_cmk_id, meta_table_name, material_name):
     plaintext_item.update(index_key)
 
     # Create a normal table resource for the meta store.
-    meta_table = boto3.resource("dynamodb").Table(meta_table_name)
+    meta_table = boto3.resource("dynamodb").Table(meta_table_name)  # generated code confuse pylint: disable=no-member
     # Create a crypto materials provider for the meta store using the specified AWS KMS key.
     aws_kms_cmp = AwsKmsCryptographicMaterialsProvider(key_id=aws_cmk_id)
     # Create a meta store using the AWS KMS crypto materials provider.
@@ -53,7 +53,7 @@ def encrypt_item(table_name, aws_cmk_id, meta_table_name, material_name):
         version_ttl=600.0,  # Check for a new material version every five minutes.
     )
     # Create a normal table resource.
-    table = boto3.resource("dynamodb").Table(table_name)
+    table = boto3.resource("dynamodb").Table(table_name)  # generated code confuse pylint: disable=no-member
     # Create attribute actions that tells the encrypted table to encrypt all attributes except one.
     actions = AttributeActions(
         default_action=CryptoAction.ENCRYPT_AND_SIGN, attribute_actions={"leave me": CryptoAction.DO_NOTHING}

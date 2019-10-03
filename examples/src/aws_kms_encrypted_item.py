@@ -41,7 +41,7 @@ def encrypt_item(table_name, aws_cmk_id):
     plaintext_item.update(index_key)
 
     # Create a normal table resource.
-    table = boto3.resource("dynamodb").Table(table_name)
+    table = boto3.resource("dynamodb").Table(table_name)  # generated code confuse pylint: disable=no-member
 
     # Use the TableInfo helper to collect information about the indexes.
     table_info = TableInfo(name=table_name)

@@ -2,13 +2,15 @@
 Changelog
 *********
 
-1.1.2 -- 2019-09-??
+1.1.2 -- 2019-10-??
 ===================
 
 Bugfixes
 --------
 * Fix :class:`AwsKmsCryptographicMaterialsProvider` regional clients override bug
   `#124 <https://github.com/aws/aws-dynamodb-encryption-python/issues/124>`_
+* Remove ``attributes`` attribute from :class:`EncryptionContext` ``str`` and ``repr`` values.
+  `#127 <https://github.com/aws/aws-dynamodb-encryption-python/issues/127>`_
 
 1.1.1 -- 2019-08-29
 ===================
