@@ -64,7 +64,9 @@ def encrypt_batch_items(table_name, aws_cmk_id):
     )
 
     # Get the encrypted item using the standard service resource.
-    encrypted_items = resource.batch_get_item(RequestItems={table_name: {"Keys": index_keys}})["Responses"][table_name]
+    encrypted_items = resource.batch_get_item(  # generated code confuse pylint: disable=no-member
+        RequestItems={table_name: {"Keys": index_keys}}
+    )["Responses"][table_name]
 
     # Get the item using the encrypted service resource, transparently decyrpting it.
     decrypted_items = encrypted_resource.batch_get_item(RequestItems={table_name: {"Keys": index_keys}})["Responses"][

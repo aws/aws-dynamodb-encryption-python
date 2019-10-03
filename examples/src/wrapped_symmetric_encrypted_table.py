@@ -40,7 +40,7 @@ def encrypt_item(table_name, aes_wrapping_key_bytes, hmac_signing_key_bytes):
     plaintext_item.update(index_key)
 
     # Create a normal table resource.
-    table = boto3.resource("dynamodb").Table(table_name)
+    table = boto3.resource("dynamodb").Table(table_name)  # generated code confuse pylint: disable=no-member
     # Create a crypto materials provider using the provided wrapping and signing keys.
     wrapping_key = JceNameLocalDelegatedKey(
         key=aes_wrapping_key_bytes,

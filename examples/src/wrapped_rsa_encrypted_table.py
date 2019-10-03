@@ -40,7 +40,7 @@ def encrypt_item(table_name, rsa_wrapping_private_key_bytes, rsa_signing_private
     plaintext_item.update(index_key)
 
     # Create a normal table resource.
-    table = boto3.resource("dynamodb").Table(table_name)
+    table = boto3.resource("dynamodb").Table(table_name)  # generated code confuse pylint: disable=no-member
     # Create a crypto materials provider using the provided wrapping and signing keys.
     # We show private keys used here, but public keys could be used as well, allowing
     # only wrapping or signature verification.
