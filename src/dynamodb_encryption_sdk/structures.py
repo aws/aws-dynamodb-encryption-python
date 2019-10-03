@@ -68,6 +68,7 @@ class EncryptionContext(object):
         validator=attr.validators.optional(attr.validators.instance_of(six.string_types)), default=None
     )
     attributes = attr.ib(
+        repr=False,
         validator=(dictionary_validator(six.string_types, dict), _validate_attribute_values_are_ddb_items),
         default=attr.Factory(dict),
     )
