@@ -22,7 +22,7 @@ cryptography==2.7
 DateTime==4.3
 docker==4.0.2
 docutils==0.15.2
-ecdsa==0.13.2
+ecdsa==0.13.3
 enum34==1.1.6
 execnet==1.7.0
 funcsigs==1.0.2
