@@ -2,13 +2,16 @@
 Changelog
 *********
 
-1.1.2 -- 2019-10-??
+1.2.0 -- 2019-10-10
 ===================
 
 Bugfixes
 --------
 * Fix :class:`AwsKmsCryptographicMaterialsProvider` regional clients override bug
   `#124 <https://github.com/aws/aws-dynamodb-encryption-python/issues/124>`_
+  **NOTE: It is possible that this is a breaking change for you,
+  depending on how you are re-using any custom botocore sessions
+  that you provide to AwsKmsCryptographicMaterialsProvider.**
 * Remove ``attributes`` attribute from :class:`EncryptionContext` ``str`` and ``repr`` values.
   `#127 <https://github.com/aws/aws-dynamodb-encryption-python/issues/127>`_
 
