@@ -1,0 +1,5 @@
+name: Local Tests
+
+# For now, just run these on every PR for consistency.
+# Later we'll probably move these to only run on promotion PRs.
+on: [pull_request]

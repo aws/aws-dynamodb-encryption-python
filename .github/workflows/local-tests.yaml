@@ -1,0 +1,3 @@
+name: Local Tests
+
+on: [pull_request]

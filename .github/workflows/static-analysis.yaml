@@ -1,0 +1,3 @@
+name: Static Analysis Checks
+
+on: [pull_request]
