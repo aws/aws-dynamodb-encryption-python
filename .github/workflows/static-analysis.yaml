@@ -1,0 +1,39 @@
+name: Static Analysis Checks
+
+on: [pull_request]
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        category:
+          - bandit
+          - doc8
+          - readme
+          - docs
+          - flake8-examples
+          - pylint-examples
+          # Disabled pending completion of cleanup
+          # https://github.com/aws/aws-dynamodb-encryption-python/issues/67
+#          - flake8
+#          - pylint
+#          - flake8-tests
+#          - pylint-tests
+          # Disabled pending completion of integration
+          # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
+#          - mypy-py2
+#          - mypy-py3
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.x
+      - run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade tox
+      - name: check
+        env:
+          TOXENV: ${{ matrix.category }}
+        run: tox -- -vv
