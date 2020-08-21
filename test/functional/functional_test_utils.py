@@ -178,7 +178,8 @@ class PassThroughCryptographicMaterialsProviderThatRequiresAttributes(Cryptograp
     def __init__(self, passthrough_cmp):
         self._passthrough_cmp = passthrough_cmp
 
-    def _assert_attributes_set(self, encryption_context):
+    @staticmethod
+    def _assert_attributes_set(encryption_context):
         # type: (EncryptionContext) -> None
         if not encryption_context.attributes:
             raise ValueError("Encryption context attributes MUST be set!")
@@ -386,7 +387,7 @@ def diverse_item():
     return copy.deepcopy(base_item)
 
 
-_reserved_attributes = set([attr.value for attr in ReservedAttributes])
+_reserved_attributes = {attr.value for attr in ReservedAttributes}
 
 
 def return_requestitems_as_unprocessed(*args, **kwargs):
@@ -529,7 +530,7 @@ def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initia
         for item in items:
             writer.put_item(item)
 
-    ddb_keys = [key for key in TEST_BATCH_KEYS]
+    ddb_keys = TEST_BATCH_KEYS.copy()
     encrypted_items = [raw_table.get_item(Key=key, ConsistentRead=True)["Item"] for key in ddb_keys]
     check_many_encrypted_items(
         actual=encrypted_items, expected=items, attribute_actions=check_attribute_actions, transformer=_nop_transformer
@@ -756,6 +757,7 @@ def client_cycle_batch_items_check_scan_paginator(
     scan the table with encrypted client paginator to get decrypted items,
     then verify that all items appear to have been encrypted correctly.
     """  # noqa=D401
+    # pylint: disable=too-many-locals
     kwargs = {}
     if region_name is not None:
         kwargs["region_name"] = region_name

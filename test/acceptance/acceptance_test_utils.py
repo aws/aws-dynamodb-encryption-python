@@ -159,12 +159,12 @@ def _meta_table_prep(table_name, items_filename):
         table_data = json.load(f)
     request_items = {}
 
-    for table_name, items in table_data.items():
+    for this_table_name, items in table_data.items():
         requests = []
         for item in items:
             _decode_item(item)
             requests.append({"PutRequest": {"Item": item}})
-        request_items[table_name] = requests
+        request_items[this_table_name] = requests
     client.batch_write_item(RequestItems=request_items)
 
 

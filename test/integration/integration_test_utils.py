@@ -54,8 +54,8 @@ def _build_kms_cmp(require_attributes):
     inner_cmp = AwsKmsCryptographicMaterialsProvider(key_id=cmk_arn_value())
     if require_attributes:
         return functional_test_utils.PassThroughCryptographicMaterialsProviderThatRequiresAttributes(inner_cmp)
-    else:
-        return inner_cmp
+
+    return inner_cmp
 
 
 def set_parameterized_kms_cmps(metafunc, require_attributes=True):
