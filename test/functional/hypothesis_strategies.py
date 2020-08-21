@@ -22,7 +22,6 @@ SLOW_SETTINGS = hypothesis.settings(
     suppress_health_check=(
         hypothesis.HealthCheck.too_slow,
         hypothesis.HealthCheck.data_too_large,
-        hypothesis.HealthCheck.hung_test,
         hypothesis.HealthCheck.large_base_example,
     ),
     deadline=None,
