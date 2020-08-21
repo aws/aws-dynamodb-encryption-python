@@ -520,9 +520,7 @@ def cycle_batch_item_check(
 
 
 def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initial_item):
-    """Check that cycling (plaintext->encrypted->decrypted) items with the Table batch writer
-    has the expected results.
-    """
+    """Cycling (plaintext->encrypted->decrypted) items with the Table batch writer should have the expected results."""
     check_attribute_actions = initial_actions.copy()
     check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
     items = _generate_items(initial_item, _nop_transformer)
@@ -757,7 +755,7 @@ def client_cycle_batch_items_check_scan_paginator(
     scan the table with raw client paginator to get encrypted items,
     scan the table with encrypted client paginator to get decrypted items,
     then verify that all items appear to have been encrypted correctly.
-    """
+    """  # noqa=D401
     kwargs = {}
     if region_name is not None:
         kwargs["region_name"] = region_name

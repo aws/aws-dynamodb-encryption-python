@@ -11,18 +11,13 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Functional tests for ``dynamodb_encryption_sdk.material_providers.store.meta``."""
-import base64
-import os
-
-import boto3
 import pytest
-from moto import mock_dynamodb2
 
 from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore, MetaStoreAttributeNames
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 
-from ...functional_test_utils import build_static_jce_cmp, mock_metastore
+from ...functional_test_utils import mock_metastore  # noqa=F401 pylint: disable=unused-import
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 

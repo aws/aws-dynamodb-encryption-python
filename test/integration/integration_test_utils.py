@@ -20,7 +20,8 @@ from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptograph
 
 # convenience imports
 try:
-    from ..functional import functional_test_utils, hypothesis_strategies
+    from ..functional import hypothesis_strategies  # noqa=F401 pylint: disable=unused-import
+    from ..functional import functional_test_utils
 except (ImportError, ValueError, SystemError):
     if "AWS_ENCRYPTION_SDK_EXAMPLES_TESTING" not in os.environ:
         raise

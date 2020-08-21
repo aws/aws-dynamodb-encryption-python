@@ -18,12 +18,10 @@ from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.structures import AttributeActions, TableIndex, TableInfo
 
-from .functional_test_utils import (
-    TEST_TABLE_NAME,
-    example_table,
-    table_with_global_secondary_indexes,
-    table_with_local_secondary_indexes,
-)
+from .functional_test_utils import example_table  # noqa=F401 pylint: disable=unused-import
+from .functional_test_utils import table_with_global_secondary_indexes  # noqa=F401 pylint: disable=unused-import
+from .functional_test_utils import table_with_local_secondary_indexes  # noqa=F401 pylint: disable=unused-import
+from .functional_test_utils import TEST_TABLE_NAME
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
