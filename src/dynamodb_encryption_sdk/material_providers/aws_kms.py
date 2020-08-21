@@ -37,8 +37,9 @@ from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint:
 from . import CryptographicMaterialsProvider
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
     from typing import Dict, Optional, Text, Tuple  # noqa pylint: disable=unused-import
+
+    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
     pass

@@ -32,6 +32,7 @@ from dynamodb_encryption_sdk.internal.str_ops import to_str
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Callable, Dict, List, Text, Union  # noqa pylint: disable=unused-import
+
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import,ungrouped-imports
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
