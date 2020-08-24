@@ -24,7 +24,8 @@ __all__ = ("dict_to_ddb", "ddb_to_dict")
 
 def dict_to_ddb(item):
     # type: (Dict[str, Any]) -> Dict[str, Any]
-    # TODO: narrow these types down
+    # narrow these types down
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
     """Converts a native Python dictionary to a raw DynamoDB item.
 
     :param dict item: Native item
@@ -37,7 +38,8 @@ def dict_to_ddb(item):
 
 def ddb_to_dict(item):
     # type: (Dict[str, Any]) -> Dict[str, Any]
-    # TODO: narrow these types down
+    # narrow these types down
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
     """Converts a raw DynamoDB item to a native Python dictionary.
 
     :param dict item: DynamoDB item

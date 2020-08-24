@@ -49,7 +49,8 @@ class JavaAuthenticator(object):
     @abc.abstractmethod
     def load_key(self, key, key_type, key_encoding):
         # (bytes, EncryptionKeyType, KeyEncodingType) -> Any
-        # TODO: narrow down the output type
+        # narrow down the output type
+        # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
         """Load a key from bytes.
 
         :param bytes key: Raw key bytes to load
@@ -237,25 +238,25 @@ class JavaSignature(JavaAuthenticator):
 
     def load_key(self, key, key_type, key_encoding):
         # (bytes, EncryptionKeyType, KeyEncodingType) -> Any
-        # TODO: narrow down the output type
+        # narrow down the output type
+        # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
         """Load a key object from the provided raw key bytes.
 
         :param bytes key: Raw key bytes to load
         :param EncryptionKeyType key_type: Type of key to load
         :param KeyEncodingType key_encoding: Encoding used to serialize ``key``
         :returns: Loaded key
-        :rtype: TODO:
         :raises ValueError: if ``key_type`` and ``key_encoding`` are not a valid pairing
         """
         return load_rsa_key(key, key_type, key_encoding)
 
     def sign(self, key, data):
         # type: (Any, bytes) -> bytes
-        # TODO: narrow down the key type
+        # narrow down the key type
+        # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
         """Sign ``data`` using loaded ``key``.
 
         :param key: Loaded key
-        :type key: TODO:
         :param bytes data: Data to sign
         :returns: Calculated signature
         :rtype: bytes
@@ -272,11 +273,11 @@ class JavaSignature(JavaAuthenticator):
 
     def verify(self, key, signature, data):
         # type: (Any, bytes, bytes) -> None
-        # TODO: narrow down the key type
+        # narrow down the key type
+        # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
         """Verify ``signature`` over ``data`` using ``key``.
 
         :param key: Loaded key
-        :type key: TODO:
         :param bytes signature: Signature to verify
         :param bytes data: Data over which to verify signature
         :raises SignatureVerificationError: if unable to verify ``signature``

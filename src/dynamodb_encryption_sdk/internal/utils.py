@@ -174,7 +174,8 @@ def _item_transformer(crypto_transformer):
 
 def decrypt_list_of_items(crypto_config, decrypt_method, items):
     # type: (CryptoConfig, Callable, Iterable[Any]) -> Iterable[Any]
-    # TODO: narrow this down
+    # narrow this down
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
     """Iterate through a list of encrypted items, decrypting each item and yielding the plaintext item.
 
     :param CryptoConfig crypto_config: :class:`CryptoConfig` to use
@@ -190,7 +191,8 @@ def decrypt_list_of_items(crypto_config, decrypt_method, items):
 
 def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwargs):
     # type: (Callable, Callable, Callable, **Any) -> Dict
-    # TODO: narrow this down
+    # narrow this down
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
     """Transparently decrypt multiple items after getting them from the table with a scan or query method.
 
     :param callable decrypt_method: Method to use to decrypt items
@@ -211,7 +213,8 @@ def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwarg
 
 def decrypt_get_item(decrypt_method, crypto_config_method, read_method, **kwargs):
     # type: (Callable, Callable, Callable, **Any) -> Dict
-    # TODO: narrow this down
+    # narrow this down
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
     """Transparently decrypt an item after getting it from the table.
 
     :param callable decrypt_method: Method to use to decrypt item
@@ -234,7 +237,8 @@ def decrypt_get_item(decrypt_method, crypto_config_method, read_method, **kwargs
 
 def decrypt_batch_get_item(decrypt_method, crypto_config_method, read_method, **kwargs):
     # type: (Callable, Callable, Callable, **Any) -> Dict
-    # TODO: narrow this down
+    # narrow this down
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
     """Transparently decrypt multiple items after getting them in a batch request.
 
     :param callable decrypt_method: Method to use to decrypt items
@@ -265,7 +269,8 @@ def decrypt_batch_get_item(decrypt_method, crypto_config_method, read_method, **
 
 def encrypt_put_item(encrypt_method, crypto_config_method, write_method, **kwargs):
     # type: (Callable, Callable, Callable, **Any) -> Dict
-    # TODO: narrow this down
+    # narrow this down
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
     """Transparently encrypt an item before putting it to the table.
 
     :param callable encrypt_method: Method to use to encrypt items
@@ -285,7 +290,8 @@ def encrypt_put_item(encrypt_method, crypto_config_method, write_method, **kwarg
 
 def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method, **kwargs):
     # type: (Callable, Callable, Callable, **Any) -> Dict
-    # TODO: narrow this down
+    # narrow this down
+    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
     """Transparently encrypt multiple items before putting them in a batch request.
 
     :param callable encrypt_method: Method to use to encrypt items

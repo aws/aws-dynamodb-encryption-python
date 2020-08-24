@@ -258,7 +258,6 @@ class MostRecentProvider(CryptographicMaterialsProvider):
             received_version = self._provider_store.version_from_material_description(
                 provider._material_description  # pylint: disable=protected-access
             )
-            # TODO: ^ should we promote material description from hidden?
 
             _LOGGER.debug("Caching materials provider version %d", received_version)
             self._version = received_version  # pylint: disable=attribute-defined-outside-init

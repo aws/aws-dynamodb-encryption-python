@@ -53,7 +53,6 @@ def serialize(material_description):
     """
     material_description_bytes = bytearray(_MATERIAL_DESCRIPTION_VERSION)
 
-    # TODO: verify Java sorting order
     for name, value in sorted(material_description.items(), key=lambda x: x[0]):
         try:
             material_description_bytes.extend(encode_value(to_bytes(name)))
