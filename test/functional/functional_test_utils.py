@@ -530,7 +530,7 @@ def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initia
         for item in items:
             writer.put_item(item)
 
-    ddb_keys = TEST_BATCH_KEYS.copy()
+    ddb_keys = copy.copy(TEST_BATCH_KEYS)
     encrypted_items = [raw_table.get_item(Key=key, ConsistentRead=True)["Item"] for key in ddb_keys]
     check_many_encrypted_items(
         actual=encrypted_items, expected=items, attribute_actions=check_attribute_actions, transformer=_nop_transformer
