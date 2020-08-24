@@ -105,9 +105,9 @@ class JavaMac(JavaAuthenticator):
     hash_type = attr.ib(validator=callable_validator)
 
     def __init__(
-        self, java_name, algorithm_type, hash_type  # type: Text  # type: Callable  # type: Callable
+        self, java_name, algorithm_type, hash_type
     ):  # noqa=D107
-        # type: (...) -> None
+        # type: (Text, Callable, Callable) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
         # https://github.com/python-attrs/attrs/issues/215
@@ -209,9 +209,9 @@ class JavaSignature(JavaAuthenticator):
     padding_type = attr.ib(validator=callable_validator)
 
     def __init__(
-        self, java_name, algorithm_type, hash_type, padding_type  # type: Text  # type: Callable  # type: Callable
+        self, java_name, algorithm_type, hash_type, padding_type
     ):  # noqa=D107
-        # type: (...) -> None
+        # type: (Text, Any, Callable, Callable) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
         # https://github.com/python-attrs/attrs/issues/215
