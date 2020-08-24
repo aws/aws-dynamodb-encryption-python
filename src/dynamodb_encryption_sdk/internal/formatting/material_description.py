@@ -63,7 +63,8 @@ def serialize(material_description):
                 'Invalid name or value in material description: "{name}"="{value}"'.format(name=name, value=value)
             )
 
-    return {Tag.BINARY.dynamodb_tag: bytes(material_description_bytes)}
+    # for some reason pylint can't follow the Enum member attributes
+    return {Tag.BINARY.dynamodb_tag: bytes(material_description_bytes)}  # pylint: disable=no-member
 
 
 def deserialize(serialized_material_description):
@@ -77,7 +78,10 @@ def deserialize(serialized_material_description):
     :raises InvalidMaterialDescriptionVersionError: if unknown version is found
     """
     try:
-        _raw_material_description = serialized_material_description[Tag.BINARY.dynamodb_tag]
+        # for some reason pylint can't follow the Enum member attributes
+        _raw_material_description = serialized_material_description[
+            Tag.BINARY.dynamodb_tag  # pylint: disable=no-member
+        ]
 
         material_description_bytes = io.BytesIO(_raw_material_description)
         total_bytes = len(_raw_material_description)

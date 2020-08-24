@@ -138,6 +138,7 @@ class KeyInfo(object):
 
 @attr.s(init=False)
 class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
+    # pylint: disable=too-many-instance-attributes
     """Cryptographic materials provider for use with the AWS Key Management Service (KMS).
 
     .. note::

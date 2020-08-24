@@ -194,7 +194,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         if time_since_updated < self._version_ttl:
             return TtlActions.LIVE
 
-        elif time_since_updated < self._version_ttl + _GRACE_PERIOD:
+        if time_since_updated < self._version_ttl + _GRACE_PERIOD:
             return TtlActions.GRACE_PERIOD
 
         _LOGGER.debug("TTL Expired because known version has expired")
@@ -255,12 +255,14 @@ class MostRecentProvider(CryptographicMaterialsProvider):
                 provider = self._cache.get(max_version)
             except KeyError:
                 provider = self._get_provider(max_version)
-            received_version = self._provider_store.version_from_material_description(provider._material_description)
+            received_version = self._provider_store.version_from_material_description(
+                provider._material_description  # pylint: disable=protected-access
+            )
             # TODO: ^ should we promote material description from hidden?
 
             _LOGGER.debug("Caching materials provider version %d", received_version)
-            self._version = received_version
-            self._last_updated = time.time()
+            self._version = received_version  # pylint: disable=attribute-defined-outside-init
+            self._last_updated = time.time()  # pylint: disable=attribute-defined-outside-init
             self._cache.put(received_version, provider)
         finally:
             self._lock.release()

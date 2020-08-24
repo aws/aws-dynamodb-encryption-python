@@ -139,7 +139,7 @@ class JavaMac(JavaAuthenticator):
             raise ValueError("Key type must be symmetric and encoding must be raw.")
 
         if len(key) * 8 < MinimumKeySizes.HMAC.value:
-            _LOGGER.warning("HMAC keys smaller than %d bits are unsafe" % MinimumKeySizes.HMAC.value)
+            _LOGGER.warning("HMAC keys smaller than %d bits are unsafe", MinimumKeySizes.HMAC.value)
 
         return key
 

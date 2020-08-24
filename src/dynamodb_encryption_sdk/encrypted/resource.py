@@ -41,7 +41,7 @@ __all__ = ("EncryptedResource", "EncryptedTablesCollectionManager")
 
 @attr.s(init=False)
 class EncryptedTablesCollectionManager(object):
-    # pylint: disable=too-few-public-methods
+    # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """Tables collection manager that provides :class:`EncryptedTable` objects.
 
     https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.tables
@@ -119,7 +119,7 @@ class EncryptedTablesCollectionManager(object):
 
 @attr.s(init=False)
 class EncryptedResource(object):
-    # pylint: disable=too-few-public-methods
+    # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """High-level helper class to provide a familiar interface to encrypted tables.
 
     >>> import boto3

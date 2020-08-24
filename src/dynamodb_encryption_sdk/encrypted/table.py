@@ -42,7 +42,7 @@ __all__ = ("EncryptedTable",)
 
 @attr.s(init=False)
 class EncryptedTable(object):
-    # pylint: disable=too-few-public-methods
+    # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """High-level helper class to provide a familiar interface to encrypted tables.
 
     >>> import boto3

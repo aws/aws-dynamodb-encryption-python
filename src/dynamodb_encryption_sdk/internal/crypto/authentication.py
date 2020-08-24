@@ -56,7 +56,8 @@ def sign_item(encrypted_item, signing_key, crypto_config):
             attribute_actions=crypto_config.attribute_actions,
         ),
     )
-    return {Tag.BINARY.dynamodb_tag: signature}
+    # for some reason pylint can't follow the Enum member attributes
+    return {Tag.BINARY.dynamodb_tag: signature}  # pylint: disable=no-member
 
 
 def verify_item_signature(signature_attribute, encrypted_item, verification_key, crypto_config):
@@ -68,7 +69,8 @@ def verify_item_signature(signature_attribute, encrypted_item, verification_key,
     :param DelegatedKey verification_key: DelegatedKey to use to calculate the signature
     :param CryptoConfig crypto_config: Cryptographic configuration
     """
-    signature = signature_attribute[Tag.BINARY.dynamodb_tag]
+    # for some reason pylint can't follow the Enum member attributes
+    signature = signature_attribute[Tag.BINARY.dynamodb_tag]  # pylint: disable=no-member
     verification_key.verify(
         algorithm=verification_key.algorithm,
         signature=signature,
@@ -98,10 +100,11 @@ def _string_to_sign(item, table_name, attribute_actions):
 
         data_to_sign.extend(_hash_data(hasher=hasher, data=key.encode(TEXT_ENCODING)))
 
+        # for some reason pylint can't follow the Enum member attributes
         if action is CryptoAction.SIGN_ONLY:
-            data_to_sign.extend(SignatureValues.PLAINTEXT.sha256)
+            data_to_sign.extend(SignatureValues.PLAINTEXT.sha256)  # pylint: disable=no-member
         else:
-            data_to_sign.extend(SignatureValues.ENCRYPTED.sha256)
+            data_to_sign.extend(SignatureValues.ENCRYPTED.sha256)  # pylint: disable=no-member
 
         data_to_sign.extend(_hash_data(hasher=hasher, data=serialize_attribute(item[key])))
     return bytes(data_to_sign)
