@@ -78,11 +78,16 @@ TEST_BATCH_INDEXES = [
 TEST_BATCH_KEYS = [{name: value["value"] for name, value in key.items()} for key in TEST_BATCH_INDEXES]
 
 
+@pytest.fixture(scope="module")
+def mock_ddb_service():
+    """Centralize service mock to avoid resetting service for tests that use multiple tables."""
+    with mock_dynamodb2():
+        yield boto3.client("dynamodb", region_name=TEST_REGION_NAME)
+
+
 @pytest.fixture
-def example_table():
-    mock_dynamodb2().start(reset=False)
-    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
-    ddb.create_table(
+def example_table(mock_ddb_service):
+    mock_ddb_service.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
             {"AttributeName": "partition_attribute", "KeyType": "HASH"},
@@ -93,16 +98,13 @@ def example_table():
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
-    yield
-    ddb.delete_table(TableName=TEST_TABLE_NAME)
-    mock_dynamodb2().stop()
+    yield mock_ddb_service
+    mock_ddb_service.delete_table(TableName=TEST_TABLE_NAME)
 
 
 @pytest.fixture
-def table_with_local_secondary_indexes():
-    mock_dynamodb2().start(reset=False)
-    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
-    ddb.create_table(
+def table_with_local_secondary_indexes(mock_ddb_service):
+    mock_ddb_service.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
             {"AttributeName": "partition_attribute", "KeyType": "HASH"},
@@ -126,16 +128,13 @@ def table_with_local_secondary_indexes():
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
-    yield
-    ddb.delete_table(TableName=TEST_TABLE_NAME)
-    mock_dynamodb2().stop()
+    yield mock_ddb_service
+    mock_ddb_service.delete_table(TableName=TEST_TABLE_NAME)
 
 
 @pytest.fixture
-def table_with_global_secondary_indexes():
-    mock_dynamodb2().start(reset=False)
-    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
-    ddb.create_table(
+def table_with_global_secondary_indexes(mock_ddb_service):
+    mock_ddb_service.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
             {"AttributeName": "partition_attribute", "KeyType": "HASH"},
@@ -161,9 +160,8 @@ def table_with_global_secondary_indexes():
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
-    yield
-    ddb.delete_table(TableName=TEST_TABLE_NAME)
-    mock_dynamodb2().stop()
+    yield mock_ddb_service
+    mock_ddb_service.delete_table(TableName=TEST_TABLE_NAME)
 
 
 class PassThroughCryptographicMaterialsProviderThatRequiresAttributes(CryptographicMaterialsProvider):

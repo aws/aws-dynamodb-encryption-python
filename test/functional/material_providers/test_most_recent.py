@@ -22,6 +22,7 @@ from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentPro
 from dynamodb_encryption_sdk.material_providers.store import ProviderStore
 
 from ..functional_test_utils import example_table  # noqa=F401 pylint: disable=unused-import
+from ..functional_test_utils import mock_ddb_service  # noqa=F401 pylint: disable=unused-import
 from ..functional_test_utils import mock_metastore  # noqa=F401 pylint: disable=unused-import
 from ..functional_test_utils import TEST_TABLE_NAME, check_metastore_cache_use_encrypt
 

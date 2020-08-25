@@ -19,29 +19,30 @@ from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.structures import AttributeActions, TableIndex, TableInfo
 
 from .functional_test_utils import example_table  # noqa=F401 pylint: disable=unused-import
+from .functional_test_utils import mock_ddb_service  # noqa=F401 pylint: disable=unused-import
 from .functional_test_utils import table_with_global_secondary_indexes  # noqa=F401 pylint: disable=unused-import
 from .functional_test_utils import table_with_local_secondary_indexes  # noqa=F401 pylint: disable=unused-import
-from .functional_test_utils import TEST_TABLE_NAME
+from .functional_test_utils import TEST_REGION_NAME, TEST_TABLE_NAME
 
 pytestmark = [pytest.mark.functional, pytest.mark.local]
 
 
 def test_tableinfo_refresh_indexes_no_secondary_indexes(example_table):
-    client = boto3.client("dynamodb", region_name="us-west-2")
+    client = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
     table = TableInfo(name=TEST_TABLE_NAME)
 
     table.refresh_indexed_attributes(client)
 
 
 def test_tableinfo_refresh_indexes_with_gsis(table_with_global_secondary_indexes):
-    client = boto3.client("dynamodb", region_name="us-west-2")
+    client = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
     table = TableInfo(name=TEST_TABLE_NAME)
 
     table.refresh_indexed_attributes(client)
 
 
 def test_tableinfo_refresh_indexes_with_lsis(table_with_local_secondary_indexes):
-    client = boto3.client("dynamodb", region_name="us-west-2")
+    client = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
     table = TableInfo(name=TEST_TABLE_NAME)
 
     table.refresh_indexed_attributes(client)
