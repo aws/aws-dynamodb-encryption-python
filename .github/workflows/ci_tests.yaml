@@ -33,8 +33,6 @@ jobs:
           - 3.x
         category:
           - local-slow
-          - nocmk
-          - sourcebuildcheck
 # These require credentials.
 # Enable them once we sort how to provide them.
 #          - integ-slow
@@ -59,6 +57,7 @@ jobs:
       matrix:
         category:
           - nocmk
+          - sourcebuildcheck
           - test-upstream-requirements-py37
     steps:
       - uses: actions/checkout@v2
