@@ -2,20 +2,17 @@ sudo: false
 language: python
 matrix:
   include:
+    # Hypothesis no longer supports Python 2 and
+    # there is a bug that appears with our slow tests
+    # only on Python 2.
+    # Until we also drop Python 2 support,
+    # the workaround is just that we don't run the slow tests
+    # on Python 2.
     # CPython 2.7
     - python: 2.7
-      env: TOXENV=py27-travis-local-slow
+      env: TOXENV=py27-travis-local-fast
     - python: 2.7
       env: TOXENV=py27-travis-integ-slow
-    - python: 2.7
-      env: TOXENV=py27-travis-isolation
-    # CPython 3.4
-    - python: 3.4
-      env: TOXENV=py34-travis-local-slow
-    - python: 3.4
-      env: TOXENV=py34-travis-integ-slow
-    - python: 3.4
-      env: TOXENV=py34-travis-isolation
     # CPython 3.5
     - python: 3.5
       env: TOXENV=py35-travis-local-slow
