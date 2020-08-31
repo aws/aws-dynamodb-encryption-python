@@ -2,88 +2,22 @@ sudo: false
 language: python
 matrix:
   include:
-    # Hypothesis no longer supports Python 2 and
-    # there is a bug that appears with our slow tests
-    # only on Python 2.
-    # Until we also drop Python 2 support,
-    # the workaround is just that we don't run the slow tests
-    # on Python 2.
     # CPython 2.7
-    - python: 2.7
-      env: TOXENV=py27-travis-local-fast
     - python: 2.7
       env: TOXENV=py27-travis-integ-slow
     # CPython 3.5
     - python: 3.5
-      env: TOXENV=py35-travis-local-slow
-    - python: 3.5
       env: TOXENV=py35-travis-integ-slow
-    - python: 3.5
-      env: TOXENV=py35-travis-isolation
     # CPython 3.6
     - python: 3.6
-      env: TOXENV=py36-travis-local-slow
-    - python: 3.6
       env: TOXENV=py36-travis-integ-slow
-    - python: 3.6
-      env: TOXENV=py36-travis-isolation
     # CPython 3.7
     # xenial + sudo are currently needed to get 3.7
     # https://github.com/travis-ci/travis-ci/issues/9815
     - python: 3.7
-      env: TOXENV=py37-travis-local-slow
-      dist: xenial
-      sudo: true
-    - python: 3.7
       env: TOXENV=py37-travis-integ-slow
       dist: xenial
       sudo: true
-    - python: 3.7
-      env: TOXENV=py37-travis-isolation
-      dist: xenial
-      sudo: true
-    # Upstream tests
-    - python: 2.7
-      env: TOXENV=test-upstream-requirements-py27
-    # xenial + sudo are currently needed to get 3.7
-    # https://github.com/travis-ci/travis-ci/issues/9815
-    - python: 3.7
-      env: TOXENV=test-upstream-requirements-py37
-      dist: xenial
-      sudo: true
-    # MyPy
-    # Disabled pending completion of integration
-    # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
-#    - python: 3.6
-#      env: TOXENV=mypy-py2
-#    - python: 3.6
-#      env: TOXENV=mypy-py3
-    # Security
-    - python: 3.6
-      env: TOXENV=bandit
-    # Linting
-    - python: 3.6
-      env: TOXENV=doc8
-    - python: 3.6
-      env: TOXENV=readme
-    - python: 3.6
-      env: TOXENV=docs
-    # Disabled pending completion of cleanup
-    # https://github.com/aws/aws-dynamodb-encryption-python/issues/67
-#    - python: 3.6
-#      env: TOXENV=flake8
-#    - python: 3.6
-#      env: TOXENV=pylint
-#    - python: 3.6
-#      env: TOXENV=flake8-tests
-#    - python: 3.6
-#      env: TOXENV=pylint-tests
-    - python: 3.7
-      dist: xenial
-      env: TOXENV=flake8-examples
-    - python: 3.7
-      dist: xenial
-      env: TOXENV=pylint-examples
 install:
     # Clean up because Travis doesn't
     # https://github.com/travis-ci/travis-ci/issues/7940
