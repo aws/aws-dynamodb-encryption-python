@@ -47,10 +47,8 @@ class JavaCipher(object):
     mode = attr.ib(validator=attr.validators.instance_of(JavaMode))
     padding = attr.ib(validator=attr.validators.instance_of(JavaPadding))
 
-    def __init__(
-        self, cipher, mode, padding  # type: JavaEncryptionAlgorithm  # type: JavaMode  # type: JavaPadding
-    ):  # noqa=D107
-        # type: (...) -> None
+    def __init__(self, cipher, mode, padding):  # noqa=D107
+        # type: (JavaEncryptionAlgorithm, JavaMode, JavaPadding) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
         # https://github.com/python-attrs/attrs/issues/215

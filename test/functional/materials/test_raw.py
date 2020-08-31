@@ -24,7 +24,7 @@ def test_no_encryption_key():
     encryption_materials = RawEncryptionMaterials(signing_key=signing_key)
 
     with pytest.raises(AttributeError) as excinfo:
-        encryption_materials.encryption_key
+        encryption_materials.encryption_key  # calls a property, so pylint: disable=pointless-statement
 
     excinfo.match("No encryption key available")
 
@@ -34,6 +34,6 @@ def test_no_decryption_key():
     decryption_materials = RawDecryptionMaterials(verification_key=verification_key)
 
     with pytest.raises(AttributeError) as excinfo:
-        decryption_materials.decryption_key
+        decryption_materials.decryption_key  # calls a property, so pylint: disable=pointless-statement
 
     excinfo.match("No decryption key available")

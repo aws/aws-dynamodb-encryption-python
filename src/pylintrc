@@ -3,8 +3,11 @@
 disable =
     bad-continuation,  # we let black handle this
     ungrouped-imports,  # we let isort handle this
-    useless-object-inheritance,  # we need to support Python 2, so no, not useless
     duplicate-code,  # causes lots of problems with implementations of common interfaces
+    # All below are disabled because we need to support Python 2
+    useless-object-inheritance,
+    raise-missing-from,
+    super-with-arguments,
 
 [BASIC]
 # Allow function names up to 50 characters

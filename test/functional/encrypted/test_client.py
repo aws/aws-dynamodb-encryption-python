@@ -14,8 +14,10 @@
 import hypothesis
 import pytest
 
-from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
+from ..functional_test_utils import example_table  # noqa=F401 pylint: disable=unused-import
+from ..functional_test_utils import mock_ddb_service  # noqa=F401 pylint: disable=unused-import
 from ..functional_test_utils import (
+    TEST_REGION_NAME,
     TEST_TABLE_NAME,
     build_static_jce_cmp,
     client_batch_items_unprocessed_check,
@@ -39,25 +41,25 @@ def pytest_generate_tests(metafunc):
 
 def _client_cycle_single_item_check(materials_provider, initial_actions, initial_item):
     return client_cycle_single_item_check(
-        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, TEST_REGION_NAME
     )
 
 
 def _client_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
     return client_cycle_batch_items_check(
-        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, TEST_REGION_NAME
     )
 
 
 def _client_cycle_batch_items_check_scan_paginator(materials_provider, initial_actions, initial_item):
     return client_cycle_batch_items_check_scan_paginator(
-        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, TEST_REGION_NAME
     )
 
 
 def _client_batch_items_unprocessed_check(materials_provider, initial_actions, initial_item):
     client_batch_items_unprocessed_check(
-        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, TEST_REGION_NAME
     )
 
 

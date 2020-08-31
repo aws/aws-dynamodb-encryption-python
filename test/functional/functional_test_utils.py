@@ -78,11 +78,16 @@ TEST_BATCH_INDEXES = [
 TEST_BATCH_KEYS = [{name: value["value"] for name, value in key.items()} for key in TEST_BATCH_INDEXES]
 
 
+@pytest.fixture(scope="module")
+def mock_ddb_service():
+    """Centralize service mock to avoid resetting service for tests that use multiple tables."""
+    with mock_dynamodb2():
+        yield boto3.client("dynamodb", region_name=TEST_REGION_NAME)
+
+
 @pytest.fixture
-def example_table():
-    mock_dynamodb2().start(reset=False)
-    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
-    ddb.create_table(
+def example_table(mock_ddb_service):
+    mock_ddb_service.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
             {"AttributeName": "partition_attribute", "KeyType": "HASH"},
@@ -93,16 +98,13 @@ def example_table():
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
-    yield
-    ddb.delete_table(TableName=TEST_TABLE_NAME)
-    mock_dynamodb2().stop()
+    yield mock_ddb_service
+    mock_ddb_service.delete_table(TableName=TEST_TABLE_NAME)
 
 
 @pytest.fixture
-def table_with_local_secondary_indexes():
-    mock_dynamodb2().start(reset=False)
-    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
-    ddb.create_table(
+def table_with_local_secondary_indexes(mock_ddb_service):
+    mock_ddb_service.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
             {"AttributeName": "partition_attribute", "KeyType": "HASH"},
@@ -126,16 +128,13 @@ def table_with_local_secondary_indexes():
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
-    yield
-    ddb.delete_table(TableName=TEST_TABLE_NAME)
-    mock_dynamodb2().stop()
+    yield mock_ddb_service
+    mock_ddb_service.delete_table(TableName=TEST_TABLE_NAME)
 
 
 @pytest.fixture
-def table_with_global_secondary_indexes():
-    mock_dynamodb2().start(reset=False)
-    ddb = boto3.client("dynamodb", region_name=TEST_REGION_NAME)
-    ddb.create_table(
+def table_with_global_secondary_indexes(mock_ddb_service):
+    mock_ddb_service.create_table(
         TableName=TEST_TABLE_NAME,
         KeySchema=[
             {"AttributeName": "partition_attribute", "KeyType": "HASH"},
@@ -161,9 +160,8 @@ def table_with_global_secondary_indexes():
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 100, "WriteCapacityUnits": 100},
     )
-    yield
-    ddb.delete_table(TableName=TEST_TABLE_NAME)
-    mock_dynamodb2().stop()
+    yield mock_ddb_service
+    mock_ddb_service.delete_table(TableName=TEST_TABLE_NAME)
 
 
 class PassThroughCryptographicMaterialsProviderThatRequiresAttributes(CryptographicMaterialsProvider):
@@ -178,7 +176,8 @@ class PassThroughCryptographicMaterialsProviderThatRequiresAttributes(Cryptograp
     def __init__(self, passthrough_cmp):
         self._passthrough_cmp = passthrough_cmp
 
-    def _assert_attributes_set(self, encryption_context):
+    @staticmethod
+    def _assert_attributes_set(encryption_context):
         # type: (EncryptionContext) -> None
         if not encryption_context.attributes:
             raise ValueError("Encryption context attributes MUST be set!")
@@ -386,7 +385,7 @@ def diverse_item():
     return copy.deepcopy(base_item)
 
 
-_reserved_attributes = set([attr.value for attr in ReservedAttributes])
+_reserved_attributes = {attr.value for attr in ReservedAttributes}
 
 
 def return_requestitems_as_unprocessed(*args, **kwargs):
@@ -520,9 +519,7 @@ def cycle_batch_item_check(
 
 
 def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initial_item):
-    """Check that cycling (plaintext->encrypted->decrypted) items with the Table batch writer
-    has the expected results.
-    """
+    """Cycling (plaintext->encrypted->decrypted) items with the Table batch writer should have the expected results."""
     check_attribute_actions = initial_actions.copy()
     check_attribute_actions.set_index_keys(*list(TEST_KEY.keys()))
     items = _generate_items(initial_item, _nop_transformer)
@@ -531,7 +528,7 @@ def cycle_batch_writer_check(raw_table, encrypted_table, initial_actions, initia
         for item in items:
             writer.put_item(item)
 
-    ddb_keys = [key for key in TEST_BATCH_KEYS]
+    ddb_keys = copy.copy(TEST_BATCH_KEYS)
     encrypted_items = [raw_table.get_item(Key=key, ConsistentRead=True)["Item"] for key in ddb_keys]
     check_many_encrypted_items(
         actual=encrypted_items, expected=items, attribute_actions=check_attribute_actions, transformer=_nop_transformer
@@ -757,7 +754,8 @@ def client_cycle_batch_items_check_scan_paginator(
     scan the table with raw client paginator to get encrypted items,
     scan the table with encrypted client paginator to get decrypted items,
     then verify that all items appear to have been encrypted correctly.
-    """
+    """  # noqa=D401
+    # pylint: disable=too-many-locals
     kwargs = {}
     if region_name is not None:
         kwargs["region_name"] = region_name

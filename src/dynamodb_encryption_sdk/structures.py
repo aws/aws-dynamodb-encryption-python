@@ -223,7 +223,7 @@ class TableIndex(object):
     partition = attr.ib(validator=attr.validators.instance_of(six.string_types))
     sort = attr.ib(validator=attr.validators.optional(attr.validators.instance_of(six.string_types)), default=None)
 
-    def __init__(self, partition, sort=None):
+    def __init__(self, partition, sort=None):  # noqa=D107
         # type: (Text, Optional[Text]) -> None
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088

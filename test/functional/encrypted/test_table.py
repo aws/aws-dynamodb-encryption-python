@@ -14,8 +14,10 @@
 import hypothesis
 import pytest
 
-from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
+from ..functional_test_utils import example_table  # noqa=F401 pylint: disable=unused-import
+from ..functional_test_utils import mock_ddb_service  # noqa=F401 pylint: disable=unused-import
 from ..functional_test_utils import (
+    TEST_REGION_NAME,
     TEST_TABLE_NAME,
     build_static_jce_cmp,
     set_parametrized_actions,
@@ -37,7 +39,7 @@ def pytest_generate_tests(metafunc):
 
 
 def _table_cycle_check(materials_provider, initial_actions, initial_item):
-    return table_cycle_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2")
+    return table_cycle_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, TEST_REGION_NAME)
 
 
 def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, parametrized_item):
@@ -47,14 +49,16 @@ def test_ephemeral_item_cycle(example_table, some_cmps, parametrized_actions, pa
 
 def test_ephemeral_item_cycle_batch_writer(example_table, some_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
-    table_cycle_batch_writer_check(some_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, "us-west-2")
+    table_cycle_batch_writer_check(
+        some_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, TEST_REGION_NAME
+    )
 
 
 def test_batch_writer_unprocessed(example_table, parametrized_actions, parametrized_item):
     """Test Unprocessed Items handling with a single ephemeral static CMP against a small number of curated items."""
     cmp = build_static_jce_cmp("AES", 256, "HmacSHA256", 256)
     table_batch_writer_unprocessed_items_check(
-        cmp, parametrized_actions, parametrized_item, TEST_TABLE_NAME, "us-west-2"
+        cmp, parametrized_actions, parametrized_item, TEST_TABLE_NAME, TEST_REGION_NAME
     )
 
 
@@ -67,7 +71,9 @@ def test_ephemeral_item_cycle_slow(example_table, all_the_cmps, parametrized_act
 @pytest.mark.slow
 def test_ephemeral_item_cycle_batch_writer_slow(example_table, all_the_cmps, parametrized_actions, parametrized_item):
     """Test a small number of curated CMPs against a small number of curated items."""
-    table_cycle_batch_writer_check(all_the_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, "us-west-2")
+    table_cycle_batch_writer_check(
+        all_the_cmps, parametrized_actions, parametrized_item, TEST_TABLE_NAME, TEST_REGION_NAME
+    )
 
 
 @pytest.mark.travis_isolation

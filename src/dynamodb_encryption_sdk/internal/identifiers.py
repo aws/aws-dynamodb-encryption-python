@@ -73,7 +73,7 @@ class Tag(Enum):
         """Sets up new Tag object.
 
         :param bytes tag: DynamoDB Encryption SDK tag
-        :param bytes dynamodb_tag: DynamoDB tag
+        :param str dynamodb_tag: DynamoDB tag
         :param bytes element_tag: The type of tag contained within attributes of this type
         """
         self.tag = tag

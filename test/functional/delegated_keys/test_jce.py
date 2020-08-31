@@ -78,7 +78,7 @@ def build_short_key_cases():
 @pytest.mark.parametrize("algorithm, key_bits, too_short, error_message", build_short_key_cases())
 def test_warn_on_short_keys(caplog, algorithm, key_bits, too_short, error_message):
     with caplog.at_level(logging.DEBUG):
-        _test = JceNameLocalDelegatedKey.generate(algorithm, key_bits)
+        _test = JceNameLocalDelegatedKey.generate(algorithm, key_bits)  # noqa=F401
 
     logging_results = caplog.text
     assert (too_short and error_message in logging_results) or (not too_short and error_message not in logging_results)

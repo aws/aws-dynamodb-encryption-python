@@ -30,6 +30,7 @@ from .serialize import encode_value
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Text  # noqa pylint: disable=unused-import
+
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
@@ -52,7 +53,6 @@ def serialize(material_description):
     """
     material_description_bytes = bytearray(_MATERIAL_DESCRIPTION_VERSION)
 
-    # TODO: verify Java sorting order
     for name, value in sorted(material_description.items(), key=lambda x: x[0]):
         try:
             material_description_bytes.extend(encode_value(to_bytes(name)))
@@ -62,7 +62,8 @@ def serialize(material_description):
                 'Invalid name or value in material description: "{name}"="{value}"'.format(name=name, value=value)
             )
 
-    return {Tag.BINARY.dynamodb_tag: bytes(material_description_bytes)}
+    # for some reason pylint can't follow the Enum member attributes
+    return {Tag.BINARY.dynamodb_tag: bytes(material_description_bytes)}  # pylint: disable=no-member
 
 
 def deserialize(serialized_material_description):
@@ -76,7 +77,10 @@ def deserialize(serialized_material_description):
     :raises InvalidMaterialDescriptionVersionError: if unknown version is found
     """
     try:
-        _raw_material_description = serialized_material_description[Tag.BINARY.dynamodb_tag]
+        # for some reason pylint can't follow the Enum member attributes
+        _raw_material_description = serialized_material_description[
+            Tag.BINARY.dynamodb_tag  # pylint: disable=no-member
+        ]
 
         material_description_bytes = io.BytesIO(_raw_material_description)
         total_bytes = len(_raw_material_description)

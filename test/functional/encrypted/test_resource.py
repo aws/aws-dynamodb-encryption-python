@@ -13,8 +13,10 @@
 """Functional tests for ``dynamodb_encryption_sdk.encrypted.resource``."""
 import pytest
 
-from ..functional_test_utils import example_table  # noqa pylint: disable=unused-import
+from ..functional_test_utils import example_table  # noqa=F401 pylint: disable=unused-import
+from ..functional_test_utils import mock_ddb_service  # noqa=F401 pylint: disable=unused-import
 from ..functional_test_utils import (
+    TEST_REGION_NAME,
     TEST_TABLE_NAME,
     build_static_jce_cmp,
     resource_batch_items_unprocessed_check,
@@ -34,12 +36,14 @@ def pytest_generate_tests(metafunc):
 
 
 def _resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item):
-    resource_cycle_batch_items_check(materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2")
+    resource_cycle_batch_items_check(
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, TEST_REGION_NAME
+    )
 
 
 def _resource_batch_items_unprocessed_check(materials_provider, initial_actions, initial_item):
     resource_batch_items_unprocessed_check(
-        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, "us-west-2"
+        materials_provider, initial_actions, initial_item, TEST_TABLE_NAME, TEST_REGION_NAME
     )
 
 

@@ -171,7 +171,7 @@ def decrypt_dynamodb_item(item, crypto_config):
     :rtype: dict
     """
     unique_actions = set([crypto_config.attribute_actions.default_action.name])
-    unique_actions.update(set([action.name for action in crypto_config.attribute_actions.attribute_actions.values()]))
+    unique_actions.update({action.name for action in crypto_config.attribute_actions.attribute_actions.values()})
 
     if crypto_config.attribute_actions.take_no_actions:
         # If we explicitly have been told not to do anything to this item, just copy it.

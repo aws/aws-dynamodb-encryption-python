@@ -13,11 +13,9 @@
 """Load testing using MostRecentProvider and MetaStore."""
 import pytest
 
-from ..integration_test_utils import (  # pylint: disable=unused-import
-    ddb_table_name,
-    functional_test_utils,
-    temp_metastore,
-)
+from ..integration_test_utils import ddb_table_name  # noqa=F401 pylint: disable=unused-import
+from ..integration_test_utils import temp_metastore  # noqa=F401 pylint: disable=unused-import
+from ..integration_test_utils import functional_test_utils
 
 pytestmark = [pytest.mark.integ, pytest.mark.ddb_integ]
 

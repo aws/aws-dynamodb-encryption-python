@@ -32,6 +32,7 @@ from dynamodb_encryption_sdk.internal.str_ops import to_str
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Callable, Dict, List, Text, Union  # noqa pylint: disable=unused-import
+
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import,ungrouped-imports
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
@@ -64,6 +65,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_binary(stream):
         # type: (io.BytesIO) -> Dict[Text, bytes]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a binary object.
 
         :param stream: Stream containing serialized object
@@ -84,6 +87,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_string(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.STRING]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a string object.
 
         :param stream: Stream containing serialized object
@@ -106,6 +111,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_number(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.STRING]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a number object.
 
         :param stream: Stream containing serialized object
@@ -119,6 +126,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_boolean(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.BOOLEAN]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a boolean object.
 
         :param stream: Stream containing serialized object
@@ -130,6 +139,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_null(stream):  # we want a consistent API but don't use stream, so pylint: disable=unused-argument
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.BOOLEAN]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a null object.
 
         :param stream: Stream containing serialized object
@@ -151,6 +162,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_binary_set(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.SET[dynamodb_types.BINARY]]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a binary set object.
 
         :param stream: Stream containing serialized object
@@ -161,6 +174,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_string_set(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.SET[dynamodb_types.STRING]]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a string set object.
 
         :param stream: Stream containing serialized object
@@ -171,6 +186,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_number_set(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.SET[dynamodb_types.STRING]]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a number set object.
 
         :param stream: Stream containing serialized object
@@ -181,6 +198,8 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
 
     def _deserialize_list(stream):
         # type: (io.BytesIO) -> Dict[Text, dynamodb_types.LIST]
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """Deserializes a list object.
 
         :param stream: Stream containing serialized object
@@ -198,19 +217,20 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :type stream: io.BytesIO
         :rtype: dict
         """
+        # for some reason pylint can't follow the Enum member attributes
         member_count = decode_length(stream)
         members = {}  # type: dynamodb_types.MAP
         for _ in range(member_count):
             key = _deserialize(stream)
-            if Tag.STRING.dynamodb_tag not in key:
+            if Tag.STRING.dynamodb_tag not in key:  # pylint: disable=no-member
                 raise DeserializationError(
                     'Malformed serialized map: found "{}" as map key.'.format(list(key.keys())[0])
                 )
 
             value = _deserialize(stream)
-            members[key[Tag.STRING.dynamodb_tag]] = value
+            members[key[Tag.STRING.dynamodb_tag]] = value  # pylint: disable=no-member
 
-        return {Tag.MAP.dynamodb_tag: members}
+        return {Tag.MAP.dynamodb_tag: members}  # pylint: disable=no-member
 
     def _deserialize_function(tag):
         # type: (bytes) -> Callable
@@ -220,17 +240,18 @@ def deserialize_attribute(serialized_attribute):  # noqa: C901 pylint: disable=t
         :type tag: dynamodb_encryption_sdk.internal.identifiers.Tag
         :rtype: callable
         """
+        # for some reason pylint can't follow the Enum member attributes
         deserialize_functions = {
-            Tag.BINARY.tag: _deserialize_binary,
-            Tag.BINARY_SET.tag: _deserialize_binary_set,
-            Tag.NUMBER.tag: _deserialize_number,
-            Tag.NUMBER_SET.tag: _deserialize_number_set,
-            Tag.STRING.tag: _deserialize_string,
-            Tag.STRING_SET.tag: _deserialize_string_set,
-            Tag.BOOLEAN.tag: _deserialize_boolean,
-            Tag.NULL.tag: _deserialize_null,
-            Tag.LIST.tag: _deserialize_list,
-            Tag.MAP.tag: _deserialize_map,
+            Tag.BINARY.tag: _deserialize_binary,  # pylint: disable=no-member
+            Tag.BINARY_SET.tag: _deserialize_binary_set,  # pylint: disable=no-member
+            Tag.NUMBER.tag: _deserialize_number,  # pylint: disable=no-member
+            Tag.NUMBER_SET.tag: _deserialize_number_set,  # pylint: disable=no-member
+            Tag.STRING.tag: _deserialize_string,  # pylint: disable=no-member
+            Tag.STRING_SET.tag: _deserialize_string_set,  # pylint: disable=no-member
+            Tag.BOOLEAN.tag: _deserialize_boolean,  # pylint: disable=no-member
+            Tag.NULL.tag: _deserialize_null,  # pylint: disable=no-member
+            Tag.LIST.tag: _deserialize_list,  # pylint: disable=no-member
+            Tag.MAP.tag: _deserialize_map,  # pylint: disable=no-member
         }
         try:
             return deserialize_functions[tag]

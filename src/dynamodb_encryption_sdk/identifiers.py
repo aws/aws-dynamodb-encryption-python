@@ -35,12 +35,12 @@ class CryptoAction(Enum):
     def __lt__(self, other):
         # type: (CryptoAction) -> bool
         """Define CryptoAction equality."""
-        return self.value < other.value
+        return self.value < other.value  # pylint: disable=comparison-with-callable
 
     def __eq__(self, other):
         # type: (CryptoAction) -> bool
         """Define CryptoAction equality."""
-        return self.value == other.value
+        return self.value == other.value  # pylint: disable=comparison-with-callable
 
 
 class EncryptionKeyType(Enum):
