@@ -19,7 +19,7 @@ Amazon DynamoDB Encryption Client for Python
    :alt: Documentation Status
 
 .. image:: https://travis-ci.org/aws/aws-dynamodb-encryption-python.svg?branch=master
-   :target: https://travis-ci.org/aws/aws-dynamodb-encryption-python
+   :target: https://travis-ci.org/aws/aws-dynamodb-encryption-python.svg?branch=master
 
 .. image:: https://github.com/aws/aws-dynamodb-encryption-python/workflows/tests/badge.svg
    :target: https://github.com/aws/aws-dynamodb-encryption-python/actions?query=workflow%3Atests
