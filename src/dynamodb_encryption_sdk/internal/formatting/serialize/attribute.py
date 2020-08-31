@@ -29,6 +29,7 @@ from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Callable  # noqa pylint: disable=unused-import
+
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import,ungrouped-imports
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
@@ -79,6 +80,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
 
     def _serialize_binary(_attribute):
         # type: (dynamodb_types.BINARY) -> bytes
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """
         :param _attribute: Attribute to serialize
         :type _attribute: boto3.dynamodb.types.Binary
@@ -104,6 +107,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
 
     def _serialize_number(_attribute):
         # type: (str) -> bytes
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """
         :param _attribute: Attribute to serialize
         :type _attribute: numbers.Number
@@ -124,6 +129,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
 
     def _serialize_string(_attribute):
         # type: (dynamodb_types.STRING) -> bytes
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """
         :param _attribute: Attribute to serialize
         :type _attribute: six.string_types
@@ -134,6 +141,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
 
     def _serialize_boolean(_attribute):
         # type: (dynamodb_types.BOOLEAN) -> bytes
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """
         :param bool _attribute: Attribute to serialize
         :returns: Serialized _attribute
@@ -144,6 +153,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
 
     def _serialize_null(_attribute):
         # type: (dynamodb_types.NULL) -> bytes
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """
         :param _attribute: Attribute to serialize
         :type _attribute: types.NoneType
@@ -203,6 +214,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
 
     def _serialize_list(_attribute):
         # type: (dynamodb_types.LIST) -> bytes
+        # pylint: disable=no-member
+        # for some reason pylint can't follow the Enum member attributes
         """
         :param list _attribute: Attribute to serialize
         :returns: Serialized _attribute
@@ -226,7 +239,8 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
         """
         serialized_attribute = io.BytesIO()
         serialized_attribute.write(_RESERVED)
-        serialized_attribute.write(Tag.MAP.tag)
+        # for some reason pylint can't follow the Enum member attributes
+        serialized_attribute.write(Tag.MAP.tag)  # pylint: disable=no-member
         serialized_attribute.write(encode_length(_attribute))
 
         sorted_items = _sorted_key_map(item=_attribute, transform=_transform_string_value)
@@ -240,17 +254,18 @@ def serialize_attribute(attribute):  # noqa: C901 pylint: disable=too-many-local
     def _serialize_function(dynamodb_tag):
         # type: (str) -> Callable[[dynamodb_types.ATTRIBUTE], bytes]
         """Locates the appropriate serialization function for the specified DynamoDB attribute tag."""
+        # for some reason pylint can't follow the Enum member attributes
         serialize_functions = {
-            Tag.BINARY.dynamodb_tag: _serialize_binary,
-            Tag.BINARY_SET.dynamodb_tag: _serialize_binary_set,
-            Tag.NUMBER.dynamodb_tag: _serialize_number,
-            Tag.NUMBER_SET.dynamodb_tag: _serialize_number_set,
-            Tag.STRING.dynamodb_tag: _serialize_string,
-            Tag.STRING_SET.dynamodb_tag: _serialize_string_set,
-            Tag.BOOLEAN.dynamodb_tag: _serialize_boolean,
-            Tag.NULL.dynamodb_tag: _serialize_null,
-            Tag.LIST.dynamodb_tag: _serialize_list,
-            Tag.MAP.dynamodb_tag: _serialize_map,
+            Tag.BINARY.dynamodb_tag: _serialize_binary,  # pylint: disable=no-member
+            Tag.BINARY_SET.dynamodb_tag: _serialize_binary_set,  # pylint: disable=no-member
+            Tag.NUMBER.dynamodb_tag: _serialize_number,  # pylint: disable=no-member
+            Tag.NUMBER_SET.dynamodb_tag: _serialize_number_set,  # pylint: disable=no-member
+            Tag.STRING.dynamodb_tag: _serialize_string,  # pylint: disable=no-member
+            Tag.STRING_SET.dynamodb_tag: _serialize_string_set,  # pylint: disable=no-member
+            Tag.BOOLEAN.dynamodb_tag: _serialize_boolean,  # pylint: disable=no-member
+            Tag.NULL.dynamodb_tag: _serialize_null,  # pylint: disable=no-member
+            Tag.LIST.dynamodb_tag: _serialize_list,  # pylint: disable=no-member
+            Tag.MAP.dynamodb_tag: _serialize_map,  # pylint: disable=no-member
         }
         try:
             return serialize_functions[dynamodb_tag]

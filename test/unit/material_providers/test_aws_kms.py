@@ -316,7 +316,6 @@ def test_select_id(default_kms_cmp):
     assert test is default_kms_cmp._key_id
 
 
-# TODO: vectorize
 @pytest.mark.parametrize(
     "attribute, expected_value",
     (
@@ -338,7 +337,6 @@ def test_attribute_to_value_wrong_type(default_kms_cmp):
     excinfo.match(r"Attribute of type *")
 
 
-# TODO: vectorize
 @pytest.mark.parametrize(
     "encryption_context, additional_expected_keypairs",
     (
@@ -413,7 +411,6 @@ def test_decrypt_initial_material_fail(default_kms_cmp, patch_kms_client):
     excinfo.match("Failed to unwrap AWS KMS protected materials")
 
 
-# TODO: vectorize
 @pytest.mark.parametrize(
     "description, method_name, key_name",
     (("AES/256", "_encryption_key", "encryption_key"), ("HmacSHA256/256", "_mac_key", "mac_key")),

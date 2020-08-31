@@ -101,9 +101,10 @@ class WrappedCryptographicMaterials(CryptographicMaterials):
                 self._content_key_from_material_description()
             )  # noqa pylint: disable=attribute-defined-outside-init
         else:
-            self._content_key, self._material_description = (
-                self._generate_content_key()
-            )  # noqa pylint: disable=attribute-defined-outside-init
+            (
+                self._content_key,
+                self._material_description,
+            ) = self._generate_content_key()  # noqa pylint: disable=attribute-defined-outside-init
 
     @staticmethod
     def _wrapping_transformation(algorithm):

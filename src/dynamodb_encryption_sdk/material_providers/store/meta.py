@@ -121,7 +121,7 @@ class MetaStore(ProviderStore):
                 ProvisionedThroughput={"ReadCapacityUnits": read_units, "WriteCapacityUnits": write_units},
             )
         except botocore.exceptions.ClientError:
-            raise Exception("TODO: Could not create table")
+            raise Exception("Could not create table")
 
     def _load_materials(self, material_name, version):
         # type: (Text, int) -> Tuple[JceNameLocalDelegatedKey, JceNameLocalDelegatedKey]
@@ -152,9 +152,10 @@ class MetaStore(ProviderStore):
                 key_encoding=KeyEncodingType.RAW,
             )
         except KeyError:
-            raise Exception("TODO: Invalid record")
+            raise Exception("Invalid record")
 
-        # TODO: handle if the material type version is not in the item
+        # need to handle if the material type version is not in the item
+        # https://github.com/aws/aws-dynamodb-encryption-python/issues/140
         if item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION.value] != MetaStoreValues.MATERIAL_TYPE_VERSION.value:
             raise InvalidVersionError(
                 'Unsupported material type: "{}"'.format(item[MetaStoreAttributeNames.MATERIAL_TYPE_VERSION.value])
@@ -301,12 +302,12 @@ class MetaStore(ProviderStore):
         try:
             info = material_description[_MATERIAL_DESCRIPTION_META_FIELD]
         except KeyError:
-            raise Exception("TODO: No info found")
+            raise Exception("No info found")
 
         try:
             return int(info.split("#", 1)[1])
         except (IndexError, ValueError):
-            raise Exception("TODO: Malformed info")
+            raise Exception("Malformed info")
 
     def max_version(self, material_name):
         # (Text) -> int

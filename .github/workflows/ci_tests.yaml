@@ -1,0 +1,131 @@
+# This workflow runs tests on pull requests.
+name: tests
+
+on:
+  pull_request:
+  push:
+  # Run once a day
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  # Hypothesis no longer supports Python 2 and
+  # there is a bug that appears with our slow tests
+  # only on Python 2.
+  # Until we also drop Python 2 support,
+  # the workaround is just that we don't run the slow tests
+  # on Python 2.
+  py2-tests:
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        platform:
+          - os: ubuntu-latest
+            architecture: x64
+          - os: windows-latest
+            architecture: x64
+          # x86 builds are only meaningful for Windows
+          - os: windows-latest
+            architecture: x86
+          - os: macos-latest
+            architecture: x64
+        category:
+          - local-fast
+    # These require credentials.
+    # Enable them once we sort how to provide them.
+    #          - integ-fast
+    #          - examples
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 2.7
+          architecture: ${{ matrix.platform.architecture }}
+      - run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade -r ci-requirements.txt
+      - name: run test
+        env:
+          TOXENV: ${{ matrix.category }}
+        run: tox -- -vv
+  tests:
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        platform:
+          - os: ubuntu-latest
+            architecture: x64
+          - os: windows-latest
+            architecture: x64
+          # x86 builds are only meaningful for Windows
+          - os: windows-latest
+            architecture: x86
+          - os: macos-latest
+            architecture: x64
+        python:
+          - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.x
+        category:
+          - local-slow
+# These require credentials.
+# Enable them once we sort how to provide them.
+#          - integ-slow
+#          - examples
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.platform.architecture }}
+      - run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade -r ci-requirements.txt
+      - name: run test
+        env:
+          TOXENV: ${{ matrix.category }}
+        run: tox -- -vv
+  upstream-py3:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        category:
+          - nocmk
+          - sourcebuildcheck
+          - test-upstream-requirements-py37
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade -r ci-requirements.txt
+      - name: run test
+        env:
+          TOXENV: ${{ matrix.category }}
+        run: tox -- -vv
+  upstream-py2:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        category:
+          - test-upstream-requirements-py27
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 2.7
+      - run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade -r ci-requirements.txt
+      - name: run test
+        env:
+          TOXENV: ${{ matrix.category }}
+        run: tox -- -vv

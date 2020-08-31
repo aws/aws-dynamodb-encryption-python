@@ -22,7 +22,6 @@ SLOW_SETTINGS = hypothesis.settings(
     suppress_health_check=(
         hypothesis.HealthCheck.too_slow,
         hypothesis.HealthCheck.data_too_large,
-        hypothesis.HealthCheck.hung_test,
         hypothesis.HealthCheck.large_base_example,
     ),
     deadline=None,
@@ -32,9 +31,7 @@ MAX_ITEM_BYTES = 400 * 1024 * 1024
 
 # _MIN_NUMBER = Decimal('1E-128')  # The DDB min is 1E-130, but DYNAMODB_CONTEXT Emin is -128
 # _MAX_NUMBER = Decimal('9.9999999999999999999999999999999999999E+125')
-# TODO: I would like to test the full range of possible number values, but boto3 does not
-# correctly handle conversion of large edge case values at this time. We will work to fix
-# that, but in the meantime, we will just use the happy path numbers.
+# boto3 does not correctly handle conversion of large edge case values at this time
 _MIN_NUMBER = Decimal("1E-38")
 _MAX_NUMBER = Decimal("9.{}E37".format("9" * 37))
 
@@ -68,7 +65,8 @@ ddb_scalar_types = ddb_string | ddb_number | ddb_binary | ddb_boolean | ddb_null
 
 ddb_set_types = ddb_string_set | ddb_number_set | ddb_binary_set
 ddb_attribute_names = text(min_size=1, max_size=255)
-# TODO: List and Map types have a max depth of 32
+# List and Map types have a max depth of 32
+# https://github.com/aws/aws-dynamodb-encryption-python/issues/141
 ddb_map_type = deferred(
     lambda: dictionaries(
         keys=ddb_attribute_names, values=(ddb_scalar_types | ddb_set_types | ddb_list_type | ddb_map_type), min_size=1

@@ -19,6 +19,7 @@ from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: 
 
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Dict, Text  # noqa pylint: disable=unused-import
+
     from mypy_extensions import NoReturn  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks

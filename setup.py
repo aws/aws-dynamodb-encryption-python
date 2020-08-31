@@ -23,7 +23,7 @@ def get_version():
 def get_requirements():
     """Reads the requirements file."""
     requirements = read("requirements.txt")
-    return [r for r in requirements.strip().splitlines()]
+    return requirements.strip().splitlines()
 
 
 setup(

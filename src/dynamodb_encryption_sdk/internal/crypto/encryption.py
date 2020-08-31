@@ -18,6 +18,7 @@
 """
 try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
     from typing import Text  # noqa pylint: disable=unused-import
+
     from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
 except ImportError:  # pragma: no cover
     # We only actually need these imports when running the mypy checks
@@ -46,7 +47,8 @@ def encrypt_attribute(attribute_name, attribute, encryption_key, algorithm):
     encrypted_attribute = encryption_key.encrypt(
         algorithm=algorithm, name=attribute_name, plaintext=serialized_attribute
     )
-    return {Tag.BINARY.dynamodb_tag: encrypted_attribute}
+    # for some reason pylint can't follow the Enum member attributes
+    return {Tag.BINARY.dynamodb_tag: encrypted_attribute}  # pylint: disable=no-member
 
 
 def decrypt_attribute(attribute_name, attribute, decryption_key, algorithm):
@@ -60,7 +62,8 @@ def decrypt_attribute(attribute_name, attribute, decryption_key, algorithm):
     :returns: Plaintext DynamoDB attribute
     :rtype: dict
     """
-    encrypted_attribute = attribute[Tag.BINARY.dynamodb_tag]
+    # for some reason pylint can't follow the Enum member attributes
+    encrypted_attribute = attribute[Tag.BINARY.dynamodb_tag]  # pylint: disable=no-member
     decrypted_attribute = decryption_key.decrypt(
         algorithm=algorithm, name=attribute_name, ciphertext=encrypted_attribute
     )

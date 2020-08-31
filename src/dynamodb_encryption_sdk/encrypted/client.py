@@ -96,7 +96,8 @@ class EncryptedPaginator(object):
 
     def paginate(self, **kwargs):
         # type: (**Any) -> Iterator[Dict]
-        # TODO: narrow this down
+        # narrow this down
+        # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
         """Create an iterator that will paginate through responses from the underlying paginator,
         transparently decrypting any returned items.
         """
