@@ -19,10 +19,15 @@ Amazon DynamoDB Encryption Client for Python
    :alt: Documentation Status
 
 .. image:: https://travis-ci.org/aws/aws-dynamodb-encryption-python.svg?branch=master
-   :target: https://travis-ci.org/aws/aws-dynamodb-encryption-python
+   :target: https://travis-ci.org/aws/aws-dynamodb-encryption-python.svg?branch=master
 
-.. image:: https://ci.appveyor.com/api/projects/status/6mh2v0nusujldu72/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/mattsb42-aws/aws-dynamodb-encryption-python-v5ycc
+.. image:: https://github.com/aws/aws-dynamodb-encryption-python/workflows/tests/badge.svg
+   :target: https://github.com/aws/aws-dynamodb-encryption-python/actions?query=workflow%3Atests
+   :alt: tests
+
+.. image:: https://github.com/aws/aws-dynamodb-encryption-python/workflows/static%20analysis/badge.svg
+   :target: https://github.com/aws/aws-dynamodb-encryption-python/actions?query=workflow%3A%22static+analysis%22
+   :alt: static analysis
 
 The `Amazon DynamoDB Encryption Client for Python`_ provides client-side encryption of `Amazon
 DynamoDB`_ items to help you to protect your table data before you send it to DynamoDB. It
