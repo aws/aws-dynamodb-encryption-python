@@ -18,7 +18,7 @@ configparser==4.0.2
 contextlib2==0.6.0.post1
 cookies==2.2.1
 coverage==4.5.4
-cryptography==2.7
+cryptography==3.2
 DateTime==4.3
 docker==4.1.0
 docutils==0.15.2
