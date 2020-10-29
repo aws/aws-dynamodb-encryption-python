@@ -187,7 +187,7 @@ of the one that the client would normally construct for you.
 .. _Read the Docs: http://aws-dynamodb-encryption-python.readthedocs.io/en/latest/
 .. _GitHub: https://github.com/aws/aws-dynamodb-encryption-python/
 .. _cryptography: https://cryptography.io/en/latest/
-.. _cryptography installation guide: https://cryptography.io/en/latest/installation/
+.. _cryptography installation guide: https://cryptography.io/en/latest/installation.html
 .. _boto3: https://boto3.readthedocs.io/en/latest/
 .. _EncryptedClient: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/client.html
 .. _EncryptedResource: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/resource.html
