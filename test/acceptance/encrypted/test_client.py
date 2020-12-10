@@ -40,8 +40,7 @@ def _compare_item(plaintext_item, decrypted_item):
         assert decrypted_item[key] == plaintext_item[key]
 
 
-def _client_setup(materials_provider, table_name, table_index, ciphertext_item, attribute_actions, prep):
-    prep()  # Test scenario setup that needs to happen inside the test
+def _client_setup(materials_provider, table_name, table_index, ciphertext_item, attribute_actions):
     cmp = materials_provider()  # Some of the materials providers need to be constructed inside the test
     client = fake_client(table_name, ciphertext_item)
     table_info = TableInfo(
@@ -59,20 +58,14 @@ def _client_setup(materials_provider, table_name, table_index, ciphertext_item, 
     return e_client, dict_to_ddb(item_key)
 
 
-def _item_check(materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep):
-    e_client, item_key = _client_setup(
-        materials_provider, table_name, table_index, ciphertext_item, attribute_actions, prep
-    )
+def _item_check(materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions):
+    e_client, item_key = _client_setup(materials_provider, table_name, table_index, ciphertext_item, attribute_actions)
     decrypted_item = e_client.get_item(TableName=table_name, Key=item_key)["Item"]
     _compare_item(plaintext_item, decrypted_item)
 
 
-def _batch_items_check(
-    materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
-):
-    e_client, item_key = _client_setup(
-        materials_provider, table_name, table_index, ciphertext_item, attribute_actions, prep
-    )
+def _batch_items_check(materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions):
+    e_client, item_key = _client_setup(materials_provider, table_name, table_index, ciphertext_item, attribute_actions)
     response = e_client.batch_get_item(RequestItems={table_name: {"Keys": [item_key]}})
     decrypted_item = response["Responses"][table_name][0]
     _compare_item(plaintext_item, decrypted_item)
@@ -95,12 +88,19 @@ def pytest_generate_tests(metafunc):
 def test_client_get_offline(
     materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep, item_checker
 ):
-    return item_checker(
-        materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
-    )
+    metatable = None
+    try:
+        metatable = prep()
+        return item_checker(
+            materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions
+        )
+    finally:
+        if metatable:
+            metatable.delete()
+            metatable.wait_until_not_exists()
 
 
-@pytest.mark.integ
+@pytest.mark.ddb_integ
 @pytest.mark.parametrize(
     "materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep",
     load_scenarios(online=True),
@@ -108,6 +108,13 @@ def test_client_get_offline(
 def test_client_get_online(
     materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep, item_checker
 ):
-    return item_checker(
-        materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
-    )
+    metatable = None
+    try:
+        metatable = prep()
+        return item_checker(
+            materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions
+        )
+    finally:
+        if metatable:
+            metatable.delete()
+            metatable.wait_until_not_exists()

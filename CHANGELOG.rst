@@ -2,6 +2,23 @@
 Changelog
 *********
 
+1.3.0 -- 2021-02-04
+===================
+Adds the CachingMostRecentProvider and deprecates MostRecentProvider.
+
+Time-based key reauthorization logic in MostRecentProvider did not reauthorize
+the use of the key after key usage permissions were changed at the key provider
+(for example AWS Key Management Service). This created the potential for keys
+to be used in the DynamoDB Encryption Client after permissions to do so were revoked.
+
+CachingMostRecentProvider replaces MostRecentProvider and provides a cache entry
+TTL to reauthorize the key with the key provider.
+
+MostRecentProvider is now deprecated, and is removed in 2.0.0. See
+https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/most-recent-provider.html
+for more details.
+
+
 1.2.0 -- 2019-10-10
 ===================
 

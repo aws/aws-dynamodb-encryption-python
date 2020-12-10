@@ -29,6 +29,10 @@
                 "partition": "hashKey",
                 "sort": "rangeKey"
             },
+            "index_types": {
+                "partition": "N",
+                "sort": "N"
+            },
             "items": [
                 {
                     "attributes": {
@@ -187,6 +191,9 @@
         "HashKeyOnly": {
             "index": {
                 "partition": "hashKey"
+            },
+            "index_types": {
+                "partition": "S"
             },
             "items": [
                 {

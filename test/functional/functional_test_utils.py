@@ -35,7 +35,7 @@ from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentProvider
+from dynamodb_encryption_sdk.material_providers.most_recent import CachingMostRecentProvider
 from dynamodb_encryption_sdk.material_providers.static import StaticCryptographicMaterialsProvider
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
@@ -860,7 +860,7 @@ def check_metastore_cache_use_encrypt(metastore, table_name, log_capture):
     except NoRegionError:
         table = boto3.resource("dynamodb", region_name=TEST_REGION_NAME).Table(table_name)
 
-    most_recent_provider = MostRecentProvider(provider_store=metastore, material_name="test", version_ttl=600.0)
+    most_recent_provider = CachingMostRecentProvider(provider_store=metastore, material_name="test", version_ttl=600.0)
     e_table = EncryptedTable(table=table, materials_provider=most_recent_provider)
 
     item = diverse_item()
