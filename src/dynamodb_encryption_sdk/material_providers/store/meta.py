@@ -120,8 +120,8 @@ class MetaStore(ProviderStore):
                 ],
                 ProvisionedThroughput={"ReadCapacityUnits": read_units, "WriteCapacityUnits": write_units},
             )
-        except botocore.exceptions.ClientError:
-            raise Exception("Could not create table")
+        except botocore.exceptions.ClientError as exc:
+            raise Exception("Could not create table", exc)
 
     def _load_materials(self, material_name, version):
         # type: (Text, int) -> Tuple[JceNameLocalDelegatedKey, JceNameLocalDelegatedKey]

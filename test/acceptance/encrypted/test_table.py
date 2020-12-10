@@ -34,30 +34,36 @@ def fake_table(item):
 def _item_check(materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep):
     ciphertext_item = ddb_to_dict(ciphertext_item)
     plaintext_item = ddb_to_dict(plaintext_item)
-    prep()  # Test scenario setup that needs to happen inside the test
-    cmp = materials_provider()  # Some of the materials providers need to be constructed inside the test
-    table = fake_table(ciphertext_item)
-    table_info = TableInfo(
-        name=table_name,
-        primary_index=TableIndex(partition=table_index["partition"], sort=table_index.get("sort", None)),
-    )
-    item_key = {table_info.primary_index.partition: ciphertext_item[table_info.primary_index.partition]}
-    if table_info.primary_index.sort is not None:
-        item_key[table_info.primary_index.sort] = ciphertext_item[table_info.primary_index.sort]
+    metatable = None
+    try:
+        metatable = prep()  # Test scenario setup that needs to happen inside the test
+        cmp = materials_provider()  # Some of the materials providers need to be constructed inside the test
+        table = fake_table(ciphertext_item)
+        table_info = TableInfo(
+            name=table_name,
+            primary_index=TableIndex(partition=table_index["partition"], sort=table_index.get("sort", None)),
+        )
+        item_key = {table_info.primary_index.partition: ciphertext_item[table_info.primary_index.partition]}
+        if table_info.primary_index.sort is not None:
+            item_key[table_info.primary_index.sort] = ciphertext_item[table_info.primary_index.sort]
 
-    e_table = EncryptedTable(
-        table=table,
-        materials_provider=cmp,
-        table_info=table_info,
-        attribute_actions=attribute_actions,
-        auto_refresh_table_indexes=False,
-    )
-    decrypted_item = e_table.get_item(Key=item_key)["Item"]
-    assert set(decrypted_item.keys()) == set(plaintext_item.keys())
-    for key in decrypted_item:
-        if key == "version":
-            continue
-        assert decrypted_item[key] == plaintext_item[key]
+        e_table = EncryptedTable(
+            table=table,
+            materials_provider=cmp,
+            table_info=table_info,
+            attribute_actions=attribute_actions,
+            auto_refresh_table_indexes=False,
+        )
+        decrypted_item = e_table.get_item(Key=item_key)["Item"]
+        assert set(decrypted_item.keys()) == set(plaintext_item.keys())
+        for key in decrypted_item:
+            if key == "version":
+                continue
+            assert decrypted_item[key] == plaintext_item[key]
+    finally:
+        if metatable:
+            metatable.delete()
+            metatable.wait_until_not_exists()
 
 
 @mock_dynamodb2
@@ -74,7 +80,7 @@ def test_table_get_offline(
     )
 
 
-@pytest.mark.integ
+@pytest.mark.ddb_integ
 @pytest.mark.parametrize(
     "materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep",
     load_scenarios(online=True),

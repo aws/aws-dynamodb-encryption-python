@@ -10,14 +10,14 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-"""Example showing use of MostRecentProvider backed by a MetaStore using an AWS KMS CMP, with EncryptedTable."""
+"""Example showing use of CachingMostRecentProvider backed by a MetaStore using an AWS KMS CMP, with EncryptedTable."""
 import boto3
 from boto3.dynamodb.types import Binary
 
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.material_providers.aws_kms import AwsKmsCryptographicMaterialsProvider
-from dynamodb_encryption_sdk.material_providers.most_recent import MostRecentProvider
+from dynamodb_encryption_sdk.material_providers.most_recent import CachingMostRecentProvider
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 from dynamodb_encryption_sdk.structures import AttributeActions
 
@@ -47,7 +47,7 @@ def encrypt_item(table_name, aws_cmk_id, meta_table_name, material_name):
     # Create a meta store using the AWS KMS crypto materials provider.
     meta_store = MetaStore(table=meta_table, materials_provider=aws_kms_cmp)
     # Create a most recent provider using the meta store.
-    most_recent_cmp = MostRecentProvider(
+    most_recent_cmp = CachingMostRecentProvider(
         provider_store=meta_store,
         material_name=material_name,
         version_ttl=600.0,  # Check for a new material version every five minutes.

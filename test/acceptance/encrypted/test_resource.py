@@ -43,8 +43,7 @@ def _compare_item(plaintext_item, decrypted_item):
         assert decrypted_item[key] == plaintext_item[key]
 
 
-def _resource_setup(materials_provider, table_name, table_index, ciphertext_item, attribute_actions, prep):
-    prep()  # Test scenario setup that needs to happen inside the test
+def _resource_setup(materials_provider, table_name, table_index, ciphertext_item, attribute_actions):
     cmp = materials_provider()  # Some of the materials providers need to be constructed inside the test
     resource = fake_resource(table_name, ciphertext_item)
     table_info = TableInfo(
@@ -62,13 +61,11 @@ def _resource_setup(materials_provider, table_name, table_index, ciphertext_item
     return e_resource, item_key
 
 
-def _batch_items_check(
-    materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
-):
+def _batch_items_check(materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions):
     plaintext_item = ddb_to_dict(plaintext_item)
     ciphertext_item = ddb_to_dict(ciphertext_item)
     e_resource, item_key = _resource_setup(
-        materials_provider, table_name, table_index, ciphertext_item, attribute_actions, prep
+        materials_provider, table_name, table_index, ciphertext_item, attribute_actions
     )
     response = e_resource.batch_get_item(RequestItems={table_name: {"Keys": [item_key]}})
     decrypted_item = response["Responses"][table_name][0]
@@ -84,12 +81,19 @@ def _batch_items_check(
 def test_client_get_offline(
     materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
 ):
-    return _batch_items_check(
-        materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
-    )
+    metatable = None
+    try:
+        metatable = prep()
+        return _batch_items_check(
+            materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions
+        )
+    finally:
+        if metatable:
+            metatable.delete()
+            metatable.wait_until_not_exists()
 
 
-@pytest.mark.integ
+@pytest.mark.ddb_integ
 @pytest.mark.parametrize(
     "materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep",
     load_scenarios(online=True),
@@ -97,6 +101,13 @@ def test_client_get_offline(
 def test_client_get_online(
     materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
 ):
-    return _batch_items_check(
-        materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
-    )
+    metatable = None
+    try:
+        metatable = prep()
+        return _batch_items_check(
+            materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions
+        )
+    finally:
+        if metatable:
+            metatable.delete()
+            metatable.wait_until_not_exists()

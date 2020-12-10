@@ -23,8 +23,7 @@ from ..acceptance_test_utils import load_scenarios
 pytestmark = [pytest.mark.accept]
 
 
-def _item_check(materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep):
-    prep()  # Test scenario setup that needs to happen inside the test
+def _item_check(materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions):
     cmp = materials_provider()  # Some of the materials providers need to be constructed inside the test
     encryption_context = EncryptionContext(
         table_name=table_name,
@@ -52,12 +51,19 @@ def _item_check(materials_provider, table_name, table_index, ciphertext_item, pl
 def test_item_encryptor_offline(
     materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
 ):
-    return _item_check(
-        materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
-    )
+    metatable = None
+    try:
+        metatable = prep()
+        return _item_check(
+            materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions
+        )
+    finally:
+        if metatable:
+            metatable.delete()
+            metatable.wait_until_not_exists()
 
 
-@pytest.mark.integ
+@pytest.mark.ddb_integ
 @pytest.mark.parametrize(
     "materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep",
     load_scenarios(online=True),
@@ -65,6 +71,13 @@ def test_item_encryptor_offline(
 def test_item_encryptor_online(
     materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
 ):
-    return _item_check(
-        materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions, prep
-    )
+    metatable = None
+    try:
+        metatable = prep()
+        return _item_check(
+            materials_provider, table_name, table_index, ciphertext_item, plaintext_item, attribute_actions
+        )
+    finally:
+        if metatable:
+            metatable.delete()
+            metatable.wait_until_not_exists()
