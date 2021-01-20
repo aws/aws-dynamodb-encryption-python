@@ -2,6 +2,14 @@
 Changelog
 *********
 
+2.0.0 -- 2021-02-04
+===================
+
+Breaking Changes
+----------------
+Removes MostRecentProvider. MostRecentProvider is replaced by CachingMostRecentProvider as of 1.3.0.
+
+
 1.3.0 -- 2021-02-04
 ===================
 Adds the CachingMostRecentProvider and deprecates MostRecentProvider.

@@ -13,7 +13,6 @@
 """Cryptographic materials provider that uses a provider store to obtain cryptographic materials."""
 import logging
 import time
-import warnings
 from collections import OrderedDict
 from enum import Enum
 from threading import Lock, RLock
@@ -37,7 +36,6 @@ except ImportError:  # pragma: no cover
 
 
 __all__ = (
-    "MostRecentProvider",
     "CachingMostRecentProvider",
 )
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -135,10 +133,12 @@ class BasicCache(object):
 
 
 @attr.s(init=False)
-class MostRecentProvider(CryptographicMaterialsProvider):
+@attr.s(init=False)
+class CachingMostRecentProvider(CryptographicMaterialsProvider):
     # pylint: disable=too-many-instance-attributes
     """Cryptographic materials provider that uses a provider store to obtain cryptography
-    materials.
+    materials. Materials obtained from the store are cached for a user-defined amount of time,
+    then removed from the cache and re-retrieved from the store.
 
     When encrypting, the most recent provider that the provider store knows about will always
     be used.
@@ -160,7 +160,6 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         # Workaround pending resolution of attrs/mypy interaction.
         # https://github.com/python/mypy/issues/2088
         # https://github.com/python-attrs/attrs/issues/215
-        warnings.warn("MostRecentProvider is deprecated, use CachingMostRecentProvider instead.", DeprecationWarning)
         self._provider_store = provider_store
         self._material_name = material_name
         self._version_ttl = version_ttl
@@ -185,15 +184,26 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :param EncryptionContext encryption_context: Encryption context for request
         :raises AttributeError: if no decryption materials are available
         """
+        provider = None
+
         version = self._provider_store.version_from_material_description(encryption_context.material_description)
-        try:
-            _LOGGER.debug("Looking in cache for decryption materials provider version %d", version)
-            _, provider = self._cache.get(version)
-        except KeyError:
-            _LOGGER.debug("Decryption materials provider not found in cache")
+
+        ttl_action = self._ttl_action(version, _DECRYPT_ACTION)
+
+        if ttl_action is TtlActions.EXPIRED:
+            self._cache.evict(self._version)
+
+        _LOGGER.debug('TTL Action "%s" when getting decryption materials', ttl_action.name)
+        if ttl_action is TtlActions.LIVE:
             try:
-                provider = self._provider_store.provider(self._material_name, version)
-                self._cache.put(version, (time.time(), provider))
+                _LOGGER.debug("Looking in cache for encryption materials provider version %d", version)
+                _, provider = self._cache.get(version)
+            except KeyError:
+                _LOGGER.debug("Decryption materials provider not found in cache")
+
+        if provider is None:
+            try:
+                provider = self._get_provider_with_grace_period(version, ttl_action)
             except InvalidVersionError:
                 _LOGGER.exception("Unable to get decryption materials from provider store.")
                 raise AttributeError("No decryption materials available")
@@ -385,52 +395,8 @@ class MostRecentProvider(CryptographicMaterialsProvider):
     def refresh(self):
         # type: () -> None
         """Clear all local caches for this provider."""
-        _LOGGER.debug("Refreshing MostRecentProvider instance.")
+        _LOGGER.debug("Refreshing CachingMostRecentProvider instance.")
         with self._lock:
             self._cache.clear()
             self._version = None  # type: int # pylint: disable=attribute-defined-outside-init
             self._last_updated = None  # type: float # pylint: disable=attribute-defined-outside-init
-
-
-@attr.s(init=False)
-class CachingMostRecentProvider(MostRecentProvider):
-    """Cryptographic materials provider that uses a provider store to obtain cryptography
-    materials. Materials obtained from the store are cached for a user-defined amount of time,
-    then removed from the cache and re-retrieved from the store.
-
-    When encrypting, the most recent provider that the provider store knows about will always
-    be used.
-    """
-
-    def decryption_materials(self, encryption_context):
-        # type: (EncryptionContext) -> CryptographicMaterials
-        """Return decryption materials.
-
-        :param EncryptionContext encryption_context: Encryption context for request
-        :raises AttributeError: if no decryption materials are available
-        """
-        provider = None
-
-        version = self._provider_store.version_from_material_description(encryption_context.material_description)
-
-        ttl_action = self._ttl_action(version, _DECRYPT_ACTION)
-
-        if ttl_action is TtlActions.EXPIRED:
-            self._cache.evict(self._version)
-
-        _LOGGER.debug('TTL Action "%s" when getting decryption materials', ttl_action.name)
-        if ttl_action is TtlActions.LIVE:
-            try:
-                _LOGGER.debug("Looking in cache for encryption materials provider version %d", version)
-                _, provider = self._cache.get(version)
-            except KeyError:
-                _LOGGER.debug("Decryption materials provider not found in cache")
-
-        if provider is None:
-            try:
-                provider = self._get_provider_with_grace_period(version, ttl_action)
-            except InvalidVersionError:
-                _LOGGER.exception("Unable to get decryption materials from provider store.")
-                raise AttributeError("No decryption materials available")
-
-        return provider.decryption_materials(encryption_context)
