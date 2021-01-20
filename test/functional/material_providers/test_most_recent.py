@@ -12,7 +12,6 @@
 # language governing permissions and limitations under the License.
 """Functional tests for ``dynamodb_encryption_sdk.material_providers.most_recent``."""
 import time
-import warnings
 from collections import defaultdict
 
 import pytest
@@ -20,11 +19,7 @@ from mock import MagicMock, sentinel
 
 from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
-from dynamodb_encryption_sdk.material_providers.most_recent import (
-    CachingMostRecentProvider,
-    MostRecentProvider,
-    TtlActions,
-)
+from dynamodb_encryption_sdk.material_providers.most_recent import CachingMostRecentProvider, TtlActions
 from dynamodb_encryption_sdk.material_providers.store import ProviderStore
 
 from ..functional_test_utils import example_table  # noqa=F401 pylint: disable=unused-import
@@ -76,12 +71,11 @@ class MockProviderStore(ProviderStore):
         return material_description
 
 
-@pytest.mark.parametrize("provider_class", (MostRecentProvider, CachingMostRecentProvider))
-def test_constructor(provider_class):
+def test_constructor():
     """Tests that when the cache is expired on encrypt, we evict the entry from the cache."""
     store = MockProviderStore()
     name = "material"
-    provider = provider_class(provider_store=store, material_name=name, version_ttl=1.0, cache_size=42)
+    provider = CachingMostRecentProvider(provider_store=store, material_name=name, version_ttl=1.0, cache_size=42)
 
     assert provider._provider_store == store
     assert provider._material_name == name
@@ -277,10 +271,9 @@ def test_get_most_recent_version_grace_period_lock_not_acquired():
     assert store.provider_calls == expected_calls
 
 
-@pytest.mark.parametrize("provider_class", (MostRecentProvider, CachingMostRecentProvider))
-def test_failed_lock_acquisition(provider_class):
+def test_failed_lock_acquisition():
     store = MagicMock(__class__=ProviderStore)
-    provider = provider_class(provider_store=store, material_name="my material", version_ttl=10.0)
+    provider = CachingMostRecentProvider(provider_store=store, material_name="my material", version_ttl=10.0)
     provider._version = 9
     provider._cache.put(provider._version, (time.time(), sentinel.nine))
 
@@ -291,11 +284,10 @@ def test_failed_lock_acquisition(provider_class):
     assert not store.mock_calls
 
 
-@pytest.mark.parametrize("provider_class", (MostRecentProvider, CachingMostRecentProvider))
-def test_encryption_materials_cache_use(provider_class):
+def test_encryption_materials_cache_use():
     store = MockProviderStore()
     name = "material"
-    provider = provider_class(provider_store=store, material_name=name, version_ttl=10.0)
+    provider = CachingMostRecentProvider(provider_store=store, material_name=name, version_ttl=10.0)
 
     test1 = provider.encryption_materials(sentinel.encryption_context_1)
     assert test1 is sentinel.material_0_encryption
@@ -320,11 +312,10 @@ def test_encryption_materials_cache_use(provider_class):
     assert store.provider_calls == expected_calls
 
 
-@pytest.mark.parametrize("provider_class", (MostRecentProvider, CachingMostRecentProvider))
-def test_encryption_materials_cache_expired(provider_class):
+def test_encryption_materials_cache_expired():
     store = MockProviderStore()
     name = "material"
-    provider = provider_class(provider_store=store, material_name=name, version_ttl=0.0)
+    provider = CachingMostRecentProvider(provider_store=store, material_name=name, version_ttl=0.0)
 
     test1 = provider.encryption_materials(sentinel.encryption_context_1)
     assert test1 is sentinel.material_0_encryption
@@ -354,12 +345,11 @@ def test_encryption_materials_cache_expired(provider_class):
     assert store.provider_calls == expected_calls
 
 
-@pytest.mark.parametrize("provider_class", (MostRecentProvider, CachingMostRecentProvider))
-def test_encryption_materials_cache_expired_cache_removed(provider_class):
+def test_encryption_materials_cache_expired_cache_removed():
     """Tests that when the cache is expired on encrypt, we evict the entry from the cache."""
     store = MockProviderStore()
     name = "material"
-    provider = provider_class(provider_store=store, material_name=name, version_ttl=0.0)
+    provider = CachingMostRecentProvider(provider_store=store, material_name=name, version_ttl=0.0)
     provider._cache = MagicMock()
     provider._cache.get.return_value = (0.0, MagicMock())
 
@@ -379,8 +369,7 @@ def test_decryption_materials_cache_expired_cache_removed():
     provider._cache.evict.assert_called_once()
 
 
-@pytest.mark.parametrize("provider_class", (MostRecentProvider, CachingMostRecentProvider))
-def test_encryption_materials_cache_in_grace_period_acquire_lock(provider_class):
+def test_encryption_materials_cache_in_grace_period_acquire_lock():
     """Test encryption grace period behavior.
 
     When the TTL is GRACE_PERIOD and we successfully acquire the lock for retrieving new materials,
@@ -388,7 +377,7 @@ def test_encryption_materials_cache_in_grace_period_acquire_lock(provider_class)
     """
     store = MockProviderStore()
     name = "material"
-    provider = provider_class(provider_store=store, material_name=name, version_ttl=0.0)
+    provider = CachingMostRecentProvider(provider_store=store, material_name=name, version_ttl=0.0)
     provider._grace_period = 10.0
 
     test1 = provider.encryption_materials(sentinel.encryption_context_1)
@@ -422,8 +411,7 @@ def test_encryption_materials_cache_in_grace_period_acquire_lock(provider_class)
     assert store.provider_calls == expected_calls
 
 
-@pytest.mark.parametrize("provider_class", (MostRecentProvider, CachingMostRecentProvider))
-def test_encryption_materials_cache_in_grace_period_fail_to_acquire_lock(provider_class):
+def test_encryption_materials_cache_in_grace_period_fail_to_acquire_lock():
     """Test encryption grace period behavior.
 
     When the TTL is GRACE_PERIOD and we fail to acquire the lock for retrieving new materials,
@@ -431,7 +419,7 @@ def test_encryption_materials_cache_in_grace_period_fail_to_acquire_lock(provide
     """
     store = MockProviderStore()
     name = "material"
-    provider = provider_class(provider_store=store, material_name=name, version_ttl=0.0)
+    provider = CachingMostRecentProvider(provider_store=store, material_name=name, version_ttl=0.0)
     provider._grace_period = 10.0
 
     test1 = provider.encryption_materials(sentinel.encryption_context_1)
@@ -463,11 +451,10 @@ def test_encryption_materials_cache_in_grace_period_fail_to_acquire_lock(provide
     assert store.provider_calls == expected_calls
 
 
-@pytest.mark.parametrize("provider_class", (CachingMostRecentProvider, CachingMostRecentProvider))
-def test_decryption_materials_cache_use(provider_class):
+def test_decryption_materials_cache_use():
     store = MockProviderStore()
     name = "material"
-    provider = provider_class(provider_store=store, material_name=name, version_ttl=10.0)
+    provider = CachingMostRecentProvider(provider_store=store, material_name=name, version_ttl=10.0)
 
     context = MagicMock(material_description=0)
 
@@ -485,39 +472,6 @@ def test_decryption_materials_cache_use(provider_class):
 
     assert len(provider._cache._cache) == 1
 
-    expected_calls.append(("version_from_material_description", 0))
-
-    assert store.provider_calls == expected_calls
-
-
-def test_most_recent_provider_decryption_materials_cache_expired():
-    """Test decryption expiration behavior for MostRecentProvider.
-
-    When using a MostRecentProvider and the cache is expired on decryption, we do not retrieve new
-    materials from the provider store. Note that this test only runs for MostRecentProvider, to ensure that our legacy
-    behavior has not changed.
-    """
-    store = MockProviderStore()
-    name = "material"
-    provider = MostRecentProvider(provider_store=store, material_name=name, version_ttl=0.0)
-
-    context = MagicMock(material_description=0)
-
-    test1 = provider.decryption_materials(context)
-    assert test1 is sentinel.material_0_decryption
-
-    assert len(provider._cache._cache) == 1
-
-    expected_calls = [("version_from_material_description", 0), ("get_or_create_provider", name, 0)]
-
-    assert store.provider_calls == expected_calls
-
-    test2 = provider.decryption_materials(context)
-    assert test2 is sentinel.material_0_decryption
-
-    assert len(provider._cache._cache) == 1
-
-    # The MostRecentProvider does not use TTLs on decryption, so we should not see a new call to the provider store
     expected_calls.append(("version_from_material_description", 0))
 
     assert store.provider_calls == expected_calls
@@ -629,13 +583,3 @@ def test_caching_provider_decryption_materials_cache_in_grace_period_fail_to_acq
 
 def test_cache_use_encrypt(mock_metastore, example_table, caplog):
     check_metastore_cache_use_encrypt(mock_metastore, TEST_TABLE_NAME, caplog)
-
-
-def test_most_recent_provider_deprecated():
-    warnings.simplefilter("error")
-
-    with pytest.raises(DeprecationWarning) as excinfo:
-        store = MockProviderStore()
-        name = "material"
-        MostRecentProvider(provider_store=store, material_name=name, version_ttl=0.0)
-    excinfo.match("MostRecentProvider is deprecated, use CachingMostRecentProvider instead")
