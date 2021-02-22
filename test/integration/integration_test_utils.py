@@ -27,16 +27,18 @@ except (ImportError, ValueError, SystemError):
         raise
 
 AWS_KMS_KEY_ID = "AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID"
+AWS_KMS_MRK_KEY_ID = "AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_MRK_KEY_ID"
+AWS_KMS_MRK_KEY_ID_2 = "AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_MRK_KEY_ID_2"
 DDB_TABLE_NAME = "DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME"
 
 
-def cmk_arn_value():
+def cmk_arn_value(env_variable=AWS_KMS_KEY_ID):
     """Retrieve the target CMK ARN from environment variable."""
-    arn = os.environ.get(AWS_KMS_KEY_ID, None)
+    arn = os.environ.get(env_variable, None)
     if arn is None:
         raise ValueError(
             'Environment variable "{}" must be set to a valid KMS CMK ARN for integration tests to run'.format(
-                AWS_KMS_KEY_ID
+                env_variable
             )
         )
     if arn.startswith("arn:") and ":alias/" not in arn:
@@ -47,7 +49,19 @@ def cmk_arn_value():
 @pytest.fixture
 def cmk_arn():
     """As of Pytest 4.0.0, fixtures cannot be called directly."""
-    return cmk_arn_value()
+    return cmk_arn_value(AWS_KMS_KEY_ID)
+
+
+@pytest.fixture
+def cmk_mrk_arn():
+    """As of Pytest 4.0.0, fixtures cannot be called directly."""
+    return cmk_arn_value(AWS_KMS_MRK_KEY_ID)
+
+
+@pytest.fixture
+def second_cmk_mrk_arn():
+    """As of Pytest 4.0.0, fixtures cannot be called directly."""
+    return cmk_arn_value(AWS_KMS_MRK_KEY_ID_2)
 
 
 def _build_kms_cmp(require_attributes):

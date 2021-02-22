@@ -17,9 +17,10 @@ from dynamodb_encryption_sdk_examples import (
     aws_kms_encrypted_item,
     aws_kms_encrypted_resource,
     aws_kms_encrypted_table,
+    aws_kms_multi_region_key,
 )
 
-from .examples_test_utils import cmk_arn, ddb_table_name  # noqa pylint: disable=unused-import
+from .examples_test_utils import cmk_arn, cmk_mrk_arn, ddb_table_name, second_cmk_mrk_arn  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.examples]
 
@@ -42,3 +43,7 @@ def test_aws_kms_encrypted_item(ddb_table_name, cmk_arn):
 
 def test_aws_kms_encrypted_resource(ddb_table_name, cmk_arn):
     aws_kms_encrypted_resource.encrypt_batch_items(ddb_table_name, cmk_arn)
+
+
+def test_aws_kms_mrk_client(ddb_table_name, cmk_mrk_arn, second_cmk_mrk_arn):
+    aws_kms_multi_region_key.encrypt_item(ddb_table_name, cmk_mrk_arn, second_cmk_mrk_arn)

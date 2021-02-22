@@ -54,7 +54,7 @@ def encrypt_item(table_name, aws_cmk_id):
     # Get the encrypted item using the standard client.
     encrypted_item = client.get_item(TableName=table_name, Key=index_key)["Item"]
 
-    # Get the item using the encrypted client, transparently decyrpting it.
+    # Get the item using the encrypted client, transparently decrypting it.
     decrypted_item = encrypted_client.get_item(TableName=table_name, Key=index_key)["Item"]
 
     # Verify that all of the attributes are different in the encrypted item
