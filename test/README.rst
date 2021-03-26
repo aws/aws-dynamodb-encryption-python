@@ -31,6 +31,5 @@ and `upstream-requirements-py27.txt`, run these commands:
 Test them using:
 
    .. code::
-
       $ tox -e test-upstream-requirements-py27
       $ tox -e test-upstream-requirements-py37
