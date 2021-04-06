@@ -13,7 +13,7 @@
 """Test ``aws_kms_encrypted_*`` examples."""
 import pytest
 
-from ..src import aws_kms_encrypted_client, aws_kms_encrypted_item, aws_kms_encrypted_resource, aws_kms_encrypted_table
+from dynamodb_encryption_sdk_examples import aws_kms_encrypted_client, aws_kms_encrypted_item, aws_kms_encrypted_resource, aws_kms_encrypted_table
 from .examples_test_utils import cmk_arn, ddb_table_name  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.examples]
