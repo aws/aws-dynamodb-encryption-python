@@ -1,0 +1,23 @@
+version: 0.2
+
+env:
+  variables:
+    BRANCH: "master"
+    AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID: >-
+      arn:aws:kms:us-west-2:658956600833:key/b3537ef1-d8dc-4780-9f5a-55776cbb2f7f
+    DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME: ddbec-release-validation
+    
+
+phases:
+  install:
+    commands:
+      - pip install tox
+    runtime-versions:
+      python: latest
+  pre_build:
+    commands:
+      - cd examples
+      - sed -i "s/dynamodb_encryption_sdk/dynamodb_encryption_sdk==$VERSION/" test/requirements.txt
+  build:
+    commands:
+      - tox -e py38-examples
