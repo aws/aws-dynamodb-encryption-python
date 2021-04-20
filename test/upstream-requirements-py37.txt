@@ -35,7 +35,7 @@ more-itertools==7.2.0
 moto==1.3.13
 packaging==19.2
 pluggy==0.13.0
-py==1.8.0
+py==1.10.0
 pyasn1==0.4.7
 pycparser==2.19
 pyparsing==2.4.2
