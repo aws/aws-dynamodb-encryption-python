@@ -76,7 +76,7 @@ def encrypt_batch_items(table_name, aws_cmk_id):
     def _select_index_from_item(item):
         """Find the index keys that match this item."""
         for index in index_keys:
-            if all([item[key] == value for key, value in index.items()]):
+            if all(item[key] == value for key, value in index.items()):
                 return index
 
         raise Exception("Index key not found in item.")
@@ -84,7 +84,7 @@ def encrypt_batch_items(table_name, aws_cmk_id):
     def _select_item_from_index(index, all_items):
         """Find the item that matches these index keys."""
         for item in all_items:
-            if all([item[key] == value for key, value in index.items()]):
+            if all(item[key] == value for key, value in index.items()):
                 return item
 
         raise Exception("Index key not found in item.")
