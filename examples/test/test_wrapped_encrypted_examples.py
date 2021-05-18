@@ -12,10 +12,10 @@
 # language governing permissions and limitations under the License.
 """Test ``wrapped_*_encrypted_*`` examples."""
 import pytest
+from dynamodb_encryption_sdk_examples import wrapped_rsa_encrypted_table, wrapped_symmetric_encrypted_table
 
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 
-from dynamodb_encryption_sdk_examples import wrapped_rsa_encrypted_table, wrapped_symmetric_encrypted_table
 from .examples_test_utils import ddb_table_name  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.examples]
