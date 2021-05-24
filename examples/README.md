@@ -1,13 +1,13 @@
-# AWS DynamoDB Encryption SDK Examples
+# AWS DynamoDB Encryption Client Examples
 
 This section features examples that show you
-how to use the AWS DynamoDB Encryption SDK.
+how to use the AWS DynamoDB Encryption Client.
 We demonstrate how to use the encryption and decryption APIs
 and how to set up some common configuration patterns.
 
 ## APIs
 
-The AWS DynamoDB Encryption SDK provides four high-level APIs: `EncryptedClient`, `EncryptedItem`,
+The AWS DynamoDB Encryption Client provides four high-level APIs: `EncryptedClient`, `EncryptedItem`,
 `EncryptedResource`, and `EncryptedTable`.
 
 You can find examples that demonstrate these APIs
@@ -19,7 +19,7 @@ Each of these examples uses AWS KMS as the materials provider.
 * [How to use the EncryptedResource API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_resource.py)
 * [How to use the EncryptedTable API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_table.py)
 
-## Configuration
+## Material Providers
 
 To use the encryption and decryption APIs, you need to describe how you want the library to protect your data keys.
 You can do this by configuring material providers. AWS KMS is the most common material provider used with the AWS DynamoDB Encryption
