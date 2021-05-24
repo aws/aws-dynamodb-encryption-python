@@ -15,9 +15,9 @@ in the [`examples/src/dynamodb_encryption_sdk_examples`](./src/dynamodb_encrypti
 Each of these examples uses AWS KMS as the materials provider.
 
 * [How to use the EncryptedClient API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_client.py)
-* [How to use the EncryptedItem API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_client.py)
-* [How to use the EncryptedResource API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_client.py)
-* [How to use the EncryptedTable API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_client.py)
+* [How to use the EncryptedItem API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_item.py)
+* [How to use the EncryptedResource API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_resource.py)
+* [How to use the EncryptedTable API](./src/dynamodb_encryption_sdk_examples/aws_kms_encrypted_table.py)
 
 ## Configuration
 
