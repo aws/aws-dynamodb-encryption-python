@@ -20,4 +20,20 @@ phases:
       - sed -i "s/dynamodb_encryption_sdk/dynamodb_encryption_sdk==$VERSION/" test/requirements.txt
   build:
     commands:
-      - tox -e py38-examples
+      - NUM_RETRIES=3
+      - |
+        while [ $NUM_RETRIES -gt 0 ]
+        do
+          tox -re py38-examples
+          if [ $? -eq 0 ]; then
+            break
+          fi
+          NUM_RETRIES=$((NUM_RETRIES-1))
+          if [ $NUM_RETRIES -eq 0 ]; then
+            echo "All validation attempts failed, stopping"
+            exit 1;
+          else
+            echo "Validation failed, retrying in 60 seconds; will retry $NUM_RETRIES more times" && sleep 60
+          fi
+        done
+
