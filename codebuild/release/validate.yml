@@ -17,7 +17,7 @@ phases:
   pre_build:
     commands:
       - cd examples
-      - sed -i "s/dynamodb_encryption_sdk/dynamodb_encryption_sdk==42.42.0/" test/requirements.txt
+      - sed -i "s/dynamodb-encryption-sdk/dynamodb-encryption-sdk==42.42.0/" test/requirements.txt
       - cat test/requirements.txt
   build:
     commands:
