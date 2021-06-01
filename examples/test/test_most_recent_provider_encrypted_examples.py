@@ -15,10 +15,10 @@ import uuid
 
 import boto3
 import pytest
+from dynamodb_encryption_sdk_examples import most_recent_provider_encrypted_table
 
 from dynamodb_encryption_sdk.material_providers.store.meta import MetaStore
 
-from ..src import most_recent_provider_encrypted_table
 from .examples_test_utils import cmk_arn, ddb_table_name  # noqa pylint: disable=unused-import
 
 pytestmark = [pytest.mark.examples]

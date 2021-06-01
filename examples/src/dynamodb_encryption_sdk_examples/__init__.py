@@ -11,3 +11,4 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Stub module indicator to make linter configuration simpler."""
+__version__ = "1.0.0"
