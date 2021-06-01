@@ -18,6 +18,7 @@ phases:
     commands:
       - cd examples
       - sed -i "s/dynamodb_encryption_sdk/dynamodb_encryption_sdk==42.42.0/" test/requirements.txt
+      - cat test/requirements.txt
   build:
     commands:
       - NUM_RETRIES=3
