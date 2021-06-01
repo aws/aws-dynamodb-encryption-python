@@ -36,7 +36,7 @@ setup(
     author_email="aws-cryptools@amazon.com",
     maintainer="Amazon Web Services",
     description="DynamoDB Encryption Client for Python examples",
-    long_description=read("README.rst"),
+    long_description=read("README.md"),
     keywords="dynamodb-encryption-sdk aws kms encryption dynamodb",
     data_files=["requirements.txt"],
     license="Apache License 2.0",
