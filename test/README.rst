@@ -8,6 +8,8 @@ In order to run these integration tests successfully, these things which must be
    `automatically discoverable credential locations`_.
 #. The ``AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID`` environment variable
    must be set to a valid `AWS KMS CMK ARN`_ that can be used by the available credentials.
+#. The ``AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_MRK_KEY_ID`` and ``AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_MRK_KEY_ID_2`` environment variables
+   must be set to two related AWS KMS Multi-Region key ids in different regions.
 #. The ``DDB_ENCRYPTION_CLIENT_TEST_TABLE_NAME`` environment variable must be set to a valid
    DynamoDB table name, in the default region, to which the discoverable credentials have
    read, write, and describe permissions.
