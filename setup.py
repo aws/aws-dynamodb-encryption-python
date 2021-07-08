@@ -11,7 +11,7 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 
 def read(*args):
     """Reads complete file contents."""
-    return io.open(os.path.join(HERE, *args), encoding="utf-8").read()
+    return io.open(os.path.join(HERE, *args), encoding="utf-8").read()  # pylint: disable=consider-using-with
 
 
 def get_version():
