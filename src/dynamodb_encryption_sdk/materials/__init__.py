@@ -33,7 +33,8 @@ __all__ = ("CryptographicMaterials", "EncryptionMaterials", "DecryptionMaterials
 class CryptographicMaterials(object):
     """Base class for all cryptographic materials."""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def material_description(self):
         # type: () -> Dict[Text, Text]
         """Material description to use with these cryptographic materials.
@@ -42,7 +43,8 @@ class CryptographicMaterials(object):
         :rtype: dict
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def encryption_key(self):
         # type: () -> DelegatedKey
         """Delegated key used for encrypting attributes.
@@ -51,7 +53,8 @@ class CryptographicMaterials(object):
         :rtype: DelegatedKey
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def decryption_key(self):
         # type: () -> DelegatedKey
         """Delegated key used for decrypting attributes.
@@ -60,7 +63,8 @@ class CryptographicMaterials(object):
         :rtype: DelegatedKey
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def signing_key(self):
         # type: () -> DelegatedKey
         """Delegated key used for calculating digital signatures.
@@ -69,7 +73,8 @@ class CryptographicMaterials(object):
         :rtype: DelegatedKey
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def verification_key(self):
         # type: () -> DelegatedKey
         """Delegated key used for verifying digital signatures.
