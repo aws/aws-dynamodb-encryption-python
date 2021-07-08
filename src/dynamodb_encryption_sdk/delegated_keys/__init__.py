@@ -45,7 +45,8 @@ class DelegatedKey(object):
     a :class:`NotImplementedError` detailing this.
     """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def algorithm(self):
         # type: () -> Text
         """Text description of algorithm used by this delegated key."""
