@@ -250,6 +250,7 @@ def test_kms_cmp_values_set(kwargs):
     assert cmp._grant_tokens == kwargs.get("grant_tokens", ())
     assert cmp._material_description == kwargs.get("material_description", {})
     assert cmp._regional_clients == kwargs.get("regional_clients", {})
+    assert cmp._enforce_decrypt_with_key_id == kwargs.get("enforce_decrypt_with_key_id", False)
 
 
 def test_add_regional_client_known_region(default_kms_cmp, patch_boto3_session):

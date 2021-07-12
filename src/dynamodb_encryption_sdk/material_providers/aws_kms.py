@@ -154,6 +154,10 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
     :param dict material_description: Material description to use as default state for this CMP (optional)
     :param dict regional_clients: Dictionary mapping AWS region names to pre-configured boto3
         KMS clients (optional)
+    #param bool enforce_decrypt_with_key_id: The KeyId parameter is optional when decrypting ciphertext 
+        that was encrypted under a symmetric CMK. This is because KMS can get information from metadata 
+        added to symmetric ciphertext blob. By default, we do not enforce that the key_id is used for 
+        decryption. When set to true, we ensure KMS only uses the specified CMK (key_id) for encryption. 
     """
 
     _key_id = attr.ib(validator=attr.validators.instance_of(six.string_types))
@@ -175,6 +179,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         grant_tokens=None,  # type: Optional[Tuple[Text]]
         material_description=None,  # type: Optional[Dict[Text, Text]]
         regional_clients=None,  # type: Optional[Dict[Text, botocore.client.BaseClient]]
+        enforce_decrypt_with_key_id=False,  # type: bool
     ):  # noqa=D107
         # type: (...) -> None
         # Workaround pending resolution of attrs/mypy interaction.
@@ -195,6 +200,7 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         self._grant_tokens = grant_tokens
         self._material_description = material_description
         self._regional_clients = regional_clients
+        self._enforce_decrypt_with_key_id = enforce_decrypt_with_key_id
         attr.validate(self)
         self.__attrs_post_init__()
 
@@ -386,6 +392,8 @@ class AwsKmsCryptographicMaterialsProvider(CryptographicMaterialsProvider):
         kms_params = dict(CiphertextBlob=encrypted_initial_material, EncryptionContext=kms_encryption_context)
         if self._grant_tokens:
             kms_params["GrantTokens"] = self._grant_tokens
+        if self._enforce_decrypt_with_key_id:
+            kms_params["KeyId"] = key_id
         # Catch any boto3 errors and normalize to expected UnwrappingError
         try:
             response = self._client(key_id).decrypt(**kms_params)
