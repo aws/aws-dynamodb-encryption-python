@@ -2,6 +2,18 @@
 Changelog
 *********
 
+3.0.0 -- 2021-07-15
+===================
+
+Deprecation
+-----------
+The AWS DynamoDB Encryption Client for Python no longer supports Python 2 or Python 3.4
+as of major version 3.x; only Python 3.5+ is supported. Customers using Python 2
+or Python 3.4 can still use the 2.x line of the DynamoDB Encryption Client,
+which will continue to receive security updates for the next 12 months, in accordance
+with our `Support Policy <https://github.com/aws/aws-dynamodb-encryption-python/blob/master/SUPPORT_POLICY.rst>`__.
+
+
 2.1.0 -- 2021-07-15
 ===================
 
