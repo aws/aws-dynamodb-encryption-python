@@ -22,16 +22,12 @@ Updating Upstream Requirements
 
 The purpose of the upstream requirements files is to provide a stable list of
 packages for dependencies to run downstream tests of the DynamoDB Encryption
-Client. In order to update the upstream requirements in `upstream-requirements-py37.txt`
-and `upstream-requirements-py27.txt`, run these commands:
+Client. In order to update the upstream requirements in `upstream-requirements-py37.txt`,
+run these commands::
 
-   .. code::
+    $ tox -e freeze-upstream-requirements-py37
 
-      $ tox -e freeze-upstream-requirements-py27
-      $ tox -e freeze-upstream-requirements-py37
+Test them using::
 
-Test them using:
+    $ tox -e test-upstream-requirements-py37
 
-   .. code::
-      $ tox -e test-upstream-requirements-py27
-      $ tox -e test-upstream-requirements-py37
