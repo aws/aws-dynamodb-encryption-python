@@ -43,7 +43,7 @@ def load_scenarios(online):
     into a shared method.
     """
     # pylint: disable=too-many-locals
-    with open(_SCENARIO_FILE) as f:
+    with open(_SCENARIO_FILE, encoding="utf-8") as f:
         scenarios = json.load(f)
     keys_file = _filename_from_uri(scenarios["keys"])
     keys = _load_keys(keys_file)
@@ -128,7 +128,7 @@ def _generate(materials_provider, table_data, ciphertext_file, metastore_info):
             if table:
                 table.delete()
 
-    with open(ciphertext_file, "w") as outfile:
+    with open(ciphertext_file, "w", encoding="utf-8") as outfile:
         json.dump(data_table_output, outfile, indent=4)
 
     if metatable:
@@ -137,7 +137,7 @@ def _generate(materials_provider, table_data, ciphertext_file, metastore_info):
         metastore_output[metastore_info["table_name"]].append(ddb_to_json(wrapping_key))
 
         metastore_ciphertext_file = _filename_from_uri(metastore_info["ciphertext"])
-        with open(metastore_ciphertext_file, "w") as outfile:
+        with open(metastore_ciphertext_file, "w", encoding="utf-8") as outfile:
             json.dump(metastore_output, outfile, indent=4)
 
         metatable.delete()
