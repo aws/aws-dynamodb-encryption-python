@@ -35,9 +35,7 @@ except ImportError:  # pragma: no cover
     pass
 
 
-__all__ = (
-    "CachingMostRecentProvider",
-)
+__all__ = ("CachingMostRecentProvider",)
 _LOGGER = logging.getLogger(LOGGER_NAME)
 #: Grace period during which we will return the latest local materials. This allows multiple
 #: threads to be using this same provider without risking lock contention or many threads
