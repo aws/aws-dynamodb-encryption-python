@@ -26,7 +26,7 @@ phases:
       # Testing every minor version
       # is too extreme at this time.
       # The choice of versions should be reviewed.
-      - pyenv install 3.7.9
-      - pyenv local 3.7.9
+      - pyenv install 3.7.12
+      - pyenv local 3.7.12
       - pip install tox tox-pyenv
       - tox
