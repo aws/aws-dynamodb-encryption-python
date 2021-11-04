@@ -47,7 +47,7 @@ Getting Started
 Required Prerequisites
 ======================
 
-* Python 3.5+
+* Python 3.6+
 
 
 Installation
