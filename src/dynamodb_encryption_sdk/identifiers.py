@@ -77,7 +77,7 @@ class PythonVersionSupport:
     WARN_BELOW_MAJOR = 3
     WARN_BELOW_MINOR = 6
     ERROR_BELOW_MAJOR = 3
-    ERROR_BELOW_MINOR = 5
+    ERROR_BELOW_MINOR = 6
     ERROR_DATE = datetime.datetime(year=2022, month=1, day=1)
 
 
