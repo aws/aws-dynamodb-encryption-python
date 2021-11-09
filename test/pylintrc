@@ -10,6 +10,7 @@ disable =
     protected-access,  # raised when calling _ methods
     redefined-outer-name,  # raised when using pytest-mock
     unused-argument,  # raised when patches and fixtures are needed but not called
+    no-self-use,  # raised on Classes in tests used for logically grouping tests
     # All below are disabled because we need to support Python 2
     useless-object-inheritance,
     raise-missing-from,

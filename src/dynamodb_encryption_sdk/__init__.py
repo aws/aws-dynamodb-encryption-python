@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """DynamoDB Encryption Client."""
+from dynamodb_encryption_sdk.compatability import _warn_deprecated_python
 from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
 from dynamodb_encryption_sdk.encrypted.item import (
     decrypt_dynamodb_item,
@@ -21,6 +22,8 @@ from dynamodb_encryption_sdk.encrypted.item import (
 from dynamodb_encryption_sdk.encrypted.resource import EncryptedResource
 from dynamodb_encryption_sdk.encrypted.table import EncryptedTable
 from dynamodb_encryption_sdk.identifiers import __version__
+
+_warn_deprecated_python()
 
 __all__ = (
     "decrypt_dynamodb_item",
