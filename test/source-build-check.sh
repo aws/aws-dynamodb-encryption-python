@@ -26,7 +26,7 @@ EXTRACTEDDIR=$(ls | tail -1)
 cd ${EXTRACTEDDIR}
 
 echo "Installing requirements from extracted source build."
-pip install -r test/requirements.txt
+pip install -r dev_requirements/test-requirements.txt
 pip install -e .
 
 echo "Running tests from extracted source build."
