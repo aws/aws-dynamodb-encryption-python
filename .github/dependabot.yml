@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # master
+  - package-ecosystem: "pip"
+    directory: "/dev_requirements"
+    schedule:
+      interval: "daily"
+
+  # Github Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
