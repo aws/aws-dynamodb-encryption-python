@@ -1,2 +1,0 @@
-dynamodb-encryption-sdk
-pytest
