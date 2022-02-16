@@ -21,7 +21,7 @@ phases:
   pre_build:
     commands:
       - cd examples
-      - sed -i "s/dynamodb-encryption-sdk/dynamodb-encryption-sdk==$VERSION/" ../dev_requirements/test-requirements.txt
+      - sed -i "s/dynamodb-encryption-sdk/dynamodb-encryption-sdk==$VERSION/" ../dev_requirements/examples-requirements.txt
   build:
     commands:
       - NUM_RETRIES=3

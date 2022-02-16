@@ -91,7 +91,7 @@ jobs:
       - run: |
           cd examples
           python -m pip install --upgrade pip
-          pip install --upgrade -r ../dev_requirements/ci-requirements.txt
+          pip install --upgrade -r ../dev_requirements/examples-requirements.txt
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
