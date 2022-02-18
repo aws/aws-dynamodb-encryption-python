@@ -1,7 +1,7 @@
 hypothesis==5.49.0
 mock==4.0.3
 moto==3.0.2
-pytest==7.0.0
+pytest==7.0.1
 pytest-cov==3.0.0
 pytest-mock==3.6.1
 pytest-xdist==2.5.0
