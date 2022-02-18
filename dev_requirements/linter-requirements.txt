@@ -1,0 +1,16 @@
+bandit==1.7.2
+black==22.1.0
+doc8==0.10.1
+flake8==4.0.1
+flake8-docstrings==1.6.0
+flake8-isort==4.1.1
+# https://github.com/JBKahn/flake8-print/pull/30
+flake8-print==4.0.0
+isort==5.10.1
+pylint==2.12.2
+pyflakes==2.4.0
+# https://github.com/PyCQA/pydocstyle/issues/375
+pydocstyle==3.0.0
+readme_renderer==32.0
+seed-isort-config==2.2.0
+vulture==2.3
