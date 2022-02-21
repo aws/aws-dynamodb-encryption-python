@@ -225,7 +225,7 @@ def test_loaded_key_infos():
     [
         pytest.param(val, id=str(val))
         for val in all_possible_combinations_kwargs(
-            dict(),
+            {},
             dict(botocore_session=botocore.session.Session()),
             dict(grant_tokens=("sdvoaweih", "auwshefiouawh")),
             dict(material_description={"asoiufeoia": "soajfijewi"}),
