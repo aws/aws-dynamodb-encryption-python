@@ -29,7 +29,7 @@ def get_version():
     return _release
 
 
-project = u"dynamodb-encryption-sdk-python" # pylint: disable=redundant-u-string-prefix
+project = u"dynamodb-encryption-sdk-python"  # pylint: disable=redundant-u-string-prefix
 version = get_version()
 release = get_release()
 
