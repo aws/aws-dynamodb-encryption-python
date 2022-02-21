@@ -31,7 +31,7 @@ jobs:
           - os: macos-latest
             architecture: x64
         category:
-          - local-fast
+          - py2-local-fast
     # These require credentials.
     # Enable them once we sort how to provide them.
     #          - integ-fast
