@@ -10,6 +10,7 @@ disable =
                    # pylint does not recognize this
     duplicate-code,  # tests for similar things tend to be similar
     redefined-outer-name,  # raises false positives with fixtures
+    consider-using-f-string,
 
 [DESIGN]
 max-args = 10
