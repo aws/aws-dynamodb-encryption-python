@@ -1,7 +1,10 @@
 hypothesis>=5.0.0,<6.0.0;python_version>='3'
 hypothesis==4.57.1;python_version=='2.7'
 mock
-moto>=1.3.8
+moto>=1.3.8;python_version>='3'
+# must be less than 2.2.x as Moto removed support for python2 as of moto 2.2.x.
+# https://github.com/spulec/moto/issues/3612
+moto>=1.3.8,<2.2.0;python_version=='2.7'
 pytest>=3.4.0
 pytest-cov
 pytest-mock
