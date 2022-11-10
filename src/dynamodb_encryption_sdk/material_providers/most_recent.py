@@ -272,7 +272,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :raises AttributeError: if provider could not locate version
         """
         blocking_wait = bool(ttl_action is TtlActions.EXPIRED)
-        acquired = self._lock.acquire(blocking_wait)
+        acquired = self._lock.acquire(blocking_wait) # pylint: disable=consider-using-with
         if not acquired:
             # We failed to acquire the lock.
             # If blocking, we will never reach this point.
@@ -310,7 +310,7 @@ class MostRecentProvider(CryptographicMaterialsProvider):
         :rtype: CryptographicMaterialsProvider
         """
         blocking_wait = bool(ttl_action is TtlActions.EXPIRED)
-        acquired = self._lock.acquire(blocking_wait)
+        acquired = self._lock.acquire(blocking_wait) # pylint: disable=consider-using-with
 
         if not acquired:
             # We failed to acquire the lock.

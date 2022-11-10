@@ -1,13 +1,13 @@
 [MESSAGES CONTROL]
 # Disabling messages that we either don't care about for tests or are necessary to break for tests.
 disable =
-    bad-continuation,  # we let black handle this
     ungrouped-imports,  # we let isort handle this
     duplicate-code,  # causes lots of problems with implementations of common interfaces
     # All below are disabled because we need to support Python 2
     useless-object-inheritance,
     raise-missing-from,
     super-with-arguments,
+    consider-using-f-string,
 
 [BASIC]
 # Allow function names up to 50 characters

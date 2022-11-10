@@ -104,14 +104,14 @@ def decode_value(value, transform_binary=False):  # noqa: C901
 
 def attribute_test_vectors(mode):
     filepath = _ATTRIBUTE_TEST_VECTOR_FILE_TEMPLATE.format(mode=mode)
-    with open(filepath) as f:
+    with open(filepath, encoding="utf-8") as f:
         vectors = json.load(f)
     for vector in vectors:
         yield (decode_value(vector["attribute"]), base64.b64decode(codecs.encode(vector["serialized"], "utf-8")))
 
 
 def material_description_test_vectors():
-    with open(_MATERIAL_DESCRIPTION_TEST_VECTORS_FILE) as f:
+    with open(_MATERIAL_DESCRIPTION_TEST_VECTORS_FILE, encoding="utf-8") as f:
         vectors = json.load(f)
     for vector in vectors:
         yield (vector["material_description"], decode_value({"B": codecs.encode(vector["serialized"], "utf-8")}))
@@ -125,7 +125,7 @@ ACTION_MAP = {
 
 
 def string_to_sign_test_vectors():
-    with open(_STRING_TO_SIGN_TEST_VECTORS_FILE) as f:
+    with open(_STRING_TO_SIGN_TEST_VECTORS_FILE, encoding="utf-8") as f:
         vectors = json.load(f)
     for vector in vectors:
         item = {key: decode_value(value["value"]) for key, value in vector["item"].items()}
