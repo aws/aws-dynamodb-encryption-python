@@ -1,5 +1,4 @@
-hypothesis>=5.0.0
-importlib-metadata<5.0
+hypothesis==6.31.6
 mock
 moto==3.0.2
 pytest>=3.4.0
