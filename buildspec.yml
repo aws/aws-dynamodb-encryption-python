@@ -3,12 +3,6 @@ version: 0.2
 batch:
   fast-fail: false
   build-list:
-    - identifier: python2_7
-      buildspec: codebuild/python2.7.yml
-    - identifier: python3_5
-      buildspec: codebuild/python3.5.yml
-    - identifier: python3_6
-      buildspec: codebuild/python3.6.yml
     - identifier: python3_7
       buildspec: codebuild/python3.7.yml
     - identifier: python3_8
