@@ -23,6 +23,7 @@ SLOW_SETTINGS = hypothesis.settings(
         hypothesis.HealthCheck.too_slow,
         hypothesis.HealthCheck.data_too_large,
         hypothesis.HealthCheck.large_base_example,
+        hypothesis.HealthCheck.function_scoped_fixture,
     ),
     deadline=None,
 )
