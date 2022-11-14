@@ -26,8 +26,8 @@ pytestmark = [pytest.mark.functional, pytest.mark.local]
     (
         ("asdf", "asdf"),
         (b"asdf", "asdf"),
-        (codecs.encode(u"Предисловие", "utf-8"), u"Предисловие"),
-        (u"Предисловие", u"Предисловие"),
+        (codecs.encode("Предисловие", "utf-8"), "Предисловие"),
+        ("Предисловие", "Предисловие"),
     ),
 )
 def test_to_str(data, expected_output):
@@ -41,8 +41,8 @@ def test_to_str(data, expected_output):
         ("asdf", b"asdf"),
         (b"asdf", b"asdf"),
         (b"\x3a\x00\x99", b"\x3a\x00\x99"),
-        (u"Предисловие", codecs.encode(u"Предисловие", "utf-8")),
-        (codecs.encode(u"Предисловие", "utf-8"), codecs.encode(u"Предисловие", "utf-8")),
+        ("Предисловие", codecs.encode("Предисловие", "utf-8")),
+        (codecs.encode("Предисловие", "utf-8"), codecs.encode("Предисловие", "utf-8")),
     ),
 )
 def test_to_bytes(data, expected_output):

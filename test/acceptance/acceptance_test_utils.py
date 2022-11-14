@@ -61,7 +61,7 @@ def _decode_item(item):
 
 def _build_plaintext_items(plaintext_file, version):
     # pylint: disable=too-many-locals
-    with open(plaintext_file) as f:
+    with open(plaintext_file, encoding="utf-8") as f:
         plaintext_data = json.load(f)
 
     actions = {}
@@ -92,7 +92,7 @@ def _build_plaintext_items(plaintext_file, version):
 
 
 def _load_ciphertext_items(ciphertext_file):
-    with open(ciphertext_file) as f:
+    with open(ciphertext_file, encoding="utf-8") as f:
         ciphertexts = json.load(f)
 
     for _table, items in ciphertexts.items():
@@ -103,7 +103,7 @@ def _load_ciphertext_items(ciphertext_file):
 
 
 def _load_keys(keys_file):
-    with open(keys_file) as f:
+    with open(keys_file, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -165,7 +165,7 @@ def _meta_table_prep(table_name, items_filename):
     table = boto3.resource("dynamodb", region_name="us-west-2").Table(table_name)
     table.wait_until_exists()
     try:
-        with open(_filename_from_uri(items_filename)) as f:
+        with open(_filename_from_uri(items_filename), encoding="utf-8") as f:
             table_data = json.load(f)
         request_items = {}
 
@@ -255,7 +255,7 @@ def _expand_items(ciphertext_items, plaintext_items):
 
 def load_scenarios(online):
     # pylint: disable=too-many-locals
-    with open(_SCENARIO_FILE) as f:
+    with open(_SCENARIO_FILE, encoding="utf-8") as f:
         scenarios = json.load(f)
     keys_file = _filename_from_uri(scenarios["keys"])
     keys = _load_keys(keys_file)
