@@ -20,7 +20,12 @@ from dynamodb_encryption_sdk_examples import (
     aws_kms_multi_region_key,
 )
 
-from .examples_test_utils import cmk_arn, cmk_mrk_arn, ddb_table_name, second_cmk_mrk_arn  # noqa pylint: disable=unused-import
+from .examples_test_utils import (  # noqa pylint: disable=unused-import
+    cmk_arn,
+    cmk_mrk_arn,
+    ddb_table_name,
+    second_cmk_mrk_arn,
+)
 
 pytestmark = [pytest.mark.examples]
 
