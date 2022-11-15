@@ -29,7 +29,7 @@ def get_version():
     return _release
 
 
-project = u"dynamodb-encryption-sdk-python"  # pylint: disable=redundant-u-string-prefix
+project = "dynamodb-encryption-sdk-python"
 version = get_version()
 release = get_release()
 
@@ -53,7 +53,7 @@ templates_path = ["_templates"]
 source_suffix = ".rst"  # The suffix of source filenames.
 master_doc = "index"  # The master toctree document.
 
-copyright = u"%s, Amazon" % datetime.now().year  # pylint: disable=redefined-builtin,redundant-u-string-prefix
+copyright = "%s, Amazon" % datetime.now().year  # pylint: disable=redefined-builtin
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.

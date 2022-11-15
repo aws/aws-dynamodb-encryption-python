@@ -3,6 +3,7 @@
 disable =
     duplicate-code,  # these examples often feature similar code
     too-many-locals,  # for these examples, we prioritize keeping everything together for simple readability
+    consider-using-f-string, # Not supported in Python 3.5
 
 [BASIC]
 # Allow function names up to 50 characters
