@@ -36,7 +36,7 @@ __all__ = (
 )
 
 warnings.warn(
-    "This major version (2.x) of the AWS DynamoDB Encryption Client for Python has reached End-of-Support.\n"
+    "This major version (1.x) of the AWS DynamoDB Encryption Client for Python has reached End-of-Support.\n"
     + "It will no longer receive security updates or bug fixes.\n"
     + "Consider updating to the latest version of the AWS DynamoDB Encryption Client.",
     DeprecationWarning,
