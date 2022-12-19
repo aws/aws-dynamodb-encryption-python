@@ -25,7 +25,7 @@ class TestWarnDeprecatedPython:
     def test_happy_version(self):
         with mock.patch.object(sys, "version_info") as v_info:
             v_info.major = 3
-            v_info.minor = 6
+            v_info.minor = 7
             with pytest.warns(None) as record:
                 _warn_deprecated_python()
             assert len(record) == 0
