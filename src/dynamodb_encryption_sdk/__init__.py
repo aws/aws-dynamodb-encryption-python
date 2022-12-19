@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """DynamoDB Encryption Client."""
+import warnings
+
 from dynamodb_encryption_sdk.encrypted.client import EncryptedClient
 from dynamodb_encryption_sdk.encrypted.item import (
     decrypt_dynamodb_item,
@@ -31,4 +33,11 @@ __all__ = (
     "EncryptedResource",
     "EncryptedTable",
     "__version__",
+)
+
+warnings.warn(
+    "This major version (2.x) of the AWS DynamoDB Encryption Client for Python has reached End-of-Support.\n"
+    + "It will no longer receive security updates or bug fixes.\n"
+    + "Consider updating to the latest version of the AWS DynamoDB Encryption Client.",
+    DeprecationWarning,
 )
