@@ -28,5 +28,5 @@ phases:
       # The choice of versions should be reviewed.
       - pyenv install 3.7.9
       - pyenv local 3.7.9
-      - pip install tox tox-pyenv
+      - pip install "tox < 4.0"
       - tox
