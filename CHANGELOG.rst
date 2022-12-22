@@ -2,6 +2,19 @@
 Changelog
 *********
 
+1.3.1 -- 2022-12-19
+===================
+
+Deprecation Announcement
+------------------------
+The AWS DynamoDB Encryption Client for Python Major Version 1 is End of Support.
+It will no longer receive security updates or bug fixes.
+Consider updating to the latest version of the AWS DynamoDB Encryption Client for Python.
+
+Maintenance
+------------------------
+* Emit Deprecation Warning on library initialization
+
 1.3.0 -- 2021-02-04
 ===================
 Adds the CachingMostRecentProvider and deprecates MostRecentProvider.
