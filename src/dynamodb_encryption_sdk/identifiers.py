@@ -14,7 +14,7 @@
 from enum import Enum
 
 __all__ = ("LOGGER_NAME", "CryptoAction", "EncryptionKeyType", "KeyEncodingType")
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 
 LOGGER_NAME = "dynamodb_encryption_sdk"
 USER_AGENT_SUFFIX = "DynamodbEncryptionSdkPython/{}".format(__version__)
