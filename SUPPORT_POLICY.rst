@@ -31,7 +31,8 @@ This table describes the current support status of each major version of the AWS
       - 
     * - 3.x
       - Generally Available
-      -
+      - Maintenance
+      - 2023-07-23
       -
 
 .. _AWS SDKs and Tools Maintenance Policy: https://docs.aws.amazon.com/sdkref/latest/guide/maint-policy.html#version-life-cycle
