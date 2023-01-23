@@ -11,6 +11,9 @@ batch:
       buildspec: codebuild/python3.9.yml
     - identifier: python3_10
       buildspec: codebuild/python3.10.yml
+    - identifier: python3_11
+      buildspec: codebuild/python3.11.yml
+
 
     - identifier: code_coverage
       buildspec: codebuild/coverage/coverage.yml

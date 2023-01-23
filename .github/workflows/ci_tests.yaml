@@ -28,6 +28,8 @@ jobs:
           - 3.7
           - 3.8
           - 3.9
+          - "3.10"
+          - "3.11"
           - 3.x
         category:
           - local-slow
@@ -62,6 +64,27 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: 3.7
+      - run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade -r dev_requirements/ci-requirements.txt
+      - name: run test
+        env:
+          TOXENV: ${{ matrix.category }}
+        run: tox -- -vv
+  upstream-py311:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        category:
+          - nocmk
+          - sourcebuildcheck
+          - test-upstream-requirements-py311
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
       - run: |
           python -m pip install --upgrade pip
           pip install --upgrade -r dev_requirements/ci-requirements.txt
