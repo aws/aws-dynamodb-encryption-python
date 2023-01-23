@@ -14,7 +14,7 @@ phases:
         python: latest
   build:
     commands:
-      - pyenv install 3.9
-      - pyenv local 3.9
+      - pyenv install 3.9.7
+      - pyenv local 3.9.7
       - pip install "tox < 4.0"
       - tox

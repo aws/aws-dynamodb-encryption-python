@@ -14,7 +14,19 @@ phases:
         python: latest
   build:
     commands:
-      - pyenv install 3.7
-      - pyenv local 3.7
+      # The specific versions are manually installed
+      # because they are not installed
+      # by default in CodeBuild containers.
+      # `pyenv` does not have
+      # a nice way to just install
+      # the latest patch version.
+      # I have selected the current latest patch
+      # rather than try
+      # and manage a one-liner or script.
+      # Testing every minor version
+      # is too extreme at this time.
+      # The choice of versions should be reviewed.
+      - pyenv install 3.7.12
+      - pyenv local 3.7.12
       - pip install "tox < 4.0"
       - tox
