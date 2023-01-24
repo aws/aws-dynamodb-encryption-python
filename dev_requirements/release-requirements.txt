@@ -1,6 +1,6 @@
 pypi-parker==0.1.2
 setuptools==66.1.1
 twine==3.8.0
-wheel==0.37.1
+wheel==0.38.4
 #This is required for twine < 4.0
 packaging
