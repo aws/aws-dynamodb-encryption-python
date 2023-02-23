@@ -4,8 +4,9 @@ botocore==1.23.51
 certifi==2022.12.7
 cffi==1.15.1
 charset-normalizer==3.0.1
-coverage==7.0.5
+coverage==7.1.0
 cryptography==39.0.1
+exceptiongroup==1.1.0
 execnet==1.9.0
 hypothesis==6.31.6
 idna==3.4
@@ -20,9 +21,9 @@ packaging==23.0
 pluggy==1.0.0
 py==1.11.0
 pycparser==2.21
-pytest==7.0.0
+pytest==7.2.1
 pytest-cov==3.0.0
-pytest-forked==1.4.0
+pytest-forked==1.6.0
 pytest-mock==3.10.0
 pytest-xdist==2.5.0
 python-dateutil==2.8.2
@@ -34,9 +35,9 @@ six==1.16.0
 sortedcontainers==2.4.0
 toml==0.10.2
 tomli==2.0.1
-types-toml==0.10.8.1
-typing_extensions==4.4.0
+types-toml==0.10.8.5
+typing_extensions==4.5.0
 urllib3==1.26.14
-Werkzeug==2.2.2
+Werkzeug==2.2.3
 xmltodict==0.13.0
-zipp==3.11.0
+zipp==3.14.0
