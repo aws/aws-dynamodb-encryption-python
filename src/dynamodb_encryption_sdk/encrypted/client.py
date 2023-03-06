@@ -134,7 +134,7 @@ class EncryptedClient(object):
         This class provides a superset of the boto3 DynamoDB client API, so should work as
         a drop-in replacement once configured.
 
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#client
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#client
 
         If you want to provide per-request cryptographic details, the ``put_item``, ``get_item``,
         ``query``, ``scan``, ``batch_write_item``, and ``batch_get_item`` methods will also

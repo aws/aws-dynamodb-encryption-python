@@ -60,7 +60,7 @@ class EncryptedTable(object):
         This class provides a superset of the boto3 DynamoDB Table API, so should work as
         a drop-in replacement once configured.
 
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#table
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/table/index.html#DynamoDB.Table
 
         If you want to provide per-request cryptographic details, the ``put_item``, ``get_item``,
         ``query``, and ``scan`` methods will also accept a ``crypto_config`` parameter, defining
@@ -158,7 +158,7 @@ class EncryptedTable(object):
     def batch_writer(self, overwrite_by_pkeys=None):
         """Create a batch writer object.
 
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.Table.batch_writer
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/table/batch_writer.html
 
         :type overwrite_by_pkeys: list(string)
         :param overwrite_by_pkeys: De-duplicate request items in buffer if match new request
