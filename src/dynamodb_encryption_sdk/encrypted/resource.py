@@ -44,7 +44,7 @@ class EncryptedTablesCollectionManager(object):
     # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """Tables collection manager that provides :class:`EncryptedTable` objects.
 
-    https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.tables
+    https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/service-resource/tables.html
 
     :param collection: Pre-configured boto3 DynamoDB table collection manager
     :type collection: boto3.resources.collection.CollectionManager
@@ -137,7 +137,7 @@ class EncryptedResource(object):
         This class provides a superset of the boto3 DynamoDB service resource API, so should
         work as a drop-in replacement once configured.
 
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#service-resource
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/service-resource/index.html
 
         If you want to provide per-request cryptographic details, the ``batch_write_item``
         and ``batch_get_item`` methods will also accept a ``crypto_config`` parameter, defining
@@ -217,7 +217,7 @@ class EncryptedResource(object):
         If any of the optional configuration values are not provided, the corresponding values
         for this ``EncryptedResource`` will be used.
 
-        https://boto3.readthedocs.io/en/latest/reference/services/dynamodb.html#DynamoDB.ServiceResource.Table
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/table/index.html#DynamoDB.Table
 
         :param name: The table name.
         :param CryptographicMaterialsProvider materials_provider: Cryptographic materials
