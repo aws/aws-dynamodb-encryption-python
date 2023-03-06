@@ -220,36 +220,32 @@ def test_loaded_key_infos():
     assert cmp._regional_clients == {}
 
 
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        pytest.param(val, id=str(val))
-        for val in all_possible_combinations_kwargs(
-            {},
-            dict(botocore_session=botocore.session.Session()),
-            dict(grant_tokens=("sdvoaweih", "auwshefiouawh")),
-            dict(material_description={"asoiufeoia": "soajfijewi"}),
-            dict(
-                regional_clients={
-                    "my-region-1": boto3.session.Session().client(
-                        "kms", region_name="not-a-real-region", endpoint_url="https://not-a-real-url"
-                    )
-                }
-            ),
-        )
-    ],
-)
-def test_kms_cmp_values_set(kwargs):
-    cmp = AwsKmsCryptographicMaterialsProvider(key_id="example_key_id", **kwargs)
+def test_kms_cmp_values_set():
+    # These aren't parametrized to avoid issues with pytest-xdist test mismatches
+    # due to different session objects per process
+    for kwargs in all_possible_combinations_kwargs(
+        {},
+        dict(botocore_session=botocore.session.Session()),
+        dict(grant_tokens=("sdvoaweih", "auwshefiouawh")),
+        dict(material_description={"asoiufeoia": "soajfijewi"}),
+        dict(
+            regional_clients={
+                "my-region-1": boto3.session.Session().client(
+                    "kms", region_name="not-a-real-region", endpoint_url="https://not-a-real-url"
+                )
+            }
+        ),
+    ):
+        cmp = AwsKmsCryptographicMaterialsProvider(key_id="example_key_id", **kwargs)
 
-    assert cmp._key_id == "example_key_id"
+        assert cmp._key_id == "example_key_id"
 
-    if "botocore_session" in kwargs:
-        assert cmp._botocore_session == kwargs["botocore_session"]
+        if "botocore_session" in kwargs:
+            assert cmp._botocore_session == kwargs["botocore_session"]
 
-    assert cmp._grant_tokens == kwargs.get("grant_tokens", ())
-    assert cmp._material_description == kwargs.get("material_description", {})
-    assert cmp._regional_clients == kwargs.get("regional_clients", {})
+        assert cmp._grant_tokens == kwargs.get("grant_tokens", ())
+        assert cmp._material_description == kwargs.get("material_description", {})
+        assert cmp._regional_clients == kwargs.get("regional_clients", {})
 
 
 def test_add_regional_client_known_region(default_kms_cmp, patch_boto3_session):
