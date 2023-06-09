@@ -82,7 +82,7 @@ CachingMostRecentProvider replaces MostRecentProvider and provides a cache entry
 TTL to reauthorize the key with the key provider.
 
 MostRecentProvider is now deprecated, and is removed in 2.0.0. See
-https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/most-recent-provider.html
+https://docs.aws.amazon.com/database-encryption-sdk/latest/devguide/most-recent-provider.html#mrp-versions
 for more details.
 
 
