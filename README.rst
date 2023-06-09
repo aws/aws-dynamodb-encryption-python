@@ -177,10 +177,10 @@ of the one that the client would normally construct for you.
     ... )  # this uses my_special_crypto_config
 
 
-.. _Amazon DynamoDB Encryption Client: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/
+.. _Amazon DynamoDB Encryption Client: https://docs.aws.amazon.com/database-encryption-sdk/latest/devguide/legacy-dynamodb-encryption-client.html
 .. _Amazon DynamoDB: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
-.. _primary documents: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/
-.. _Concepts Guide: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/concepts.html
+.. _primary documents: https://docs.aws.amazon.com/database-encryption-sdk/latest/devguide/legacy-dynamodb-encryption-client.html
+.. _Concepts Guide: https://docs.aws.amazon.com/database-encryption-sdk/latest/devguide/DDBEC-legacy-concepts.html
 .. _Amazon DynamoDB Encryption Client for Java: https://github.com/aws/aws-dynamodb-encryption-java/
 .. _Amazon DynamoDB Encryption Client for Python: https://github.com/aws/aws-dynamodb-encryption-python/
 .. _DynamoDB Stream: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html
