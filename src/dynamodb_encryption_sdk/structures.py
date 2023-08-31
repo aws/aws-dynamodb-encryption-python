@@ -176,7 +176,7 @@ class AttributeActions(object):
             SIGN_ONLY        -> SIGN_ONLY
             ENCRYPT_AND_SIGN -> SIGN_ONLY
 
-        :param str *keys: Attribute names to treat as indexed
+        :param str ``*keys``: Attribute names to treat as indexed
         :raises InvalidArgumentError: if a custom action was previously set for any specified
             attributes
         """
