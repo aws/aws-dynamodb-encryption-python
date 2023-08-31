@@ -195,5 +195,5 @@ of the one that the client would normally construct for you.
 .. _CryptoConfig: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/config.html
 .. _decrypt_dynamodb_item: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/encrypted/item.html#dynamodb_encryption_sdk.encrypted.item.decrypt_dynamodb_item
 .. _transformation functions: https://aws-dynamodb-encryption-python.readthedocs.io/en/latest/lib/tools/transform.html
-.. _Security issue notifications: https://github.com/aws/aws-dynamodb-encryption-python/blob/master/CONTRIBUTING.md#user-content-security-issue-notifications
+.. _Security issue notifications: https://github.com/aws/aws-dynamodb-encryption-python/blob/master/CONTRIBUTING.md
 .. _Support Policy: https://github.com/aws/aws-dynamodb-encryption-python/blob/master/SUPPORT_POLICY.rst

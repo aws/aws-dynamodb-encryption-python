@@ -198,7 +198,7 @@ def decrypt_multi_get(decrypt_method, crypto_config_method, read_method, **kwarg
     :param callable decrypt_method: Method to use to decrypt items
     :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
     :param callable read_method: Method that reads from the table
-    :param **kwargs: Keyword arguments to pass to ``read_method``
+    :param ``**kwargs``: Keyword arguments to pass to ``read_method``
     :return: DynamoDB response
     :rtype: dict
     """
@@ -220,7 +220,7 @@ def decrypt_get_item(decrypt_method, crypto_config_method, read_method, **kwargs
     :param callable decrypt_method: Method to use to decrypt item
     :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
     :param callable read_method: Method that reads from the table
-    :param **kwargs: Keyword arguments to pass to ``read_method``
+    :param ``**kwargs``: Keyword arguments to pass to ``read_method``
     :return: DynamoDB response
     :rtype: dict
     """
@@ -244,7 +244,7 @@ def decrypt_batch_get_item(decrypt_method, crypto_config_method, read_method, **
     :param callable decrypt_method: Method to use to decrypt items
     :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
     :param callable read_method: Method that reads from the table
-    :param **kwargs: Keyword arguments to pass to ``read_method``
+    :param ``**kwargs``: Keyword arguments to pass to ``read_method``
     :return: DynamoDB response
     :rtype: dict
     """
@@ -276,7 +276,7 @@ def encrypt_put_item(encrypt_method, crypto_config_method, write_method, **kwarg
     :param callable encrypt_method: Method to use to encrypt items
     :param callable crypto_config_method: Method that accepts ``kwargs`` and provides a :class:`CryptoConfig`
     :param callable write_method: Method that writes to the table
-    :param **kwargs: Keyword arguments to pass to ``write_method``
+    :param ``**kwargs``: Keyword arguments to pass to ``write_method``
     :return: DynamoDB response
     :rtype: dict
     """
@@ -297,7 +297,7 @@ def encrypt_batch_write_item(encrypt_method, crypto_config_method, write_method,
     :param callable encrypt_method: Method to use to encrypt items
     :param callable crypto_config_method: Method that accepts a table name string and provides a :class:`CryptoConfig`
     :param callable write_method: Method that writes to the table
-    :param **kwargs: Keyword arguments to pass to ``write_method``
+    :param ``**kwargs``: Keyword arguments to pass to ``write_method``
     :return: DynamoDB response
     :rtype: dict
     """
