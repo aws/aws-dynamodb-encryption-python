@@ -34,7 +34,7 @@ with this library.
 * `How to use raw symmetric wrapping keys <./src/dynamodb_encryption_sdk_examples/wrapped_symmetric_encrypted_table.py>`_
 * `How to use raw asymmetric wrapping keys <./src/dynamodb_encryption_sdk_examples/wrapped_rsa_encrypted_table.py>`_
 
-For more details on the different type of material providers, see `How to choose a cryptographic materials provider <https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/crypto-materials-providers.html>`_.
+For more details on the different type of material providers, see `How to choose a cryptographic materials provider <https://docs.aws.amazon.com/database-encryption-sdk/latest/devguide/crypto-materials-providers.html>`_.
 
 Running the examples
 ====================
