@@ -21,6 +21,7 @@ from dynamodb_encryption_sdk.internal.identifiers import ReservedAttributes
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
 
 from .identifiers import CryptoAction
+from typing import Dict, Iterable, List, Optional, Set, Text
 
 __all__ = ("EncryptionContext", "AttributeActions", "TableIndex", "TableInfo")
 
