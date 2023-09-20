@@ -18,11 +18,8 @@
 """
 import struct
 
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Sized  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
+from typing import Sized
+
 
 __all__ = ("encode_length", "encode_value")
 

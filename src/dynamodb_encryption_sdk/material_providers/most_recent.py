@@ -28,11 +28,7 @@ from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint:
 from . import CryptographicMaterialsProvider
 from .store import ProviderStore
 
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
+from typing import Any, Text
 
 
 __all__ = ("CachingMostRecentProvider",)

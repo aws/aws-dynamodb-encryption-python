@@ -28,11 +28,8 @@ from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.structures import CryptoAction, EncryptionContext, TableInfo
 from dynamodb_encryption_sdk.transform import dict_to_ddb
 
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Bool, Callable, Dict, Iterable, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
+from typing import Any, Bool, Callable, Dict, Iterable, Text
+
 
 __all__ = (
     "TableInfoCache",

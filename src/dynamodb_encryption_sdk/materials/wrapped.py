@@ -24,12 +24,7 @@ from dynamodb_encryption_sdk.identifiers import EncryptionKeyType
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import CryptographicMaterials
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
+from typing import Dict, Optional, Text
 
 
 __all__ = ("WrappedCryptographicMaterials",)

@@ -32,11 +32,8 @@ from dynamodb_encryption_sdk.internal.validators import callable_validator
 
 from .primitives import load_rsa_key
 
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Callable, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
+from typing import Any, Callable, Text
+
 
 __all__ = ("JavaAuthenticator", "JavaMac", "JavaSignature", "JAVA_AUTHENTICATOR")
 _LOGGER = logging.getLogger(LOGGER_NAME)

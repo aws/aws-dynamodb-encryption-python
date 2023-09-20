@@ -27,13 +27,9 @@ from dynamodb_encryption_sdk.internal.formatting.serialize import encode_length,
 from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Callable  # noqa pylint: disable=unused-import
+from typing import Callable
 
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import,ungrouped-imports
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
+from dynamodb_encryption_sdk.internal import dynamodb_types
 
 
 __all__ = ("serialize_attribute",)

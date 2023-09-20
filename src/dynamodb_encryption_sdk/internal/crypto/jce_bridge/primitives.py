@@ -38,11 +38,7 @@ from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, 
 from dynamodb_encryption_sdk.internal.identifiers import MinimumKeySizes
 from dynamodb_encryption_sdk.internal.validators import callable_validator
 
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Callable, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
+from typing import Any, Callable, Text
 
 
 __all__ = (
