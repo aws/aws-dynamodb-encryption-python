@@ -13,11 +13,10 @@
 """Delegated keys."""
 import abc
 
+from typing import Dict, Optional, Text
 import six
 
 from dynamodb_encryption_sdk.identifiers import EncryptionKeyType  # noqa pylint: disable=unused-import
-
-from typing import Dict, Optional, Text
 
 
 __all__ = ("DelegatedKey",)

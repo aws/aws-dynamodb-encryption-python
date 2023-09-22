@@ -17,6 +17,7 @@ import base64
 import logging
 from enum import Enum
 
+from typing import Dict, Optional, Text, Tuple
 import attr
 import boto3
 import botocore
@@ -34,10 +35,8 @@ from dynamodb_encryption_sdk.internal.validators import dictionary_validator, it
 from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEncryptionMaterials
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 
-from . import CryptographicMaterialsProvider
-
-from typing import Dict, Optional, Text, Tuple
 from dynamodb_encryption_sdk.internal import dynamodb_types
+from . import CryptographicMaterialsProvider
 
 
 __all__ = ("AwsKmsCryptographicMaterialsProvider",)

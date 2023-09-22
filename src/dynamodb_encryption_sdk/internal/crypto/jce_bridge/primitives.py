@@ -20,6 +20,7 @@ import abc
 import logging
 import os
 
+from typing import Any, Callable, Text
 import attr
 import six
 from cryptography.hazmat.backends import default_backend
@@ -37,8 +38,6 @@ from dynamodb_encryption_sdk.exceptions import (
 from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, KeyEncodingType
 from dynamodb_encryption_sdk.internal.identifiers import MinimumKeySizes
 from dynamodb_encryption_sdk.internal.validators import callable_validator
-
-from typing import Any, Callable, Text
 
 
 __all__ = (

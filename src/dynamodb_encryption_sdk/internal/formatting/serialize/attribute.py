@@ -19,6 +19,7 @@
 import io
 import logging
 
+from typing import Callable
 from boto3.dynamodb.types import DYNAMODB_CONTEXT, Binary
 
 from dynamodb_encryption_sdk.exceptions import SerializationError
@@ -27,7 +28,6 @@ from dynamodb_encryption_sdk.internal.formatting.serialize import encode_length,
 from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
 
-from typing import Callable
 
 from dynamodb_encryption_sdk.internal import dynamodb_types
 

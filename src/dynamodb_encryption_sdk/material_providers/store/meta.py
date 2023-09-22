@@ -14,6 +14,7 @@
 import logging
 from enum import Enum
 
+from typing import Dict, Optional, Text, Tuple
 import attr
 import botocore
 from boto3.dynamodb.conditions import Attr, Key
@@ -28,8 +29,6 @@ from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsPro
 from dynamodb_encryption_sdk.material_providers.wrapped import WrappedCryptographicMaterialsProvider
 
 from . import ProviderStore
-
-from typing import Dict, Optional, Text, Tuple
 
 
 __all__ = ("MetaStore",)

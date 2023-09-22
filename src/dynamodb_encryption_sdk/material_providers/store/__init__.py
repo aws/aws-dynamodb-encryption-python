@@ -13,13 +13,13 @@
 """Cryptographic materials provider stores."""
 import abc
 
+from typing import Dict, Optional, Text
 import six
 
 from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
 from dynamodb_encryption_sdk.material_providers import (  # noqa pylint: disable=unused-import
     CryptographicMaterialsProvider,
 )
-from typing import Dict, Optional, Text
 
 
 __all__ = ("ProviderStore",)

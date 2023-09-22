@@ -13,6 +13,7 @@
 """Resources for encrypting items."""
 import copy
 
+from typing import Dict
 import attr
 
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
@@ -20,8 +21,6 @@ from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsProvider
 from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.structures import AttributeActions, EncryptionContext
-
-from typing import Dict
 
 
 __all__ = ("CryptoConfig",)

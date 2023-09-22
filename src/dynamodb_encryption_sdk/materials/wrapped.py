@@ -14,6 +14,7 @@
 import base64
 import copy
 
+from typing import Dict, Optional, Text
 import attr
 import six
 
@@ -24,7 +25,6 @@ from dynamodb_encryption_sdk.identifiers import EncryptionKeyType
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import CryptographicMaterials
-from typing import Dict, Optional, Text
 
 
 __all__ = ("WrappedCryptographicMaterials",)

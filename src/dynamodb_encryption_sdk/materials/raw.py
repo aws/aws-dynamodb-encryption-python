@@ -24,13 +24,13 @@ Cryptographic materials classes for use directly with delegated keys.
 """
 import copy
 
+from typing import Dict, Optional, Text
 import attr
 import six
 
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMaterials
-from typing import Dict, Optional, Text
 
 
 __all__ = ("RawEncryptionMaterials", "RawDecryptionMaterials")

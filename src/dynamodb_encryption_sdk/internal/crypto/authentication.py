@@ -16,6 +16,7 @@
     No guarantee is provided on the modules and APIs within this
     namespace staying consistent. Directly reference at your own risk.
 """
+from typing import Text
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 
@@ -25,8 +26,6 @@ from dynamodb_encryption_sdk.identifiers import CryptoAction
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.internal.identifiers import TEXT_ENCODING, SignatureValues, Tag
 from dynamodb_encryption_sdk.structures import AttributeActions  # noqa pylint: disable=unused-import
-
-from typing import Text
 
 from dynamodb_encryption_sdk.internal import dynamodb_types
 

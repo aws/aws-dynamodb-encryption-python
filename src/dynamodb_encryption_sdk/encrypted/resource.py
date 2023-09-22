@@ -13,6 +13,7 @@
 """High-level helper class to provide a familiar interface to encrypted tables."""
 from functools import partial
 
+from typing import Optional
 import attr
 from boto3.resources.base import ServiceResource
 from boto3.resources.collection import CollectionManager
@@ -28,8 +29,6 @@ from dynamodb_encryption_sdk.structures import AttributeActions
 
 from .item import decrypt_python_item, encrypt_python_item
 from .table import EncryptedTable
-
-from typing import Optional
 
 
 __all__ = ("EncryptedResource", "EncryptedTablesCollectionManager")

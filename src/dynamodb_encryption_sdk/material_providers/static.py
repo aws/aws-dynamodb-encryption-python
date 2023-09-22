@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider for use with pre-configured encryption and decryption materials."""
+from typing import Optional
 import attr
 
 from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
@@ -18,8 +19,6 @@ from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMat
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 
 from . import CryptographicMaterialsProvider
-
-from typing import Optional
 
 
 __all__ = ("StaticCryptographicMaterialsProvider",)
