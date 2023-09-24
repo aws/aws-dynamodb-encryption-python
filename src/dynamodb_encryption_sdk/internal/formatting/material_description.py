@@ -22,15 +22,14 @@ import struct
 
 from typing import Dict, Text
 
-from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
 from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
+from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.identifiers import Tag
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
 
 from .deserialize import decode_value, unpack_value
 from .serialize import encode_value
-
 
 __all__ = ("serialize", "deserialize")
 _LOGGER = logging.getLogger(LOGGER_NAME)
