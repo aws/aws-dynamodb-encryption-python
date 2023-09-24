@@ -19,7 +19,7 @@
 import copy
 from functools import partial
 
-from typing import Any, bool, Callable, Dict, Iterable, Text
+from typing import Any, Callable, Dict, Iterable, Text
 import attr
 import botocore.client
 
