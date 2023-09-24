@@ -19,7 +19,6 @@
 import io
 import logging
 import struct
-
 from typing import Dict, Text
 
 from dynamodb_encryption_sdk.exceptions import InvalidMaterialDescriptionError, InvalidMaterialDescriptionVersionError
