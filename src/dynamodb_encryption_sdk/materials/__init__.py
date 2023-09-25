@@ -12,13 +12,12 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials are containers that provide delegated keys for cryptographic operations."""
 import abc
-
 from typing import Dict, Text
+
 import six
 
 from mypy_extensions import NoReturn
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
-
 
 __all__ = ("CryptographicMaterials", "EncryptionMaterials", "DecryptionMaterials")
 

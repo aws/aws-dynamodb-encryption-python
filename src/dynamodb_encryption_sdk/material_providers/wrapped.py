@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider to use ephemeral content encryption keys wrapped by delegated keys."""
 from typing import Dict, Optional, Text
+
 import attr
 import six
 
@@ -22,7 +23,6 @@ from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMateri
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 
 from . import CryptographicMaterialsProvider
-
 
 __all__ = ("WrappedCryptographicMaterialsProvider",)
 

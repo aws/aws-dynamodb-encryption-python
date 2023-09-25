@@ -18,8 +18,8 @@
 """
 import abc
 import logging
-
 from typing import Any, Callable, Text
+
 import attr
 import six
 from cryptography.hazmat.backends import default_backend
@@ -32,7 +32,6 @@ from dynamodb_encryption_sdk.internal.identifiers import MinimumKeySizes
 from dynamodb_encryption_sdk.internal.validators import callable_validator
 
 from .primitives import load_rsa_key
-
 
 __all__ = ("JavaAuthenticator", "JavaMac", "JavaSignature", "JAVA_AUTHENTICATOR")
 _LOGGER = logging.getLogger(LOGGER_NAME)

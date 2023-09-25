@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 """High-level helper class to provide a familiar interface to encrypted tables."""
 from functools import partial
-
 from typing import Any, Callable, Dict, Iterator, Optional
+
 import attr
 import botocore
 
@@ -34,7 +34,6 @@ from dynamodb_encryption_sdk.material_providers import CryptographicMaterialsPro
 from dynamodb_encryption_sdk.structures import AttributeActions
 
 from .item import decrypt_dynamodb_item, decrypt_python_item, encrypt_dynamodb_item, encrypt_python_item
-
 
 __all__ = ("EncryptedClient", "EncryptedPaginator")
 

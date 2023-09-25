@@ -12,9 +12,10 @@
 # language governing permissions and limitations under the License.
 """High-level helper class to provide a familiar interface to encrypted tables."""
 from functools import partial
-
 from typing import Optional
+
 import attr
+
 from boto3.dynamodb.table import BatchWriter
 from boto3.resources.base import ServiceResource
 
@@ -30,7 +31,6 @@ from dynamodb_encryption_sdk.structures import AttributeActions, TableInfo
 
 from .client import EncryptedClient
 from .item import decrypt_python_item, encrypt_python_item
-
 
 __all__ = ("EncryptedTable",)
 

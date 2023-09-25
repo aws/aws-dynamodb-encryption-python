@@ -15,8 +15,8 @@ from __future__ import division
 
 import logging
 import os
-
 from typing import Dict, Optional, Text
+
 import attr
 import six
 from cryptography.hazmat.backends import default_backend
@@ -28,7 +28,6 @@ from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, 
 from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
 
 from . import DelegatedKey
-
 
 __all__ = ("JceNameLocalDelegatedKey",)
 _LOGGER = logging.getLogger(LOGGER_NAME)

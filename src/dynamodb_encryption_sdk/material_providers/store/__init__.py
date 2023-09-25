@@ -12,15 +12,14 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider stores."""
 import abc
+from typing import Optional, Text
 
-from typing import Dict, Optional, Text
 import six
 
 from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
 from dynamodb_encryption_sdk.material_providers import (  # noqa pylint: disable=unused-import
     CryptographicMaterialsProvider,
 )
-
 
 __all__ = ("ProviderStore",)
 

@@ -16,8 +16,8 @@ import time
 from collections import OrderedDict
 from enum import Enum
 from threading import Lock, RLock
-
 from typing import Any, Text
+
 import attr
 import six
 
@@ -28,8 +28,6 @@ from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint:
 
 from . import CryptographicMaterialsProvider
 from .store import ProviderStore
-
-
 
 __all__ = ("CachingMostRecentProvider",)
 _LOGGER = logging.getLogger(LOGGER_NAME)
