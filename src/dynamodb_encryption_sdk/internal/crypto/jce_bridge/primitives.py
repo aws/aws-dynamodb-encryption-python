@@ -23,7 +23,6 @@ from typing import Any, Callable, Text
 
 import attr
 import six
-
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, keywrap, padding as symmetric_padding, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
