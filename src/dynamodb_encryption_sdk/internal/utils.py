@@ -19,8 +19,8 @@
 import copy
 from functools import partial
 from typing import Any, Callable, Dict, Iterable, Text
-import attr
 
+import attr
 import botocore.client
 
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
