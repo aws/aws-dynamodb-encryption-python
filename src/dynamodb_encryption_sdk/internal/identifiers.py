@@ -17,9 +17,7 @@
     namespace staying consistent. Directly reference at your own risk.
 """
 from enum import Enum
-
 from typing import Optional, Text
-
 
 __all__ = (
     "ReservedAttributes",

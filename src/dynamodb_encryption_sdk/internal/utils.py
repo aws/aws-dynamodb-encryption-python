@@ -18,9 +18,9 @@
 """
 import copy
 from functools import partial
-
 from typing import Any, Callable, Dict, Iterable, Text
 import attr
+
 import botocore.client
 
 from dynamodb_encryption_sdk.encrypted import CryptoConfig
@@ -28,8 +28,6 @@ from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.structures import CryptoAction, EncryptionContext, TableInfo
 from dynamodb_encryption_sdk.transform import dict_to_ddb
-
-
 
 __all__ = (
     "TableInfoCache",
