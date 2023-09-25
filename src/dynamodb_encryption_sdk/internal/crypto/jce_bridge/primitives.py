@@ -19,10 +19,11 @@
 import abc
 import logging
 import os
-
 from typing import Any, Callable, Text
+
 import attr
 import six
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, keywrap, padding as symmetric_padding, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as asymmetric_padding, rsa
@@ -38,7 +39,6 @@ from dynamodb_encryption_sdk.exceptions import (
 from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, KeyEncodingType
 from dynamodb_encryption_sdk.internal.identifiers import MinimumKeySizes
 from dynamodb_encryption_sdk.internal.validators import callable_validator
-
 
 __all__ = (
     "JavaPadding",
