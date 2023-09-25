@@ -15,10 +15,9 @@ import abc
 from typing import Dict, Text
 
 import six
+from mypy_extensions import NoReturn
 
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
-
-from mypy_extensions import NoReturn
 
 __all__ = ("CryptographicMaterials", "EncryptionMaterials", "DecryptionMaterials")
 
