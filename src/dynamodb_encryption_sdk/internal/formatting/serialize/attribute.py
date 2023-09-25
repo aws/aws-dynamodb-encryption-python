@@ -18,19 +18,16 @@
 """
 import io
 import logging
-
 from typing import Callable
+
 from boto3.dynamodb.types import DYNAMODB_CONTEXT, Binary
 
 from dynamodb_encryption_sdk.exceptions import SerializationError
 from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
+from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.formatting.serialize import encode_length, encode_value
 from dynamodb_encryption_sdk.internal.identifiers import Tag, TagValues
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes
-
-
-from dynamodb_encryption_sdk.internal import dynamodb_types
-
 
 __all__ = ("serialize_attribute",)
 _LOGGER = logging.getLogger(LOGGER_NAME)

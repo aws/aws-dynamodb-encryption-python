@@ -19,13 +19,11 @@
 
 from typing import Text
 
-from dynamodb_encryption_sdk.internal import dynamodb_types
-
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
+from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.formatting.deserialize.attribute import deserialize_attribute
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.internal.identifiers import Tag
-
 
 __all__ = ("encrypt_attribute", "decrypt_attribute")
 

@@ -17,9 +17,7 @@
     namespace staying consistent. Directly reference at your own risk.
 """
 import struct
-
 from typing import Sized
-
 
 __all__ = ("encode_length", "encode_value")
 
