@@ -17,8 +17,8 @@ import base64
 import logging
 from enum import Enum
 from typing import Dict, Optional, Text, Tuple
-import attr
 
+import attr
 import boto3
 import botocore
 import six

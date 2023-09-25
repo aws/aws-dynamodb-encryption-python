@@ -15,7 +15,6 @@ from functools import partial
 from typing import Optional
 
 import attr
-
 from boto3.dynamodb.table import BatchWriter
 from boto3.resources.base import ServiceResource
 
