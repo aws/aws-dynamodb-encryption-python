@@ -15,7 +15,6 @@ from typing import Any, Dict
 
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
-
 __all__ = ("dict_to_ddb", "ddb_to_dict")
 
 

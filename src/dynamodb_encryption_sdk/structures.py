@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 """Common structures used by the DynamoDB Encryption Client."""
 import copy
-
 from typing import Dict, Iterable, List, Optional, Set, Text
+
 import attr
 import six
 
