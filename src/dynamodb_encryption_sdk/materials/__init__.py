@@ -15,7 +15,7 @@ import abc
 from typing import Dict, Text
 
 import six
-from mypy_extensions import NoReturn
+# from mypy_extensions import NoReturn
 
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
 
@@ -82,7 +82,6 @@ class EncryptionMaterials(CryptographicMaterials):
 
     @property
     def decryption_key(self):
-        # type: () -> NoReturn
         """Encryption materials do not provide decryption keys.
 
         :raises NotImplementedError: because encryption materials do not contain decryption keys
@@ -91,7 +90,6 @@ class EncryptionMaterials(CryptographicMaterials):
 
     @property
     def verification_key(self):
-        # type: () -> NoReturn
         """Encryption materials do not provide verification keys.
 
         :raises NotImplementedError: because encryption materials do not contain verification keys
@@ -104,7 +102,6 @@ class DecryptionMaterials(CryptographicMaterials):
 
     @property
     def encryption_key(self):
-        # type: () -> NoReturn
         """Decryption materials do not provide encryption keys.
 
         :raises NotImplementedError: because decryption materials do not contain encryption keys
@@ -113,7 +110,6 @@ class DecryptionMaterials(CryptographicMaterials):
 
     @property
     def signing_key(self):
-        # type: () -> NoReturn
         """Decryption materials do not provide signing keys.
 
         :raises NotImplementedError: because decryption materials do not contain signing keys
