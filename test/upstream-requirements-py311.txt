@@ -33,6 +33,6 @@ six==1.16.0
 sortedcontainers==2.4.0
 toml==0.10.2
 types-toml==0.10.8.5
-urllib3==1.26.14
+urllib3==1.26.17
 Werkzeug==2.2.3
 xmltodict==0.13.0
