@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    TOXENV: "py38-integ-slow"
+    TOXENV: "py311-integ-slow"
     AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID: >-
       arn:aws:kms:us-west-2:658956600833:key/b3537ef1-d8dc-4780-9f5a-55776cbb2f7f
     AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID_2: >-
@@ -11,7 +11,7 @@ env:
 phases:
   install:
     runtime-versions:
-        python: 3.8
+      python: 3.11
   build:
     commands:
       - pip install "tox < 4.0"
