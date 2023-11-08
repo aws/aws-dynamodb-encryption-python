@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider to use ephemeral content encryption keys wrapped by delegated keys."""
+from typing import Dict, Optional, Text
+
 import attr
 import six
 
@@ -21,19 +23,6 @@ from dynamodb_encryption_sdk.materials.wrapped import WrappedCryptographicMateri
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 
 from . import CryptographicMaterialsProvider
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Optional  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("WrappedCryptographicMaterialsProvider",)
 

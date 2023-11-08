@@ -13,6 +13,7 @@
 """Cryptographic materials to use ephemeral content encryption keys wrapped by delegated keys."""
 import base64
 import copy
+from typing import Dict, Optional, Text
 
 import attr
 import six
@@ -24,13 +25,6 @@ from dynamodb_encryption_sdk.identifiers import EncryptionKeyType
 from dynamodb_encryption_sdk.internal.identifiers import MaterialDescriptionKeys
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator
 from dynamodb_encryption_sdk.materials import CryptographicMaterials
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("WrappedCryptographicMaterials",)
 _DEFAULT_CONTENT_ENCRYPTION_ALGORITHM = "AES/256"

@@ -11,14 +11,9 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Top-level functions for encrypting and decrypting DynamoDB items."""
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 from dynamodb_encryption_sdk.exceptions import DecryptionError, EncryptionError
 from dynamodb_encryption_sdk.identifiers import CryptoAction
+from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.crypto.authentication import sign_item, verify_item_signature
 from dynamodb_encryption_sdk.internal.crypto.encryption import decrypt_attribute, encrypt_attribute
 from dynamodb_encryption_sdk.internal.formatting.material_description import (

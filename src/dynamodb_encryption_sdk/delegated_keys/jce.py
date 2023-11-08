@@ -15,6 +15,7 @@ from __future__ import division
 
 import logging
 import os
+from typing import Dict, Optional, Text
 
 import attr
 import six
@@ -27,13 +28,6 @@ from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, EncryptionKeyType, 
 from dynamodb_encryption_sdk.internal.crypto.jce_bridge import authentication, encryption, primitives
 
 from . import DelegatedKey
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("JceNameLocalDelegatedKey",)
 _LOGGER = logging.getLogger(LOGGER_NAME)

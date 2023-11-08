@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider for use with pre-configured encryption and decryption materials."""
+from typing import Optional
+
 import attr
 
 from dynamodb_encryption_sdk.materials import CryptographicMaterials  # noqa pylint: disable=unused-import
@@ -18,13 +20,6 @@ from dynamodb_encryption_sdk.materials import DecryptionMaterials, EncryptionMat
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 
 from . import CryptographicMaterialsProvider
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Optional  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("StaticCryptographicMaterialsProvider",)
 

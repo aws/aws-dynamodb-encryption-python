@@ -16,6 +16,7 @@ from __future__ import division
 import base64
 import logging
 from enum import Enum
+from typing import Dict, Optional, Text, Tuple
 
 import attr
 import boto3
@@ -28,6 +29,7 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from dynamodb_encryption_sdk.delegated_keys.jce import JceNameLocalDelegatedKey
 from dynamodb_encryption_sdk.exceptions import UnknownRegionError, UnwrappingError, WrappingError
 from dynamodb_encryption_sdk.identifiers import LOGGER_NAME, USER_AGENT_SUFFIX, EncryptionKeyType, KeyEncodingType
+from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.identifiers import TEXT_ENCODING, MaterialDescriptionKeys
 from dynamodb_encryption_sdk.internal.str_ops import to_bytes, to_str
 from dynamodb_encryption_sdk.internal.validators import dictionary_validator, iterable_validator
@@ -35,15 +37,6 @@ from dynamodb_encryption_sdk.materials.raw import RawDecryptionMaterials, RawEnc
 from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint: disable=unused-import
 
 from . import CryptographicMaterialsProvider
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Optional, Text, Tuple  # noqa pylint: disable=unused-import
-
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("AwsKmsCryptographicMaterialsProvider",)
 _LOGGER = logging.getLogger(LOGGER_NAME)

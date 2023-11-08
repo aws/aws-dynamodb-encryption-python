@@ -16,24 +16,18 @@
     No guarantee is provided on the modules and APIs within this
     namespace staying consistent. Directly reference at your own risk.
 """
+from typing import Text
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 
 from dynamodb_encryption_sdk.delegated_keys import DelegatedKey  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.encrypted import CryptoConfig  # noqa pylint: disable=unused-import
 from dynamodb_encryption_sdk.identifiers import CryptoAction
+from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.formatting.serialize.attribute import serialize_attribute
 from dynamodb_encryption_sdk.internal.identifiers import TEXT_ENCODING, SignatureValues, Tag
 from dynamodb_encryption_sdk.structures import AttributeActions  # noqa pylint: disable=unused-import
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Text  # noqa pylint: disable=unused-import
-
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("sign_item", "verify_item_signature")
 

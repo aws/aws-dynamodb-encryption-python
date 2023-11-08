@@ -18,6 +18,7 @@
 """
 import copy
 from functools import partial
+from typing import Any, Callable, Dict, Iterable, Text
 
 import attr
 import botocore.client
@@ -27,12 +28,6 @@ from dynamodb_encryption_sdk.encrypted.item import decrypt_python_item, encrypt_
 from dynamodb_encryption_sdk.exceptions import InvalidArgumentError
 from dynamodb_encryption_sdk.structures import CryptoAction, EncryptionContext, TableInfo
 from dynamodb_encryption_sdk.transform import dict_to_ddb
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Bool, Callable, Dict, Iterable, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
 
 __all__ = (
     "TableInfoCache",
@@ -366,7 +361,7 @@ def _process_batch_write_response(request, response, table_crypto_config):
 
 
 def _item_keys_match(crypto_config, item1, item2):
-    # type: (CryptoConfig, Dict, Dict) -> Bool
+    # type: (CryptoConfig, Dict, Dict) -> bool
     """Determines whether the values in the primary and sort keys (if they exist) are the same
 
     :param CryptoConfig crypto_config: CryptoConfig used in encrypting the given items
@@ -387,7 +382,7 @@ def _item_keys_match(crypto_config, item1, item2):
 
 
 def _item_attributes_match(crypto_config, plaintext_item, encrypted_item):
-    # type: (CryptoConfig, Dict, Dict) -> Bool
+    # type: (CryptoConfig, Dict, Dict) -> bool
     """Determines whether the unencrypted values in the plaintext items attributes are the same as those in the
     encrypted item. Essentially this uses brute force to cover when we don't know the primary and sort
     index attribute names, since they can't be encrypted.

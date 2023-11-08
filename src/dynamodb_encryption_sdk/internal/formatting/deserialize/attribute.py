@@ -21,23 +21,16 @@ import io
 import logging
 import struct
 from decimal import Decimal
+from typing import Callable, Dict, List, Text, Union
 
 from boto3.dynamodb.types import Binary
 
 from dynamodb_encryption_sdk.exceptions import DeserializationError
 from dynamodb_encryption_sdk.identifiers import LOGGER_NAME
+from dynamodb_encryption_sdk.internal import dynamodb_types
 from dynamodb_encryption_sdk.internal.formatting.deserialize import decode_byte, decode_length, decode_tag, decode_value
 from dynamodb_encryption_sdk.internal.identifiers import TEXT_ENCODING, Tag, TagValues
 from dynamodb_encryption_sdk.internal.str_ops import to_str
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Callable, Dict, List, Text, Union  # noqa pylint: disable=unused-import
-
-    from dynamodb_encryption_sdk.internal import dynamodb_types  # noqa pylint: disable=unused-import,ungrouped-imports
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("deserialize_attribute",)
 _LOGGER = logging.getLogger(LOGGER_NAME)

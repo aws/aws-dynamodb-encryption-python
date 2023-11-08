@@ -16,6 +16,7 @@ import time
 from collections import OrderedDict
 from enum import Enum
 from threading import Lock, RLock
+from typing import Any, Text
 
 import attr
 import six
@@ -27,13 +28,6 @@ from dynamodb_encryption_sdk.structures import EncryptionContext  # noqa pylint:
 
 from . import CryptographicMaterialsProvider
 from .store import ProviderStore
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Any, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("CachingMostRecentProvider",)
 _LOGGER = logging.getLogger(LOGGER_NAME)

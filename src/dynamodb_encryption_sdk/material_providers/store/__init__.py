@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 """Cryptographic materials provider stores."""
 import abc
+from typing import Optional, Text
 
 import six
 
@@ -19,13 +20,6 @@ from dynamodb_encryption_sdk.exceptions import NoKnownVersionError
 from dynamodb_encryption_sdk.material_providers import (  # noqa pylint: disable=unused-import
     CryptographicMaterialsProvider,
 )
-
-try:  # Python 3.5.0 and 3.5.1 have incompatible typing modules
-    from typing import Dict, Optional, Text  # noqa pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    # We only actually need these imports when running the mypy checks
-    pass
-
 
 __all__ = ("ProviderStore",)
 
