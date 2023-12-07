@@ -40,7 +40,7 @@ jobs:
 #          - examples
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.platform.architecture }}
@@ -63,7 +63,7 @@ jobs:
           - test-upstream-requirements-py37
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.7
       - run: |
@@ -85,7 +85,7 @@ jobs:
           - test-upstream-requirements-py311
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: |
