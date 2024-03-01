@@ -39,7 +39,7 @@ jobs:
 #          - integ-slow
 #          - examples
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
@@ -62,7 +62,7 @@ jobs:
           - sourcebuildcheck
           - test-upstream-requirements-py37
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: 3.7
@@ -84,7 +84,7 @@ jobs:
           - sourcebuildcheck
           - test-upstream-requirements-py311
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
