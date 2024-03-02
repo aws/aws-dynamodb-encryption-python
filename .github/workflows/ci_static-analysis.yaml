@@ -17,7 +17,6 @@ jobs:
         category:
 # Disabled pending completion of integration
 # https://github.com/aws/aws-dynamodb-encryption-python/issues/66
-#          - mypy-py2
 #          - mypy-py3
           - bandit
           - doc8
@@ -31,8 +30,8 @@ jobs:
           - pylint-examples
           - black-check
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.8
       - run: |
