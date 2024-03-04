@@ -24,9 +24,10 @@ def _warn_deprecated_python():
         (3, 4): {"date": DEPRECATION_DATE_MAP["2.x"]},
         (3, 5): {"date": "2021-11-10"},
         (3, 6): {"date": "2021-12-19"},
+        (3, 7): {"date": "2024-03-04"},
     }
     py_version = (sys.version_info.major, sys.version_info.minor)
-    minimum_version = (3, 7)
+    minimum_version = (3, 8)
 
     if py_version in deprecated_versions:
         params = deprecated_versions[py_version]
@@ -36,5 +37,5 @@ def _warn_deprecated_python():
             "bug fixes, and security updates please upgrade to Python {}.{} or "
             "later. For more information, see SUPPORT_POLICY.rst: "
             "https://github.com/aws/aws-dynamodb-encryption-python/blob/master/SUPPORT_POLICY.rst"
-        ).format(py_version[0], py_version[1], minimum_version[0], minimum_version[1], params["date"])
+        ).format(py_version[0], py_version[1], params["date"], minimum_version[0], minimum_version[1])
         warnings.warn(warning, DeprecationWarning)
