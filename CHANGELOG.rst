@@ -2,6 +2,39 @@
 Changelog
 *********
 
+3.3.0 -- 2024-03-18
+===================
+
+Features
+-----------
+* test Python 3.12 (#747 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/747)) (e260227 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/e260227fe281fff9279bd67ed9307df8d789f30e))
+* update requirements (#758 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/758)) (197d7f8 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/197d7f8352da19e036fb21ccc9f816d2f9be9221))
+
+Fixes
+-----------
+* docs: Update AWS Doc URLs (#663 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/663)) (e6bb11e (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/e6bb11e5a2aa43fdd04a018f6ecb9bed28eaeec5))
+* docs: update broken links (#572 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/572)) (7db2114 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/7db21140dba2ec1b722421e7468be22cc1b087d8))
+
+Maintenance
+-----------
+* address doc linter findings (#731 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/731)) (65abd6a (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/65abd6ad2e3d406f4b7466a515f9e7bc4c006ade))
+* bump ci deps (#564 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/564)) (5e963f3 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/5e963f38bf6a1f9885edd47b53863ab386a2b630))
+* bump dependencies (#763 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/763)) (2a7fe12 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/2a7fe129cbfdb982479f6192372f5f9d76a77d4d))
+* ci: skip pyenv installation if already exists (#756 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/756)) (25a6be3 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/25a6be357d22770419f84fe3506e1f9a850ec07f))
+* deps: bump certifi from 2022.12.7 to 2023.7.22 in /test (#703 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/703)) (5be949e (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/5be949efe3b147b052c681b582623c6c013f5ac6))
+* deps: bump cryptography from 39.0.0 to 39.0.1 in /test (#547 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/547)) (ce8b779 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/ce8b779f628ccc150837cd768190f237f52a23e5))
+* deps: bump cryptography from 39.0.1 to 41.0.3 in /test (#706 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/706)) (a7b328c (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/a7b328ccebf4eb5497286d7ba0a4c3cd6e9a5176))
+* deps: bump cryptography from 41.0.3 to 41.0.4 in /test (#743 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/743)) (6e7a75e (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/6e7a75ea266e65e0a18e89fe047e64ba183c0717))
+* deps: bump cryptography from 41.0.4 to 41.0.6 in /test (#751 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/751)) (d1ec2cb (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/d1ec2cbccdf5d25870450d35ce24eb37f46ae422))
+* deps: bump flake8-docstrings in /dev_requirements (#707 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/707)) (ca26b68 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/ca26b6862442135d407086bc4714633ac05a2834))
+* deps: bump flake8-print from 4.0.0 to 5.0.0 in /dev_requirements (#711 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/711)) (9b7b1af (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/9b7b1af44943c49bc5a4e21644e291f354d75c93))
+* deps: bump isort from 5.10.1 to 5.12.0 in /dev_requirements (#708 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/708)) (c3609b6 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/c3609b6c5a20888cf5c1a0ae312489857f895d23))
+* deps: bump pytest from 7.0.0 to 7.2.1 in /dev_requirements (#513 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/513)) (de31c5e (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/de31c5e4339bfdc0e237b4b53fb6e4958bed972f))
+* deps: bump requests from 2.28.2 to 2.31.0 in /test (#643 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/643)) (b69d747 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/b69d747e5e3b17737a1f462c566604fb8b8f2271))
+* deps: bump setuptools from 60.7.1 to 66.1.1 in /dev_requirements (#526 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/526)) (decf303 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/decf303794fde0ebaed8ac6e512fcff81e082140))
+* deps: bump wheel from 0.37.1 to 0.38.4 in /dev_requirements (#491 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/491)) (71b9856 (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/71b98568695b863d04fd31d168c3037dd2784bc8))
+* update boto (#732 (https://github.com/josecorella/aws-dynamodb-encryption-python/issues/732)) (ace5eec (https://github.com/josecorella/aws-dynamodb-encryption-python/commit/ace5eec2d52d22d6135e30fe3708294361eb2e28))
+
 3.2.0 -- 2021-12-19
 ===================
 
