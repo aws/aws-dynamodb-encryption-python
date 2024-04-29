@@ -1,2 +1,2 @@
 setuptools
-tox==3.24.5
+tox==4.15.0
