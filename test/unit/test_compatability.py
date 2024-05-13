@@ -22,13 +22,12 @@ pytestmark = [pytest.mark.unit, pytest.mark.local]
 
 
 class TestWarnDeprecatedPython:
-    def test_happy_version(self):
+    def test_happy_version(self, recwarn):
         with mock.patch.object(sys, "version_info") as v_info:
             v_info.major = 3
             v_info.minor = 8
-            with pytest.warns(None) as record:
-                _warn_deprecated_python()
-            assert len(record) == 0
+            _warn_deprecated_python()
+            assert len(recwarn) == 0
 
     def test_below_warn(self):
         with mock.patch.object(sys, "version_info") as v_info:
