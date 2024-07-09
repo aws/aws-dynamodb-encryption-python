@@ -16,10 +16,10 @@ MarkupSafe==2.1.2
 mock==4.0.3
 moto==3.0.2
 packaging==23.0
-pluggy==1.0.0
+pluggy==1.5.0
 py==1.11.0
 pycparser==2.21
-pytest==7.2.1
+pytest==8.2.0
 pytest-cov==3.0.0
 pytest-forked==1.6.0
 pytest-mock==3.10.0
