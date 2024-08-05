@@ -7,8 +7,7 @@ Changelog
 
 Deprecation
 -----------
-* The AWS DynamoDB Encryption Client for Python no longer supports Python 3.7
-as of version 3.3; only Python 3.8+ is supported.
+* The AWS DynamoDB Encryption Client for Python no longer supports Python 3.7 as of version 3.3; only Python 3.8+ is supported.
 * We no longer support OpenSSL 1.0.1 or 1.0.2, as per `cryptography documentation <https://cryptography.io/en/3.4.6/installation.html#supported-platforms>`_.
 
 Feature
