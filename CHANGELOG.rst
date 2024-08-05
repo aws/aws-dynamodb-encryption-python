@@ -2,6 +2,18 @@
 Changelog
 *********
 
+3.3.0 -- 2024-08-05
+===================
+
+Deprecation
+-----------
+The AWS DynamoDB Encryption Client for Python no longer supports Python 3.7
+as of version 3.3; only Python 3.8+ is supported.
+
+Feature
+-----------
+* Warn on Deprecated Python 3.7 usage
+
 3.2.0 -- 2021-12-19
 ===================
 
