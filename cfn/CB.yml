@@ -180,10 +180,6 @@ Resources:
         - !Ref SecretsManagerPolicy
         - !Ref DDBPolicy
         - "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
-        # the following three are hard coded to incorporate the drift on CFN
-        - "arn:aws:iam::587316601012:policy/service-role/CodeBuildBuildBatchPolicy-python-ddb-ec-test-release-us-west-2-codebuild-python-ddb-ec-service-role"
-        - "arn:aws:iam::587316601012:policy/service-role/CodeBuildBasePolicy-python-ddb-ec-prod-release-us-west-2"
-        - "arn:aws:iam::587316601012:policy/service-role/CodeBuildBasePolicy-python-ddb-ec-test-release-us-west-2"
 
   CodeBuildCIServiceRole:
     Type: "AWS::IAM::Role"
