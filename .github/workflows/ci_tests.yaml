@@ -22,7 +22,7 @@ jobs:
           # x86 builds are only meaningful for Windows
           - os: windows-latest
             architecture: x86
-          - os: macos-12
+          - os: macos-13
             architecture: x64
         python:
           - 3.8
@@ -30,7 +30,7 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12"
-          - 3.x
+#          - 3.x  3.13 does not have 'pipes' and maybe other necessary things
         category:
           - local-slow
 # These require credentials.
