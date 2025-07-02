@@ -28,6 +28,9 @@ jobs:
             toxenv: 'py311-integ-slow'
           - python-version: '3.12'
             toxenv: 'py312-integ-slow'
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
