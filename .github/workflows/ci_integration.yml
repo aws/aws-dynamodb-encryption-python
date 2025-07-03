@@ -2,11 +2,8 @@
 name: integration-tests
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  # Run once a day
+  workflow_call:
+  # Keep the schedule to maintain daily runs
   schedule:
     - cron: '0 0 * * *'
 
