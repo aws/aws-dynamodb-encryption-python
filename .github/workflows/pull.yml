@@ -3,6 +3,9 @@ name: Pull Request Checks
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   call-integration-tests:
     name: Run Integration Tests
