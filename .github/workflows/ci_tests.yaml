@@ -35,6 +35,11 @@ jobs:
 #          - 3.x  3.13 does not have 'pipes' and maybe other necessary things
         category:
           - local-slow
+        exclude:
+          # Python 3.8 is broken on macOS-latest runners due to missing libintl dependency
+          - platform:
+              os: macos-latest
+            python: 3.8
 # These require credentials.
 # Enable them once we sort how to provide them.
 #          - integ-slow
