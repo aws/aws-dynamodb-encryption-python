@@ -24,7 +24,7 @@ jobs:
           # x86 builds are only meaningful for Windows
           - os: windows-latest
             architecture: x86
-          - os: macos-13
+          - os: macos-latest
             architecture: x64
         python:
           - 3.8
@@ -35,6 +35,18 @@ jobs:
 #          - 3.x  3.13 does not have 'pipes' and maybe other necessary things
         category:
           - local-slow
+        exclude:
+          # Python < 3.11 is broken on macOS runners due to missing libintl dependency
+          # See: https://github.com/actions/setup-python/issues/875
+          - platform:
+              os: macos-latest
+            python: 3.8
+          - platform:
+              os: macos-latest
+            python: 3.9
+          - platform:
+              os: macos-latest
+            python: "3.10"
 # These require credentials.
 # Enable them once we sort how to provide them.
 #          - integ-slow
