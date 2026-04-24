@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "IAM Role for CI from Github"
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: A prefix that will be applied to any names
+    Default: DDBEC-Python
+  GitHubRepo:
+    Type: String
+    Description: GitHub Repo that invokes CI
+    Default: aws/aws-dynamodb-encryption-python
+
+Resources:
+  GitHubCIRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub "GitHub-CI-${ProjectName}-Role-${AWS::Region}"
+      Description: "Access KMS Resources for CI from GitHub"
+      ManagedPolicyArns:
+        - "arn:aws:iam::370957321024:policy/KMS-Public-CMK-EncryptDecrypt-Key-Access"
+      AssumeRolePolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",   
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com" },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+                },
+                "StringLike": {
+                  "token.actions.githubusercontent.com:sub": "repo:${GitHubRepo}:*"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:PrincipalArn": [
+                    "arn:aws:iam::${AWS::AccountId}:role/ToolsDevelopment"
+                  ]
+                }
+              }
+            }
+          ]
+        }

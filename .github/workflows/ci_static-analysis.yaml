@@ -2,11 +2,13 @@
 name: static analysis
 
 on:
-  pull_request:
-  push:
-  # Run once a day
+  workflow_call:
+  # Keep the schedule to maintain daily runs
   schedule:
     - cron: '0 0 * * *'
+
+permissions:
+  contents: read
 
 jobs:
   analysis:

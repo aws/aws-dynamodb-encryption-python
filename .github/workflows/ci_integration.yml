@@ -1,0 +1,86 @@
+# This workflow runs integration tests with AWS KMS keys
+name: integration-tests
+
+on:
+  workflow_call:
+  # Keep the schedule to maintain daily runs
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        include:
+          - python-version: '3.8'
+            toxenv: 'py38-integ-slow'
+          - python-version: '3.9'
+            toxenv: 'py39-integ-slow'
+          - python-version: '3.10'
+            toxenv: 'py310-integ-slow'
+          - python-version: '3.11'
+            toxenv: 'py311-integ-slow'
+          - python-version: '3.12'
+            toxenv: 'py312-integ-slow'
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "tox < 4.0"
+      
+      # Python no longer bundles setuptools starting in 3.12
+      - name: Install python version specific dependencies
+        if: matrix.python-version == '3.12'
+        run: |
+          pip install setuptools
+      
+      - name: Configure AWS Credentials for Tests
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-DDBEC-Python-Role-us-west-2
+          role-session-name: DDBEC-Python-Tests
+          
+      - name: Test with tox
+        env:
+          TOXENV: ${{ matrix.toxenv }}
+          AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID: >-
+            arn:aws:kms:us-west-2:658956600833:key/b3537ef1-d8dc-4780-9f5a-55776cbb2f7f
+          AWS_ENCRYPTION_SDK_PYTHON_INTEGRATION_TEST_AWS_KMS_KEY_ID_2: >-
+            arn:aws:kms:eu-central-1:658956600833:key/75414c93-5285-4b57-99c9-30c1cf0a22c2
+        run: tox
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "tox < 4.0"  
+          pip install setuptools
+          
+      - name: Run coverage
+        env:
+          TOXENV: coverage
+        run: tox

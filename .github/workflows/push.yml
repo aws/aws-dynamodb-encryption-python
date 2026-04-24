@@ -1,0 +1,19 @@
+name: Push Checks
+
+on:
+  push:
+    branches: master
+
+permissions:
+  contents: read
+
+jobs:
+  call-integration-tests:
+    name: Run Integration Tests
+    uses: ./.github/workflows/ci_integration.yml
+  call-static-analysis:
+    name: Run Static Analysis
+    uses: ./.github/workflows/ci_static-analysis.yaml
+  call-tests:
+    name: Run Tests
+    uses: ./.github/workflows/ci_tests.yaml
