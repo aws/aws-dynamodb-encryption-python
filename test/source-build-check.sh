@@ -12,13 +12,13 @@ echo "Using working directory ${WORKINGDIR}"
 echo "Using dist directory ${DISTDIR}"
 
 echo "Locating the source build and copying it into the working directory."
-DISTFILE=$(ls ${DISTDIR}/dynamodb-encryption-sdk-*.tar.gz | tail -1)
+DISTFILE=$(ls ${DISTDIR}/dynamodb?encryption?sdk-*.tar.gz | tail -1)
 echo "Found source build at ${DISTFILE}"
 cp ${DISTFILE} ${WORKINGDIR}
 
 echo "Extracting the source build."
 cd ${WORKINGDIR}
-NEWDISTFILE=$(ls dynamodb-encryption-sdk-*.tar.gz | tail -1)
+NEWDISTFILE=$(ls dynamodb?encryption?sdk-*.tar.gz | tail -1)
 echo "Using distfile ${NEWDISTFILE}"
 tar xzvf ${NEWDISTFILE}
 rm ${NEWDISTFILE}
