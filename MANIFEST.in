@@ -8,5 +8,6 @@ recursive-exclude doc .DS_Store *.pyc
 prune doc/build
 prune doc/lib/generated
 
+recursive-include dev_requirements *
 recursive-include test *
 recursive-exclude test .DS_Store *.pyc
