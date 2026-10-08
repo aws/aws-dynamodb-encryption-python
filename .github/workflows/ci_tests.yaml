@@ -63,6 +63,8 @@ jobs:
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
+          # tox reads pip's output as UTF-8; Windows writes it in the console code page otherwise.
+          PYTHONUTF8: "1"
         run: tox -- -vv
 
   upstream-py311:
@@ -85,4 +87,6 @@ jobs:
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
+          # tox reads pip's output as UTF-8; Windows writes it in the console code page otherwise.
+          PYTHONUTF8: "1"
         run: tox -- -vv
