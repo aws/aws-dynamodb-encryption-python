@@ -23,7 +23,7 @@ jobs:
       - call-integration-tests
       - call-static-analysis
       - call-tests
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Verify all required jobs passed
         uses: re-actors/alls-green@release/v1
