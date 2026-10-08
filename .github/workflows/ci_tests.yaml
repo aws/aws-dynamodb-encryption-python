@@ -12,23 +12,19 @@ permissions:
 
 jobs:
   tests:
-    runs-on: ${{ matrix.platform.runner }}
+    runs-on: ${{ matrix.platform.os == 'ubuntu-latest' && format('codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-{0}-{1}', github.run_id, github.run_attempt) || matrix.platform.os }}
     strategy:
       fail-fast: true
       matrix:
         platform:
           - os: ubuntu-latest
-            runner: codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-${{ github.run_id }}-${{ github.run_attempt }}
             architecture: x64
           - os: windows-latest
-            runner: windows-latest
             architecture: x64
           # x86 builds are only meaningful for Windows
           - os: windows-latest
-            runner: windows-latest
             architecture: x86
           - os: macos-latest
-            runner: macos-latest
             architecture: x64
         python:
           - 3.8
