@@ -7,6 +7,10 @@ on:
       platforms:
         type: string
         required: false
+        default: >-
+          [{"os": "ubuntu-latest", "architecture": "x64", "runner": "codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-${{ github.run_id }}-${{ github.run_attempt }}"},
+           {"os": "windows-latest", "architecture": "x64", "runner": "windows-latest"},
+           {"os": "macos-latest", "architecture": "x64", "runner": "macos-latest"}]
       upstream:
         type: boolean
         required: false
@@ -20,11 +24,11 @@ permissions:
 
 jobs:
   tests:
-    runs-on: ${{ matrix.platform.os == 'ubuntu-latest' && format('codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-{0}-{1}', github.run_id, github.run_attempt) || matrix.platform.os }}
+    runs-on: ${{ matrix.platform.runner }}
     strategy:
       fail-fast: true
       matrix:
-        platform: ${{ fromJSON(inputs.platforms || '[{"os":"ubuntu-latest","architecture":"x64"},{"os":"windows-latest","architecture":"x64"},{"os":"macos-latest","architecture":"x64"}]') }}
+        platform: ${{ fromJSON(inputs.platforms || format('[{{"os":"ubuntu-latest","architecture":"x64","runner":"codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-{0}-{1}"}},{{"os":"windows-latest","architecture":"x64","runner":"windows-latest"}},{{"os":"macos-latest","architecture":"x64","runner":"macos-latest"}}]', github.run_id, github.run_attempt)) }}
         python:
           - 3.8
           - 3.9
