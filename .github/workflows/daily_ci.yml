@@ -1,0 +1,14 @@
+name: Daily CI
+
+on:
+  # Keep the schedule to maintain daily runs
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  call-tests:
+    name: Run Tests
+    uses: ./.github/workflows/ci_tests.yaml

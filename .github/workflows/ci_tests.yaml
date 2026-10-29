@@ -3,29 +3,29 @@ name: tests
 
 on:
   workflow_call:
-  # Keep the schedule to maintain daily runs
-  schedule:
-    - cron: '0 0 * * *'
+    inputs:
+      platforms:
+        type: string
+        required: false
+        default: >-
+          [{"os": "ubuntu-latest", "architecture": "x64", "runner": "codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-${{ github.run_id }}-${{ github.run_attempt }}"},
+           {"os": "windows-latest", "architecture": "x64", "runner": "windows-latest"},
+           {"os": "macos-latest", "architecture": "x64", "runner": "macos-latest"}]
+      upstream:
+        type: boolean
+        required: false
+        default: true
 
 permissions:
   contents: read
 
 jobs:
   tests:
-    runs-on: ${{ matrix.platform.os }}
+    runs-on: ${{ matrix.platform.runner }}
     strategy:
       fail-fast: true
       matrix:
-        platform:
-          - os: ubuntu-latest
-            architecture: x64
-          - os: windows-latest
-            architecture: x64
-          # x86 builds are only meaningful for Windows
-          - os: windows-latest
-            architecture: x86
-          - os: macos-latest
-            architecture: x64
+        platform: ${{ fromJSON(inputs.platforms) }}
         python:
           - 3.8
           - 3.9
@@ -63,10 +63,13 @@ jobs:
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
+          # tox reads pip's output as UTF-8; Windows writes it in the console code page otherwise.
+          PYTHONUTF8: "1"
         run: tox -- -vv
 
   upstream-py311:
-    runs-on: ubuntu-latest
+    if: inputs.upstream != false
+    runs-on: codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-${{ github.run_id }}-${{ github.run_attempt }}
     strategy:
       fail-fast: true
       matrix:
@@ -85,4 +88,6 @@ jobs:
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
+          # tox reads pip's output as UTF-8; Windows writes it in the console code page otherwise.
+          PYTHONUTF8: "1"
         run: tox -- -vv
