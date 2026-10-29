@@ -3,6 +3,14 @@ name: tests
 
 on:
   workflow_call:
+    inputs:
+      platforms:
+        type: string
+        required: false
+      upstream:
+        type: boolean
+        required: false
+        default: true
   # Keep the schedule to maintain daily runs
   schedule:
     - cron: '0 0 * * *'
@@ -16,13 +24,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        platform:
-          - os: ubuntu-latest
-            architecture: x64
-          - os: windows-latest
-            architecture: x64
-          - os: macos-latest
-            architecture: x64
+        platform: ${{ fromJSON(inputs.platforms || '[{"os":"ubuntu-latest","architecture":"x64"},{"os":"windows-latest","architecture":"x64"},{"os":"macos-latest","architecture":"x64"}]') }}
         python:
           - 3.8
           - 3.9
@@ -65,6 +67,7 @@ jobs:
         run: tox -- -vv
 
   upstream-py311:
+    if: inputs.upstream != false
     runs-on: codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-${{ github.run_id }}-${{ github.run_attempt }}
     strategy:
       fail-fast: true

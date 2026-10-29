@@ -17,6 +17,14 @@ jobs:
   call-tests:
     name: Run Tests
     uses: ./.github/workflows/ci_tests.yaml
+    with:
+      platforms: '[{"os":"ubuntu-latest","architecture":"x64"}]'
+  call-tests-macos-windows:
+    name: Run Tests (macOS, Windows)
+    uses: ./.github/workflows/ci_tests.yaml
+    with:
+      platforms: '[{"os":"windows-latest","architecture":"x64"},{"os":"macos-latest","architecture":"x64"}]'
+      upstream: false
   pr-ci-all-required:
     if: always()
     needs:
