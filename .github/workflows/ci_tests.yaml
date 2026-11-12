@@ -63,7 +63,7 @@ jobs:
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
-          # tox reads pip's output as UTF-8; Windows writes it in the console code page otherwise.
+          # On Windows, pip writes its output in the console code page, but tox reads it as UTF-8.
           PYTHONUTF8: "1"
         run: tox -- -vv
 
@@ -88,6 +88,5 @@ jobs:
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
-          # tox reads pip's output as UTF-8; Windows writes it in the console code page otherwise.
           PYTHONUTF8: "1"
         run: tox -- -vv
