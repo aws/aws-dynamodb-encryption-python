@@ -10,7 +10,6 @@ on:
         default: >-
           [{"os": "ubuntu-latest", "architecture": "x64", "runner": "codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-${{ github.run_id }}-${{ github.run_attempt }}"},
            {"os": "windows-latest", "architecture": "x64", "runner": "windows-latest"},
-           {"os": "windows-latest", "architecture": "x86", "runner": "windows-latest"},
            {"os": "macos-latest", "architecture": "x64", "runner": "macos-latest"}]
       upstream:
         type: boolean

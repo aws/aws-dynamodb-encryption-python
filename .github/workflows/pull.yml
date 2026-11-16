@@ -26,7 +26,6 @@ jobs:
     with:
       platforms: >-
         [{"os": "windows-latest", "architecture": "x64", "runner": "windows-latest"},
-         {"os": "windows-latest", "architecture": "x86", "runner": "windows-latest"},
          {"os": "macos-latest", "architecture": "x64", "runner": "macos-latest"}]
       upstream: false
   pr-ci-all-required:
