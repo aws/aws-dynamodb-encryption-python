@@ -10,6 +10,7 @@ on:
         default: >-
           [{"os": "ubuntu-latest", "architecture": "x64", "runner": "codebuild-CryptoToolsCI-linux-aws-dynamodb-encryption-python-${{ github.run_id }}-${{ github.run_attempt }}"},
            {"os": "windows-latest", "architecture": "x64", "runner": "windows-latest"},
+           {"os": "windows-latest", "architecture": "x86", "runner": "windows-latest"},
            {"os": "macos-latest", "architecture": "x64", "runner": "macos-latest"}]
       upstream:
         type: boolean
@@ -63,8 +64,6 @@ jobs:
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
-          # On Windows, pip writes its output in the console code page, but tox reads it as UTF-8.
-          PYTHONUTF8: "1"
         run: tox -- -vv
 
   upstream-py311:
@@ -88,5 +87,4 @@ jobs:
       - name: run test
         env:
           TOXENV: ${{ matrix.category }}
-          PYTHONUTF8: "1"
         run: tox -- -vv
